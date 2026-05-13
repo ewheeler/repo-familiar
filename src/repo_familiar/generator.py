@@ -390,6 +390,7 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
         "worktree_profiles_yaml": profile_registry.render_advisory_profiles(profile_registry.WORKTREE_PROFILES, options.worktree_profiles),
         "selected_worktree_profiles_list": _markdown_list(options.worktree_profiles),
         "selected_skills_list": _markdown_list(options.skills),
+        "skill_sources_yaml": profile_registry.render_skill_sources(options.skills),
     }
 
 

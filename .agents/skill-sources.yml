@@ -1,0 +1,121 @@
+skills:
+  a11y-web-scan:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar accessibility scanning guidance."
+  caveman:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  cq:
+    source_type: "external"
+    source_url: "https://github.com/mozilla-ai/cq/blob/main/plugins/cq/skills/cq/SKILL.md"
+    notes: "Adapted for repo-familiar selectable skill guidance."
+  diagnose:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnose/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  get-api-docs:
+    source_type: "external"
+    source_url: "https://github.com/andrewyng/context-hub/blob/main/cli/skills/get-api-docs/SKILL.md"
+    notes: "Adapted from Context Hub get-api-docs skill for repo-familiar selectable skill guidance."
+  git-guardrails-claude-code:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  grill-me:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  grill-with-docs:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/grill-with-docs/SKILL.md"
+    notes: "Adapted from mattpocock/skills for repo-familiar documentation and planning workflows."
+  improve-codebase-architecture:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  migrate-to-shoehorn:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/misc/migrate-to-shoehorn/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  playwright-cli:
+    source_type: "external"
+    source_url: "https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md"
+    notes: "Adapted from Microsoft playwright-cli skill for repo-familiar browser automation guidance."
+  privacy-review:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar privacy review workflows."
+  prompt-migration:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar prompt migration workflows."
+  prompt-eval-design:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar prompt evaluation design workflows."
+  prompt-output-safety:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar prompt and output safety reviews."
+  prototype:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/prototype/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  qa-test-design:
+    source_type: "external"
+    source_url: "https://github.com/omega-memory/omega-skills/blob/main/skills/qa-test-design/SKILL.md"
+    notes: "Adapted from omega-memory/omega-skills."
+  rodney-browser:
+    source_type: "local-adapted"
+    source_url: "https://github.com/simonw/rodney"
+    notes: "Authored in repo-familiar around Rodney browser automation guidance."
+  scaffold-exercises:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/misc/scaffold-exercises/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  security-audit:
+    source_type: "external"
+    source_url: "https://github.com/omega-memory/omega-skills/blob/main/skills/security-audit/SKILL.md"
+    notes: "Adapted from omega-memory/omega-skills."
+  session-focus:
+    source_type: "external"
+    source_url: "https://github.com/omega-memory/omega-skills/blob/main/skills/session-focus/SKILL.md"
+    notes: "Adapted from omega-memory/omega-skills."
+  setup-matt-pocock-skills:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/setup-matt-pocock-skills/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  setup-pre-commit:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/misc/setup-pre-commit/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  tdd:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  to-issues:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-issues/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  to-prd:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-prd/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  triage:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/triage/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  upstream-improvement:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar upstream contribution workflows."
+  write-a-skill:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/productivity/write-a-skill/SKILL.md"
+    notes: "Adapted from mattpocock/skills."
+  zoom-out:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/zoom-out/SKILL.md"
+    notes: "Adapted from mattpocock/skills."

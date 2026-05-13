@@ -50,6 +50,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertTrue((output_dir / ".agents/sandbox.yml").exists())
             self.assertTrue((output_dir / ".agents/secrets.yml").exists())
             self.assertTrue((output_dir / ".agents/safety.yml").exists())
+            self.assertTrue((output_dir / ".agents/skill-sources.yml").exists())
             self.assertTrue((output_dir / ".agents/tools.yml").exists())
             self.assertTrue((output_dir / ".agents/worktrees.yml").exists())
             self.assertTrue((output_dir / ".env.example").exists())
@@ -72,6 +73,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('path: ".agents/tools.yml"', bootstrap)
             self.assertIn('path: ".agents/memory.yml"', bootstrap)
             self.assertIn('path: ".agents/secrets.yml"', bootstrap)
+            self.assertIn('path: ".agents/skill-sources.yml"', bootstrap)
             self.assertIn('path: ".env.example"', bootstrap)
             self.assertIn('secrets_profiles:', bootstrap)
             self.assertIn('- "kvenv-azure-keyvault"', bootstrap)
@@ -84,7 +86,7 @@ class GeneratorTests(unittest.TestCase):
             models = (output_dir / ".agents/models.yml").read_text()
             self.assertIn("default-coding:", models)
             self.assertIn("budget-review:", models)
-            self.assertEqual(len(assets), 22)
+            self.assertEqual(len(assets), 25)
 
     def test_refuses_non_empty_output_without_force(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -112,7 +114,7 @@ class GeneratorTests(unittest.TestCase):
                 )
             )
 
-            self.assertEqual(len(assets), 22)
+            self.assertEqual(len(assets), 25)
             self.assertFalse(output_dir.exists())
 
     def test_cli_lists_templates_and_model_profiles(self) -> None:
@@ -141,12 +143,16 @@ class GeneratorTests(unittest.TestCase):
         with redirect_stdout(stdout):
             result = main(["list-skills"])
         self.assertEqual(result, 0)
+        self.assertIn("cq", stdout.getvalue())
         self.assertIn("grill-with-docs", stdout.getvalue())
         self.assertIn("get-api-docs", stdout.getvalue())
         self.assertIn("playwright-cli", stdout.getvalue())
         self.assertIn("rodney-browser", stdout.getvalue())
         self.assertIn("upstream-improvement", stdout.getvalue())
         self.assertIn("a11y-web-scan", stdout.getvalue())
+        self.assertIn("session-focus", stdout.getvalue())
+        self.assertIn("qa-test-design", stdout.getvalue())
+        self.assertIn("security-audit", stdout.getvalue())
 
         expected_profile_commands = [
             ("list-memory-profiles", "memory-local"),
@@ -324,12 +330,14 @@ class GeneratorTests(unittest.TestCase):
 
             self.assertEqual(result, 0)
             self.assertTrue((repo / ".agents/skills/grill-with-docs/SKILL.md").exists())
+            self.assertTrue((repo / ".agents/skill-sources.yml").exists())
             self.assertTrue((repo / ".repo-familiar/bootstrap.yml").exists())
             self.assertFalse((repo / "AGENTS.md").exists())
             self.assertFalse((repo / ".agents/models.yml").exists())
             bootstrap = (repo / ".repo-familiar/bootstrap.yml").read_text()
             self.assertIn('skills:', bootstrap)
             self.assertIn('path: ".agents/skills/grill-with-docs/SKILL.md"', bootstrap)
+            self.assertIn('path: ".agents/skill-sources.yml"', bootstrap)
             self.assertNotIn('path: "AGENTS.md"', bootstrap)
 
     def test_add_tool_only_writes_tool_profile_and_metadata(self) -> None:

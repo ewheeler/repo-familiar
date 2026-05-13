@@ -87,6 +87,7 @@ uv run python -m repo_familiar generate \
   --sandbox-profile sandbox-light \
   --design-profile design-impeccable \
   --worktree-profile parallel-worktrees \
+  --skill cq \
   --skill grill-with-docs \
   --dry-run
 ```
@@ -102,6 +103,7 @@ uv run python -m repo_familiar generate \
   --model-profile default-coding \
   --tool-profile cq \
   --memory-profile memory-local \
+  --skill cq \
   --skill grill-with-docs
 ```
 
@@ -114,7 +116,7 @@ uv run python -m repo_familiar generate --interactive
 
 `questionary` is imported lazily for interactive commands and installed by `uv sync`.
 
-This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/worktrees.yml`, selected skills, a Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
+This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/worktrees.yml`, `.agents/skill-sources.yml`, selected skills, a Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
 
 Generated repositories should receive vendored copies of the selected assets by default. Each generated repository should also include `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version used to create it. Live synchronization can come later as an explicit upgrade command, but initial bootstraps should be stable and self-contained.
 
@@ -161,6 +163,10 @@ generated_assets:
   - path: .agents/skills/grill-with-docs/SKILL.md
     kind: skill
     source: templates/skills/grill-with-docs/SKILL.md.tmpl
+    content_sha256: <sha256>
+  - path: .agents/skill-sources.yml
+    kind: template_config
+    source: templates/basic/.agents/skill-sources.yml.tmpl
     content_sha256: <sha256>
   - path: docs/_quarto.yml
     kind: documentation
@@ -233,6 +239,7 @@ uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
 uv run python -m repo_familiar upgrade --path /path/to/repo
 uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding --apply
 uv run python -m repo_familiar add-docs --path /path/to/repo --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill upstream-improvement --apply
@@ -247,7 +254,7 @@ uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-prof
 
 Existing bootstrap metadata uses `bootstrap_mode: existing_repository` and records only assets written by the operation. Conflicts skipped for safety are reported but not claimed as generated assets.
 
-Granular bootstrap can use `--asset-group` with `agent`, `config`, `docs`, `metadata`, `models`, `plan`, `skills`, or `tools`.
+Granular bootstrap can use `--asset-group` with `agent`, `config`, `docs`, `metadata`, `models`, `plan`, `skills`, or `tools`. The `skills` group includes selected skill files and `.agents/skill-sources.yml` provenance for future upstream drift checks.
 
 Use `check` to detect missing or modified generated assets from checksum metadata:
 
@@ -277,11 +284,16 @@ For prompt-heavy repositories, especially Hamilton or prompt DAGs authored again
 
 For policy, education, children, or other sensitive user-facing AI outputs, add `prompt-output-safety` and `data-privacy-review` before production-maintenance work.
 
+For broad agent discipline, add `session-focus` before long multi-step work, `qa-test-design` before designing test coverage, and `security-audit` before shipping code that touches auth, secrets, dependencies, or user-facing surfaces.
+
+Skill provenance for selected skills is recorded in `.agents/skill-sources.yml`. It distinguishes local skills, adapted local skills, imported-local skills with unknown upstreams, and external skills such as `cq`, `mattpocock/skills`, Context Hub, and selected `omega-memory/omega-skills` imports. Any skill dogfooded in this Reference Source is also a selectable downstream skill, so future upgrade or drift commands can compare all vendored skills against upstream sources from one manifest.
+
 ## Agent-Agnostic Defaults
 
 Downstream repositories should be able to use these assets without binding themselves to a single coding agent. A generated project should include:
 
 - `.agents/` for shared agent instructions and skills.
+- `.agents/skill-sources.yml` for selected skill provenance and future upstream drift checks.
 - `AGENTS.md` for repository-level working rules.
 - `.agents/tools.yml` for non-secret tool profile guidance.
 - Optional harness-specific adapters when a tool requires a different file location or naming convention.
@@ -328,13 +340,6 @@ Candidate skill sources and adjacent tooling:
 - [impeccable.style](https://impeccable.style/)
 
 Planned local setup work includes installing and enabling MCPs such as `cq`, then documenting which projects should inherit them.
-
-## Background Reading
-
-- [Agentic engineering patterns](https://simonwillison.net/guides/agentic-engineering-patterns/)
-- [How I use Claude Code](https://boristane.com/blog/how-i-use-claude-code/)
-- [AI agent coding](https://minimaxir.com/2026/02/ai-agent-coding/)
-- [How I write software with LLMs](https://www.stavros.io/posts/how-i-write-software-with-llms/)
 
 ## Near-Term Roadmap
 

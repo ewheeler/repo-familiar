@@ -1,0 +1,5 @@
+skills:
+  grill-with-docs:
+    source_type: "external"
+    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/grill-with-docs/SKILL.md"
+    notes: "Adapted from mattpocock/skills for repo-familiar documentation and planning workflows."

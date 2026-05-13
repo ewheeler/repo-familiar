@@ -1,8 +1,26 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from repo_familiar import profiles
+from repo_familiar.generator import GenerationOptions, plan_project
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PROFILE_ASSET_PATHS = (
+    ".agents/models.yml",
+    ".agents/tools.yml",
+    ".agents/memory.yml",
+    ".agents/prompts.yml",
+    ".agents/safety.yml",
+    ".agents/privacy.yml",
+    ".agents/repomap.yml",
+    ".agents/sandbox.yml",
+    ".agents/secrets.yml",
+    ".agents/skill-sources.yml",
+    ".agents/design.yml",
+    ".agents/worktrees.yml",
+)
 
 
 class ProfileRegistryTests(unittest.TestCase):
@@ -10,6 +28,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("default-coding", profiles.list_names(profiles.MODEL_PROFILES))
         self.assertIn("browser-automation", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
+        self.assertIn("session-focus", profiles.list_names(profiles.SKILLS))
 
     def test_validates_profile_selections(self) -> None:
         profiles.validate_profile_selections(
@@ -34,6 +53,81 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("browser-automation:", tools)
         self.assertIn("screenshots", tools)
         self.assertIn("memory-local:", memory)
+
+    def test_generated_profile_files_match_registry_renderers(self) -> None:
+        options = _all_profile_options()
+        generated = {asset.path: asset.content for asset in plan_project(options)}
+
+        expected = {
+            ".agents/models.yml": "profiles:\n" + profiles.render_model_profiles(options.model_profiles) + "\n",
+            ".agents/tools.yml": "profiles:\n" + profiles.render_tool_profiles(options.tool_profiles) + "\n",
+            ".agents/memory.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.MEMORY_PROFILES, options.memory_profiles) + "\n",
+            ".agents/prompts.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.PROMPT_PROFILES, options.prompt_profiles) + "\n",
+            ".agents/safety.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.SAFETY_PROFILES, options.safety_profiles) + "\n",
+            ".agents/privacy.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.PRIVACY_PROFILES, options.privacy_profiles) + "\n",
+            ".agents/repomap.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.REPOMAP_PROFILES, options.repomap_profiles) + "\n",
+            ".agents/sandbox.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.SANDBOX_PROFILES, options.sandbox_profiles) + "\n",
+            ".agents/secrets.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, options.secrets_profiles) + "\n\nrules:\n  - Commit `.env.example` with placeholders or secret references only.\n  - Do not commit `.env`, `.env.*`, API keys, tokens, private keys, or credential JSON files.\n  - Prefer local or managed secret stores that inject values at process start.\n  - Keep secret values out of prompts, agent memory, and bootstrap metadata.\n",
+            ".agents/skill-sources.yml": "skills:\n" + profiles.render_skill_sources(options.skills) + "\n",
+            ".agents/design.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.DESIGN_PROFILES, options.design_profiles) + "\n",
+            ".agents/worktrees.yml": "profiles:\n" + profiles.render_advisory_profiles(profiles.WORKTREE_PROFILES, options.worktree_profiles) + "\n",
+        }
+        for path, expected_content in expected.items():
+            self.assertEqual(generated[path], expected_content, path)
+
+    def test_root_agents_dogfood_assets_match_registry_templates(self) -> None:
+        generated = {asset.path: asset.content for asset in plan_project(_all_profile_options())}
+        expected_paths = [
+            *PROFILE_ASSET_PATHS,
+            *(path for path in generated if path.startswith(".agents/skills/")),
+        ]
+
+        for path in expected_paths:
+            self.assertEqual((REPO_ROOT / path).read_text(), generated[path], path)
+
+    def test_root_skill_sources_cover_every_dogfood_skill(self) -> None:
+        skill_source_names = _skill_source_names((REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        root_skill_names = {
+            path.name
+            for path in (REPO_ROOT / ".agents/skills").iterdir()
+            if path.is_dir()
+        }
+
+        self.assertEqual(root_skill_names - skill_source_names, set())
+        self.assertEqual(root_skill_names - set(profiles.SKILLS), set())
+        self.assertIn("https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("https://github.com/andrewyng/context-hub/blob/main/cli/skills/get-api-docs/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+
+
+def _all_profile_options() -> GenerationOptions:
+    return GenerationOptions(
+        name="Profile Regression",
+        description="Verify generated profile files match registry output.",
+        output_dir=Path("unused"),
+        model_profiles=tuple(profiles.MODEL_PROFILES),
+        tool_profiles=tuple(profiles.TOOL_PROFILES),
+        memory_profiles=tuple(profiles.MEMORY_PROFILES),
+        prompt_profiles=tuple(profiles.PROMPT_PROFILES),
+        safety_profiles=tuple(profiles.SAFETY_PROFILES),
+        privacy_profiles=tuple(profiles.PRIVACY_PROFILES),
+        repomap_profiles=tuple(profiles.REPOMAP_PROFILES),
+        sandbox_profiles=tuple(profiles.SANDBOX_PROFILES),
+        secrets_profiles=tuple(profiles.SECRETS_PROFILES),
+        design_profiles=tuple(profiles.DESIGN_PROFILES),
+        worktree_profiles=tuple(profiles.WORKTREE_PROFILES),
+        skills=tuple(profiles.SKILLS),
+        dry_run=True,
+    )
+
+
+def _skill_source_names(content: str) -> set[str]:
+    names: set[str] = set()
+    for line in content.splitlines():
+        if line.startswith("  ") and not line.startswith("    ") and line.endswith(":"):
+            names.add(line.strip()[:-1])
+    return names
 
 
 if __name__ == "__main__":

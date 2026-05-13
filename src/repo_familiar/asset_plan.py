@@ -24,6 +24,7 @@ ASSET_KINDS = {
     ".agents/sandbox.yml": "template_config",
     ".agents/secrets.yml": "template_config",
     ".agents/safety.yml": "template_config",
+    ".agents/skill-sources.yml": "template_config",
     ".agents/tools.yml": "template_config",
     ".agents/worktrees.yml": "template_config",
     "docs/_quarto.yml": "documentation",
@@ -102,7 +103,7 @@ def filter_planned_assets(
 def asset_in_groups(path: str, asset_groups: tuple[str, ...]) -> bool:
     if "metadata" in asset_groups and path == BOOTSTRAP_METADATA_PATH:
         return True
-    if "skills" in asset_groups and path.startswith(".agents/skills/"):
+    if "skills" in asset_groups and (path.startswith(".agents/skills/") or path == ".agents/skill-sources.yml"):
         return True
     if "tools" in asset_groups and path == ".agents/tools.yml":
         return True

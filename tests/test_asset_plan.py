@@ -65,6 +65,8 @@ class AssetPlanTests(unittest.TestCase):
             PlannedAsset(path=".gitignore", kind="template_config", source="test", content=""),
             PlannedAsset(path=".env.example", kind="template_config", source="test", content=""),
             PlannedAsset(path=".agents/secrets.yml", kind="template_config", source="test", content=""),
+            PlannedAsset(path=".agents/skill-sources.yml", kind="template_config", source="test", content=""),
+            PlannedAsset(path=".agents/skills/demo/SKILL.md", kind="skill", source="test", content=""),
             PlannedAsset(path="docs/index.qmd", kind="documentation", source="test", content=""),
             PlannedAsset(path="README.md", kind="documentation", source="test", content=""),
             PlannedAsset(path="AGENTS.md", kind="agent_instructions", source="test", content=""),
@@ -74,6 +76,10 @@ class AssetPlanTests(unittest.TestCase):
         self.assertEqual(
             [asset.path for asset in filter_planned_assets(assets, ("secrets",))],
             [".env.example", ".agents/secrets.yml"],
+        )
+        self.assertEqual(
+            [asset.path for asset in filter_planned_assets(assets, ("skills",))],
+            [".agents/skill-sources.yml", ".agents/skills/demo/SKILL.md"],
         )
         self.assertEqual(
             [asset.path for asset in filter_planned_assets(assets, ("docs",))],

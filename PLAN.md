@@ -24,16 +24,24 @@
 - Secrets profiles exist for dotenv, kvenv/Azure Key Vault, and 1Password-style local secret injection guidance.
 - Accessibility scanning support exists through `a11y-scanner`, `design-a11y`, and `a11y-web-scan`.
 - Browser automation support exists through the `browser-automation` tool profile plus `playwright-cli` and `rodney-browser` skills.
+- Agent knowledge commons support exists through the `cq` tool profile plus the selectable `cq` skill.
 - API documentation lookup support exists through the vendored `get-api-docs` skill.
+- Agent discipline and review support includes selectable `session-focus`, `qa-test-design`, and `security-audit` skills adapted from `omega-memory/omega-skills`.
 - OpenCode/Homebrew PATH setup guidance exists through the `opencode-homebrew-path` tool profile.
 - Prompt migration/eval profiles exist for GPT-5.5 prompt migrations and prompt DAG eval design.
 - Safety and privacy profiles exist for prompt/output safety and data/privacy review.
 - Repo map profiles exist with `hamilton-dag` as the preferred graph approach.
 - Advisory profile files are generated under `.agents/` and selected profile names are recorded in bootstrap metadata.
+- Skill source provenance is generated in `.agents/skill-sources.yml` for selected skills, so future drift checks can compare vendored/imported skills against upstream sources where known.
+- Root `.agents/` dogfoods the Reference Source asset set: profile family files, selectable skills, and non-secret tool/advisory guidance live in this repository as working defaults as well as generated templates.
 - `advise` recommends stage, profile families, asset groups, next commands, and memory usage for an existing repository.
 - `advise` decision logic lives in `src/repo_familiar/advice_dag.py` as Hamilton-compatible nodes; command formatting helpers remain outside the DAG module.
 - Core generator seams have been deepened: Bootstrap Metadata, profile registry, asset planning, repository advice orchestration, and targeted CLI add commands now live behind dedicated Modules or descriptor tables.
 - `examples/basic-agentic-project` is a deterministic generated snapshot and regression fixture.
+- The example snapshot uses lowercase `plan.md`, matching the generator contract and avoiding path drift from the old `PLAN.md` casing.
+- Profile-renderer regression coverage checks that generated `.agents/*.yml` profile files match registry-backed output for selected profiles.
+- Root `.agents/` consistency coverage checks dogfood profile files and registered selectable skill files against generated registry/template output.
+- Quarto render outputs are ignored through `docs/_site/` and `docs/.quarto/` in `.gitignore`.
 - Existing repository bootstrap is implemented as a second bootstrap mode: advise/audit first, dry-run by default, and additive unless explicit replacement is selected.
 
 ## Goals
@@ -67,6 +75,8 @@
 - Tool profiles: `.agents/tools.yml` contains non-secret tool guidance; `.repo-familiar/bootstrap.yml` records selected tool profile names.
 - OpenCode/Homebrew setup remains Tool Profile guidance for agent shells only; it must not become workstation mutation or an installer.
 - Skills: selected skills are vendored under `.agents/skills/` and recorded as `skill` assets.
+- Skill provenance: `.agents/skill-sources.yml` records selected skill source type, source URL when known, and notes about local adaptation or missing upstreams.
+- Reference Source dogfooding: root `.agents/` should contain the same reusable profile families and selectable skills that this repository offers to Downstream Repositories. If a skill is useful enough to dogfood here, it should be available to Downstream Repositories.
 - Renderer: keep `string.Template` until the template contract needs Banks, Cookiecutter, or another dedicated engine.
 - Example policy: commit deterministic generated snapshots and compare them in tests.
 - Existing repository bootstrap: support it as a distinct audit-first, additive workflow rather than overloading new repository generation.
@@ -98,14 +108,15 @@ These are the suggested tool/component categories to dogfood in this Reference S
 | Future template rendering | Banks later; keep `string.Template` for now | Deferred renderer decision | Prompt or project templates outgrow simple substitution. |
 | Current API docs | `get-api-docs` skill with `chub` when available | Vendored skill and selectable skill template | Work touches third-party APIs, SDKs, CLIs, package managers, or fast-moving docs. |
 | External skill source | `mattpocock/skills` | Vendored local skills plus documented install path | Engineering workflows need diagnose, TDD, triage, PRD, issue, architecture, or zoom-out support. |
-| Agent knowledge commons | `cq` | Tool profile and agent instruction | Before implementation tasks or error fixes where stale/version-specific gotchas matter. |
+| Agent knowledge commons | `cq` | Tool profile plus selectable skill | Before implementation tasks or error fixes where stale/version-specific gotchas matter. |
+| Agent session discipline | `session-focus`, `qa-test-design`, `security-audit` | Selectable skills with source provenance | Multi-step agent work, test design, or security-sensitive code review benefits from stricter gates. |
 | Browser automation | `browser-automation`, `playwright-cli`, `rodney-browser` | Tool profile plus selectable skills | Repos have frontend routes, Quarto/published docs, user-facing web outputs, browser smoke checks, screenshots, console-error checks, or accessibility tree checks. |
 | OpenCode shell setup | `opencode-homebrew-path` | Tool profile | macOS Homebrew users need `node`, `npm`, `npx`, `pnpm`, `uv`, or `quarto` visible in OpenCode agent shells. |
 | Memory | `memory-local` | `.agents/memory.yml` advisory profile | Any repo with recurring decisions, conventions, stage changes, or non-obvious debugging lessons. |
 | Model defaults | `default-coding`, `budget-review` | `.agents/models.yml` model profiles | Repos need explicit model/provider defaults without storing credentials. |
 | Prompt migration and evals | `prompt-migration-gpt55`, `prompt-evals-dag`, `prompt-migration`, `prompt-eval-design` | Prompt profiles and skills | Prompt DAGs, model migrations, or prompt-heavy pipelines exist. |
 | Repo map and graphing | `hamilton-dag` | `.agents/repomap.yml` advisory profile | Python pipelines, prompt DAGs, dataflow, or graph fingerprints matter. |
-| Safety review | `prompt-output-safety` profile and skill | `.agents/safety.yml` plus skill | User-facing AI, policy-sensitive, education, child-related, or high-impact outputs exist. |
+| Safety review | `prompt-output-safety` profile and skill; `security-audit` for code/security review | `.agents/safety.yml` plus skill | User-facing AI, policy-sensitive, education, child-related, high-impact outputs, auth, secrets, or dependency risk exists. |
 | Privacy review | `data-privacy-review` profile and `privacy-review` skill | `.agents/privacy.yml` plus skill | Repos handle PII, child data, logs, analytics, memory, prompts, or exported artifacts. |
 | Accessibility and design | `a11y-scanner`, `design-a11y`, `design-impeccable`, `a11y-web-scan` | Tool, design profiles, and skill | Frontend code, Quarto sites, design docs, or user-facing web outputs exist. Browser automation can support the manual/browser recheck portion. |
 | Sandboxing | `sandbox-light`, optionally `sandbox-agent-runtime` | `.agents/sandbox.yml` advisory profile | Agents run generated code, package installs, unknown scripts, risky tests, or long autonomous sessions. |
@@ -182,8 +193,12 @@ Acceptance criteria:
 
 ### 3. Expand Agentic Engineering Defaults
 
-- Normalize local skill locations under `.agents/skills/` or another stable reference-source path.
-- Add starter `AGENTS.md` content for downstream repositories.
+Status: done for the current selectable defaults and root `.agents/` dogfood pass; more harness adapters and model profiles remain future work.
+
+- Normalize local skill locations under `.agents/skills/` or another stable reference-source path. Done for current vendored skills.
+- Add starter `AGENTS.md` content for downstream repositories. Done for `basic`.
+- Root `.agents/` now includes the selectable profile families and skills exposed by the Reference Source, including all dogfooded Matt Pocock skills, cq, session-focus, qa-test-design, security-audit, browser automation, accessibility, prompt migration/evals, safety, privacy, and upstream-improvement support.
+- Selected skill source provenance is generated and dogfooded through `.agents/skill-sources.yml`.
 - Add optional harness adapters for OpenCode, Conductor, Hermes, and Pi as their required conventions become clear.
 - Add model profiles for coding, planning, review, low-cost passes, and high-context tasks.
 
@@ -216,6 +231,7 @@ Status: done for the first snapshot.
 - Included Quarto docs and the default coding profile.
 - Included multiple harnesses and multiple model profiles.
 - Added a regression test that regenerates the example and compares file contents.
+- Normalized the snapshot planning file to lowercase `plan.md` so it matches generated output on case-sensitive filesystems.
 
 Acceptance criteria:
 
@@ -242,17 +258,21 @@ Acceptance criteria:
 
 ### 8. Add Drift Detection
 
-Status: done for current generated metadata.
+Status: done for current generated metadata, registry-backed profile output, and root `.agents/` dogfood consistency.
 
 - Add `content_sha256` to non-metadata generated asset records.
 - Add `check` command to report `ok`, `modified`, `missing`, and `unchecked` assets.
 - Add JSON output for scripted checks.
+- Add a regression check that generated profile files match the registry-backed renderers for selected profiles. Done.
+- Add a regression check that root `.agents/` dogfood profile and registered skill assets match generated registry/template output. Done.
 
 Acceptance criteria:
 
 - `check` returns success when generated assets match recorded checksums.
 - `check` returns non-zero when generated assets are missing or modified.
 - Bootstrap metadata is not self-hashed.
+- Generated profile files stay aligned with the registry renderers.
+- Root dogfood `.agents/` assets stay aligned with generated registry/template output.
 
 ### 9. Add Advisory Profile Families
 
@@ -264,6 +284,7 @@ Status: done for first profile set.
 - Add `worktree_profiles` and `.agents/worktrees.yml`.
 - Add `secrets_profiles`, `.agents/secrets.yml`, and `.env.example`.
 - Add list and targeted add commands for each profile family.
+- Dogfood the current advisory profile families in root `.agents/`. Done.
 
 Acceptance criteria:
 
@@ -293,6 +314,7 @@ Status: done for first advisory pass.
 - Add `a11y-scanner` tool profile.
 - Add `design-a11y` advisory design profile.
 - Add `a11y-web-scan` skill.
+- Dogfood `a11y-web-scan` in root `.agents/skills/`. Done.
 - Update `advise` so frontend, Quarto, and design-doc repositories recommend accessibility scanning.
 - Adapt the ADT Studio reporting pattern: selected targets, rule count deltas, top violations, browser recheck, and residual manual-review queue.
 
@@ -312,6 +334,7 @@ Status: done for first advisory pass.
 - Add `privacy_profiles` and `.agents/privacy.yml`.
 - Add `repomap_profiles` and `.agents/repomap.yml`.
 - Add `prompt-migration`, `prompt-eval-design`, `prompt-output-safety`, and `privacy-review` skills.
+- Dogfood prompt, safety, privacy, and repo-map profile files plus their selectable skills in root `.agents/`. Done.
 - Recommend prompt/safety/privacy/repomap profiles from `advise` when prompt DAGs, policy/education repos, frontend outputs, or Python projects are detected.
 
 Acceptance criteria:
@@ -352,6 +375,7 @@ Downstream Repositories should be able to propose improvements back to this Refe
 Candidate shape:
 
 - Add an `upstream-improvement` skill that helps an agent identify whether a local change is generally useful, strips project-specific details, and drafts a focused upstream PR. Done.
+- Dogfood `upstream-improvement` in root `.agents/skills/`. Done.
 - Use `.repo-familiar/bootstrap.yml` as the provenance source for which assets came from this Reference Source.
 - Add a read-only `diff-upstream-candidate` command to compare generated assets against Bootstrap Metadata and classify changes as unchanged, modified, missing, unchecked, or unsafe/private. Current Reference Source comparison is advisory until richer template context is recorded. Done.
 - Add a `prepare-upstream-pr` command later only if repeated manual PR prep becomes tedious.

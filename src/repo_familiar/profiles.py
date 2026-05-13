@@ -229,16 +229,189 @@ WORKTREE_PROFILES = {
 }
 
 SKILLS = {
-    "grill-with-docs": "Stress-test plans against project language and documented decisions",
-    "get-api-docs": "Fetch current third-party API, SDK, and library documentation before integration work",
-    "playwright-cli": "Use Playwright CLI for browser inspection, screenshots, console errors, and web interaction checks",
-    "rodney-browser": "Use Rodney for persistent Chrome automation, shell-scripted web checks, and accessibility tree queries",
-    "upstream-improvement": "Prepare safe upstream improvement proposals from downstream generated asset changes",
     "a11y-web-scan": "Plan and run accessibility scans for user-facing web outputs",
+    "caveman": "Use ultra-compressed communication when brevity is explicitly requested",
+    "cq": "Query the knowledge commons before implementation work and error fixes",
+    "diagnose": "Diagnose hard bugs and performance regressions with a disciplined loop",
+    "get-api-docs": "Fetch current third-party API, SDK, and library documentation before integration work",
+    "git-guardrails-claude-code": "Set up Claude Code hooks to block dangerous git commands",
+    "grill-me": "Stress-test a plan or design through focused questioning",
+    "grill-with-docs": "Stress-test plans against project language and documented decisions",
+    "improve-codebase-architecture": "Find architecture refactoring opportunities informed by domain docs",
+    "migrate-to-shoehorn": "Migrate tests from type assertions to @total-typescript/shoehorn",
+    "playwright-cli": "Use Playwright CLI for browser inspection, screenshots, console errors, and web interaction checks",
+    "privacy-review": "Review data flows, prompts, logs, memory, and outputs for privacy risks",
     "prompt-migration": "Migrate prompt DAGs across model versions safely",
     "prompt-eval-design": "Design lightweight evals for prompt DAGs and model-version migrations",
     "prompt-output-safety": "Review prompts and outputs for unsafe or policy-sensitive behavior",
-    "privacy-review": "Review data flows, prompts, logs, memory, and outputs for privacy risks",
+    "prototype": "Build throwaway prototypes to flush out design questions",
+    "qa-test-design": "Design meaningful tests before writing implementation or test code",
+    "rodney-browser": "Use Rodney for persistent Chrome automation, shell-scripted web checks, and accessibility tree queries",
+    "scaffold-exercises": "Create exercise directory structures and stubs",
+    "security-audit": "Review code, dependencies, secrets, and auth patterns for security risks",
+    "session-focus": "Prevent goal drift during multi-step agent tasks",
+    "setup-matt-pocock-skills": "Set up agent skill context and issue-tracker documentation",
+    "setup-pre-commit": "Set up Husky pre-commit hooks with formatting, type checks, and tests",
+    "tdd": "Use red-green-refactor test-driven development",
+    "to-issues": "Break a plan into independently grabbable implementation issues",
+    "to-prd": "Turn conversation context into a product requirements document",
+    "triage": "Triage issues through a role-driven state machine",
+    "upstream-improvement": "Prepare safe upstream improvement proposals from downstream generated asset changes",
+    "write-a-skill": "Create new agent skills with proper structure and progressive disclosure",
+    "zoom-out": "Give broader context and explain how a code area fits the system",
+}
+
+SKILL_SOURCES = {
+    "a11y-web-scan": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar accessibility scanning guidance.",
+    },
+    "caveman": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "cq": {
+        "source_type": "external",
+        "source_url": "https://github.com/mozilla-ai/cq/blob/main/plugins/cq/skills/cq/SKILL.md",
+        "notes": "Adapted for repo-familiar selectable skill guidance.",
+    },
+    "diagnose": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnose/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "get-api-docs": {
+        "source_type": "external",
+        "source_url": "https://github.com/andrewyng/context-hub/blob/main/cli/skills/get-api-docs/SKILL.md",
+        "notes": "Adapted from Context Hub get-api-docs skill for repo-familiar selectable skill guidance.",
+    },
+    "git-guardrails-claude-code": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "grill-me": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "grill-with-docs": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/grill-with-docs/SKILL.md",
+        "notes": "Adapted from mattpocock/skills for repo-familiar documentation and planning workflows.",
+    },
+    "improve-codebase-architecture": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "migrate-to-shoehorn": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/migrate-to-shoehorn/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "playwright-cli": {
+        "source_type": "external",
+        "source_url": "https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md",
+        "notes": "Adapted from Microsoft playwright-cli skill for repo-familiar browser automation guidance.",
+    },
+    "privacy-review": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar privacy review workflows.",
+    },
+    "prompt-migration": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar prompt migration workflows.",
+    },
+    "prompt-eval-design": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar prompt evaluation design workflows.",
+    },
+    "prompt-output-safety": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar prompt and output safety reviews.",
+    },
+    "prototype": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/prototype/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "qa-test-design": {
+        "source_type": "external",
+        "source_url": "https://github.com/omega-memory/omega-skills/blob/main/skills/qa-test-design/SKILL.md",
+        "notes": "Adapted from omega-memory/omega-skills.",
+    },
+    "rodney-browser": {
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/simonw/rodney",
+        "notes": "Authored in repo-familiar around Rodney browser automation guidance.",
+    },
+    "scaffold-exercises": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/scaffold-exercises/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "security-audit": {
+        "source_type": "external",
+        "source_url": "https://github.com/omega-memory/omega-skills/blob/main/skills/security-audit/SKILL.md",
+        "notes": "Adapted from omega-memory/omega-skills.",
+    },
+    "session-focus": {
+        "source_type": "external",
+        "source_url": "https://github.com/omega-memory/omega-skills/blob/main/skills/session-focus/SKILL.md",
+        "notes": "Adapted from omega-memory/omega-skills.",
+    },
+    "setup-matt-pocock-skills": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/setup-matt-pocock-skills/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "setup-pre-commit": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/setup-pre-commit/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "tdd": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "to-issues": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-issues/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "to-prd": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-prd/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "triage": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/triage/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "upstream-improvement": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar upstream contribution workflows.",
+    },
+    "write-a-skill": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/write-a-skill/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
+    "zoom-out": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/zoom-out/SKILL.md",
+        "notes": "Adapted from mattpocock/skills.",
+    },
 }
 
 
@@ -308,6 +481,19 @@ def render_advisory_profiles(registry: dict, profile_names: tuple[str, ...]) -> 
         if guidance:
             lines.append("    guidance:")
             lines.extend(_yaml_list(guidance, indent="      "))
+    return "\n".join(lines) if lines else "  {}"
+
+
+def render_skill_sources(skill_names: tuple[str, ...]) -> str:
+    lines: list[str] = []
+    for name in skill_names:
+        source = SKILL_SOURCES[name]
+        lines.append(f"  {name}:")
+        lines.append(f"    source_type: {_yaml_scalar(source['source_type'])}")
+        lines.append(f"    source_url: {_yaml_scalar(source['source_url'])}")
+        notes = source.get("notes")
+        if notes:
+            lines.append(f"    notes: {_yaml_scalar(notes)}")
     return "\n".join(lines) if lines else "  {}"
 
 
