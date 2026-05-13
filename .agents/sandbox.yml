@@ -6,3 +6,10 @@ profiles:
       - "Default to no network for generated or unknown code"
       - "Allow writes only to explicit build, temp, or output directories"
       - "Use snapshots or restore behavior for risky package or codegen commands"
+  sandbox-agent-runtime:
+    tool: "OpenShell"
+    purpose: "policy-governed runtime for longer autonomous agent sessions"
+    guidance:
+      - "Use declarative filesystem, network, process, and inference policies"
+      - "Treat credential providers as runtime injection, not repository secrets"
+      - "Prefer for production-maintenance or high-autonomy workflows"

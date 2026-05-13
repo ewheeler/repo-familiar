@@ -12,6 +12,15 @@ profiles:
       - "Run automated scans during design iteration and before production handoff"
       - "Treat automated results as a floor, not a complete accessibility review"
       - "Pair scans with keyboard navigation, screen reader, focus management, and responsive checks"
+  browser-automation:
+    purpose: "let agents inspect rendered pages, interact with web apps, capture screenshots, check console errors, and run browser smoke checks"
+    config: "Use the project-appropriate browser driver: Playwright CLI for agent-friendly snapshots and screenshots, or Rodney for persistent Chrome sessions and shell-scriptable checks"
+    notes:
+      - "Prefer rendered pages or local preview servers over static source inspection for layout and interaction checks"
+      - "Use Playwright CLI when the agent needs snapshots, screenshots, console inspection, and interactive page exploration"
+      - "Use Rodney when persistent Chrome state, shell scripting, JavaScript assertions, accessibility tree queries, or directory-scoped sessions are useful"
+      - "Keep browser session directories such as .rodney/ out of version control"
+      - "Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary"
   opencode-homebrew-path:
     purpose: "document how macOS Homebrew users can expose CLIs such as node, npm, npx, pnpm, uv, and quarto to OpenCode agent shells"
     config: "Agent-shell guidance only: if OpenCode uses /bin/zsh, put /opt/homebrew/bin and /usr/local/bin on PATH via ~/.zshenv so non-interactive tool calls can find Homebrew CLIs"
