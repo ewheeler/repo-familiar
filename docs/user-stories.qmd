@@ -12,11 +12,12 @@ Acceptance criteria:
 
 - The setup flow asks for project type, agent harnesses, model/provider preferences, and documentation depth.
 - The generated repository includes `.agents/`, `AGENTS.md`, selected advisory profiles, selected skills, a project plan, and optional Quarto docs.
+- The generated repository records selected skill provenance in `.agents/skill-sources.yml`.
 - The generated repository includes `.agents/models.yml` when model/provider profiles are selected.
 - The generated plan records technical preferences and explicit tradeoffs.
 - The generated repository includes `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version.
 
-Current status: a non-interactive Python generator can create the baseline asset set. Interactive prompts remain future work.
+Current status: the Python generator can create the baseline asset set through CLI flags or `generate --interactive`.
 
 ## Bootstrap An Existing Repository
 
@@ -37,6 +38,7 @@ As a developer, I want generated projects to contain vendored copies of selected
 Acceptance criteria:
 
 - Skills, instructions, docs scaffolds, and plans are copied into the downstream repository by default.
+- Any skill dogfooded in the Reference Source is available as a selectable downstream skill.
 - `.repo-familiar/bootstrap.yml` records `schema_version`, `reference_source`, `generated_at`, `generator`, `selected_options`, and structured `generated_assets` records.
 - Generated asset records use the initial `kind` vocabulary: `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
 - Any future refresh from `repo-familiar` happens through an explicit upgrade command, not live synchronization.
@@ -64,7 +66,7 @@ Acceptance criteria:
 
 ## Review Plans Before Coding
 
-As a developer, I want a docs-review skill to challenge generated plans before implementation so that assumptions, missing decisions, and vague requirements are caught early.
+As a developer, I want `grill-with-docs` to challenge generated plans before implementation so that assumptions, missing decisions, and vague requirements are caught early.
 
 Acceptance criteria:
 

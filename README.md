@@ -22,12 +22,12 @@ The generator should support both brand-new downstream repositories and existing
 
 This repository is expected to grow into four related layers:
 
-- `skills/` or `.agents/skills/`: reusable agent skills copied into or installed for downstream projects.
-- `templates/`: the primary product surface: project scaffolds, likely powered by Cookiecutter or a comparable templating tool.
+- `.agents/skills/`: reusable agent skills dogfooded in this Reference Source and available for downstream selection.
+- `src/repo_familiar/templates/`: the primary product surface for generated project scaffolds and skill templates.
 - `docs/`: the Quarto documentation site for usage notes, architecture, design decisions, research notes, and user stories.
 - `examples/`: reference projects that demonstrate complete setups for common stacks or model-provider choices.
 
-The current checked-in skills are early seed material. The structure will be tightened as the bootstrap flow becomes concrete.
+The root `.agents/skills/` set and generated skill templates are kept aligned by tests: if this Reference Source dogfoods a skill, downstream repositories can select it too.
 
 ## Inspiration
 
@@ -52,7 +52,7 @@ The intended workflow for starting a new repository is:
 2. Answer `questionary` interactive setup prompts or pass equivalent CLI flags for project type, agent harnesses, model providers, documentation depth, and preferred libraries.
 3. Generate repository instructions and starter agent assets.
 4. Generate a project plan and Quarto documentation skeleton.
-5. Run a docs-review skill to challenge the plan before implementation begins.
+5. Run `grill-with-docs` to challenge the plan before implementation begins.
 
 The current generator can be run from this checkout with:
 
@@ -204,7 +204,7 @@ profiles:
         - documentation
 ```
 
-The first template should probably ask for:
+Future interactive prompts can ask for:
 
 - Project name, description, license, and visibility.
 - Primary language and runtime.
@@ -225,7 +225,7 @@ Existing repositories should be handled through a separate audit-first flow:
 5. Apply selected tools, skills, model profiles, docs, and metadata only when requested.
 6. Avoid overwriting user-owned files unless an explicit replacement mode is selected.
 
-Candidate future commands:
+Useful commands:
 
 ```bash
 uv run python -m repo_familiar advise --path /path/to/repo
@@ -240,6 +240,7 @@ uv run python -m repo_familiar upgrade --path /path/to/repo
 uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding --apply
 uv run python -m repo_familiar add-docs --path /path/to/repo --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill upstream-improvement --apply
@@ -332,19 +333,19 @@ Hamilton is especially important because DAG visualizations make abstraction bou
 
 ## Skill Sources
 
-Candidate skill sources and adjacent tooling:
+Current skill sources and adjacent tooling:
 
 - `npx skills@latest add mattpocock/skills`
 - [superpowers](https://github.com/obra/superpowers)
 - [unicef/design.md](https://github.com/unicef/design.md)
 - [impeccable.style](https://impeccable.style/)
 
-Planned local setup work includes installing and enabling MCPs such as `cq`, then documenting which projects should inherit them.
+`.agents/skill-sources.yml` records the source for every selectable skill, including local repo-familiar skills, `mattpocock/skills`, Context Hub, Microsoft Playwright CLI, Mozilla AI cq, and selected `omega-memory/omega-skills` imports.
 
 ## Near-Term Roadmap
 
 - Expand the `questionary` interactive setup flow based on real bootstraps.
 - Keep `string.Template` until prompt or project templates need Banks or a broader generator framework.
 - Add more model profiles and harness-specific adapters.
-- Add selected skill vendoring.
-- Design explicit upgrade behavior.
+- Dogfood on real existing repositories and capture any schema or advice gaps.
+- Design write-capable upgrade behavior after read-only upgrade previews prove the metadata contract.

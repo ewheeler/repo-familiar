@@ -74,6 +74,8 @@ uv run python -m repo_familiar generate \
   --tool-profile cq \
   --memory-profile memory-local \
   --secrets-profile dotenv-local \
+  --skill cq \
+  --skill session-focus \
   --skill grill-with-docs \
   --dry-run
 ```
@@ -90,6 +92,8 @@ uv run python -m repo_familiar generate \
   --tool-profile cq \
   --memory-profile memory-local \
   --secrets-profile dotenv-local \
+  --skill cq \
+  --skill session-focus \
   --skill grill-with-docs
 ```
 
@@ -139,6 +143,16 @@ uv run python -m repo_familiar add-model \
 
 uv run python -m repo_familiar add-docs \
   --path /path/to/repo \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill cq \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill session-focus \
   --apply
 
 uv run python -m repo_familiar add-skill \
@@ -267,15 +281,10 @@ The `basic` template currently writes:
 - `.agents/sandbox.yml`
 - `.agents/secrets.yml`
 - `.env.example`
+- `.agents/skill-sources.yml`
 - `.agents/design.yml`
 - `.agents/worktrees.yml`
-- `.agents/skills/grill-with-docs/SKILL.md`
-- `.agents/skills/get-api-docs/SKILL.md` when selected
-- `.agents/skills/playwright-cli/SKILL.md` when selected
-- `.agents/skills/rodney-browser/SKILL.md` when selected
-- `.agents/skills/upstream-improvement/SKILL.md` when selected
-- `.agents/skills/a11y-web-scan/SKILL.md` when selected
-- other selected skill files under `.agents/skills/`
+- selected skill directories under `.agents/skills/`, including bundled support files when a skill has them
 - `docs/_quarto.yml`
 - `docs/index.qmd`
 - `docs/usage.qmd`

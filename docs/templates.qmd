@@ -15,6 +15,7 @@ It is intentionally small and focused on the core contract:
 - Tool setup guidance in `.agents/tools.yml`.
 - Advisory profile guidance in `.agents/memory.yml`, `.agents/prompts.yml`, `.agents/safety.yml`, `.agents/privacy.yml`, `.agents/repomap.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, and `.agents/worktrees.yml`.
 - Vendored skills in `.agents/skills/`.
+- Skill source provenance in `.agents/skill-sources.yml`.
 - Generator provenance in `.repo-familiar/bootstrap.yml`.
 - Quarto documentation scaffold in `docs/`.
 - Safe local environment placeholders in `.env.example`.
@@ -41,11 +42,12 @@ The `basic` template currently uses:
 - `selected_tool_profiles_list`
 - advisory profile YAML/list variables for memory, prompts, safety, privacy, repomap, sandbox, secrets, design, and worktrees
 - `selected_skills_list`
+- `skill_sources_yaml`
 
 ## Future Template Work
 
 - Split common assets from optional Quarto, model, advisory profile, skill, and harness assets.
 - Add harness-specific adapters only when selected.
-- Add richer skill vendoring from external sources once source provenance is normalized.
+- Add automated upstream drift checks for external skill sources recorded in `.agents/skill-sources.yml`.
 - Add upgrade-aware merge behavior for generated assets.
 - Reuse asset selection rules for existing repository bootstrap, where files may already exist and conflicts need explicit handling.

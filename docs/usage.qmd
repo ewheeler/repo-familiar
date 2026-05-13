@@ -8,7 +8,7 @@ title: "Usage"
 2. Select project type, agent harnesses, model/provider preferences, advisory profiles, skills, and documentation mode with flags or `questionary` prompts.
 3. Generate `.agents/`, `AGENTS.md`, starter skills, and a project plan.
 4. Generate a Quarto documentation scaffold for plans, decisions, research, and user stories.
-5. Run a docs-review skill to challenge the generated plan before implementation begins.
+5. Run `grill-with-docs` to challenge the generated plan before implementation begins.
 
 Generated assets should be copied into the downstream repository by default. The generator should also write `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version so future upgrade tooling can reason about what was created.
 
@@ -23,11 +23,14 @@ uv run python -m repo_familiar generate \
   --output /path/to/demo-project \
   --agent-harness opencode \
   --model-profile default-coding \
+  --tool-profile cq \
   --memory-profile memory-local \
+  --skill cq \
+  --skill session-focus \
   --skill grill-with-docs
 ```
 
-The generator writes a basic downstream repository with vendored assets, advisory profile files, selected skills, Quarto docs, and bootstrap metadata.
+The generator writes a basic downstream repository with vendored assets, advisory profile files, selected skills, skill source provenance, Quarto docs, and bootstrap metadata.
 
 Use `--interactive` to answer prompts instead of passing every flag:
 
@@ -92,6 +95,10 @@ generated_assets:
     kind: template_config
     source: templates/basic/.agents/models.yml.tmpl
     content_sha256: <sha256>
+  - path: .agents/skill-sources.yml
+    kind: template_config
+    source: templates/basic/.agents/skill-sources.yml.tmpl
+    content_sha256: <sha256>
   - path: docs/_quarto.yml
     kind: documentation
     source: templates/basic/docs/_quarto.yml.tmpl
@@ -146,6 +153,8 @@ Use targeted add commands when you only want one class of defaults:
 
 ```bash
 uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
 ```
@@ -157,5 +166,6 @@ A generated plan should capture:
 - Project goals and non-goals.
 - Technical preferences and explicit constraints.
 - Agent harnesses and `.agents/models.yml` model-provider assumptions.
+- Selected skill provenance in `.agents/skill-sources.yml`.
 - Documentation expectations.
 - Initial milestones and review checkpoints.

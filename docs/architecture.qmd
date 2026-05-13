@@ -30,10 +30,10 @@ The generated asset set currently includes:
 - `.agents/sandbox.yml`
 - `.agents/secrets.yml`
 - `.env.example`
+- `.agents/skill-sources.yml`
 - `.agents/design.yml`
 - `.agents/worktrees.yml`
-- `.agents/skills/grill-with-docs/SKILL.md`
-- other selected skills under `.agents/skills/`
+- selected skill directories under `.agents/skills/`
 - `docs/_quarto.yml`
 - `docs/index.qmd`
 - `docs/usage.qmd`

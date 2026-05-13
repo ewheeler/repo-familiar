@@ -34,6 +34,7 @@
 - Advisory profile files are generated under `.agents/` and selected profile names are recorded in bootstrap metadata.
 - Skill source provenance is generated in `.agents/skill-sources.yml` for selected skills, so future drift checks can compare vendored/imported skills against upstream sources where known.
 - Root `.agents/` dogfoods the Reference Source asset set: profile family files, selectable skills, and non-secret tool/advisory guidance live in this repository as working defaults as well as generated templates.
+- Every root dogfooded skill is registered as a selectable downstream skill and has a matching template under `src/repo_familiar/templates/skills/`.
 - `advise` recommends stage, profile families, asset groups, next commands, and memory usage for an existing repository.
 - `advise` decision logic lives in `src/repo_familiar/advice_dag.py` as Hamilton-compatible nodes; command formatting helpers remain outside the DAG module.
 - Core generator seams have been deepened: Bootstrap Metadata, profile registry, asset planning, repository advice orchestration, and targeted CLI add commands now live behind dedicated Modules or descriptor tables.
@@ -107,7 +108,7 @@ These are the suggested tool/component categories to dogfood in this Reference S
 | Advice decision graph | Hamilton-compatible node module | `src/repo_familiar/advice_dag.py` and `hamilton-dag` repomap profile | Advice rules need graphing, reviewability, or future visual artifacts. |
 | Future template rendering | Banks later; keep `string.Template` for now | Deferred renderer decision | Prompt or project templates outgrow simple substitution. |
 | Current API docs | `get-api-docs` skill with `chub` when available | Vendored skill and selectable skill template | Work touches third-party APIs, SDKs, CLIs, package managers, or fast-moving docs. |
-| External skill source | `mattpocock/skills` | Vendored local skills plus documented install path | Engineering workflows need diagnose, TDD, triage, PRD, issue, architecture, or zoom-out support. |
+| External skill source | `mattpocock/skills` | Selectable vendored skill templates with source provenance | Engineering workflows need diagnose, TDD, triage, PRD, issue, architecture, or zoom-out support. |
 | Agent knowledge commons | `cq` | Tool profile plus selectable skill | Before implementation tasks or error fixes where stale/version-specific gotchas matter. |
 | Agent session discipline | `session-focus`, `qa-test-design`, `security-audit` | Selectable skills with source provenance | Multi-step agent work, test design, or security-sensitive code review benefits from stricter gates. |
 | Browser automation | `browser-automation`, `playwright-cli`, `rodney-browser` | Tool profile plus selectable skills | Repos have frontend routes, Quarto/published docs, user-facing web outputs, browser smoke checks, screenshots, console-error checks, or accessibility tree checks. |
@@ -125,13 +126,13 @@ These are the suggested tool/component categories to dogfood in this Reference S
 | Documentation and planning | Quarto docs, `CONTEXT.md`, ADRs, `plan.md`, `grill-with-docs` | Generated docs, planning asset, and skill | Repos need durable project memory, domain language, or decision records. |
 | Upstream contribution loop | `diff-upstream-candidate`, `upstream-improvement`, and future PR helper | Read-only diff command, skill, plus bootstrap metadata source fields | Downstream repos improve generated assets, profiles, skills, docs, or advice heuristics in ways that should flow back to this Reference Source. |
 
-Default first-pass adoption for existing repos should remain narrow: memory, `grill-with-docs`, `get-api-docs`, and `opencode-homebrew-path`. Add the other categories only when `advise` or repo inspection shows a concrete trigger.
+Default first-pass adoption for existing repos should remain narrow: memory, `cq`, `session-focus`, `grill-with-docs`, `get-api-docs`, and `opencode-homebrew-path`. Add the other categories only when `advise` or repo inspection shows a concrete trigger.
 
 ## Pre-Usage Priorities For Existing Repos
 
 Priority 1: Use `advise` on representative repositories and compare recommendations against your intuition. Initial scans have already covered `project-review`, `model-decision-advice`, `ai-policy-kids-education`, `digital-playbook-quarto`, and `design.md`.
 
-Priority 2: For the first real repo, apply only `add-memory`, `add-skill --skill grill-with-docs`, `add-skill --skill get-api-docs`, and `add-tool --tool opencode-homebrew-path` unless `advise` shows clear missing docs, prompt DAGs, model defaults, or user-facing web outputs.
+Priority 2: For the first real repo, apply only `add-memory`, `add-skill --skill cq`, `add-skill --skill session-focus`, `add-skill --skill grill-with-docs`, `add-skill --skill get-api-docs`, and `add-tool --tool opencode-homebrew-path` unless `advise` shows clear missing docs, prompt DAGs, model defaults, security/privacy risk, or user-facing web outputs.
 
 Priority 3: Add docs with `add-docs` only after checking README/docs conflicts; avoid `--force` on first adoption.
 
@@ -151,6 +152,8 @@ First recommended real bootstrap sequence:
 uv run python -m repo_familiar advise --path /path/to/repo
 uv run python -m repo_familiar audit --path /path/to/repo
 uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
 uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-homebrew-path --apply
@@ -199,7 +202,7 @@ Status: done for the current selectable defaults and root `.agents/` dogfood pas
 - Add starter `AGENTS.md` content for downstream repositories. Done for `basic`.
 - Root `.agents/` now includes the selectable profile families and skills exposed by the Reference Source, including all dogfooded Matt Pocock skills, cq, session-focus, qa-test-design, security-audit, browser automation, accessibility, prompt migration/evals, safety, privacy, and upstream-improvement support.
 - Selected skill source provenance is generated and dogfooded through `.agents/skill-sources.yml`.
-- Add optional harness adapters for OpenCode, Conductor, Hermes, and Pi as their required conventions become clear.
+- Add optional harness adapters for OpenCode, Conductor, Hermes, and Pi if their required conventions become clear.
 - Add model profiles for coding, planning, review, low-cost passes, and high-context tasks.
 
 Acceptance criteria:
@@ -417,7 +420,7 @@ Acceptance criteria:
 
 ## Next Highest Priority Slices
 
-Priority 1: Dogfood on one low-risk existing repository using the renamed command and narrow adoption set. Use `advise`, `audit`, then add only memory, `grill-with-docs`, `get-api-docs`, and `opencode-homebrew-path` unless the repo clearly triggers more.
+Priority 1: Dogfood on one low-risk existing repository using the narrow adoption set. Use `advise`, `audit`, then add only memory, `cq`, `session-focus`, `grill-with-docs`, `get-api-docs`, and `opencode-homebrew-path` unless the repo clearly triggers more.
 
 Priority 2: Dogfood `diff-upstream-candidate` plus `upstream-improvement` on this Reference Source and one generated/bootstrapped Downstream Repository before adding PR automation. Capture whether Bootstrap Metadata needs project name/description or rendered-context fields to make current Reference Source comparison exact.
 
@@ -457,7 +460,7 @@ uv run python -m repo_familiar generate \
 
 - Which additional prompts should `questionary` ask versus infer from `advise`?
 - What exact file conventions do Conductor, Hermes, and Pi need?
-- Should selected skills be vendored from this repository only, installed from external sources, or both?
+- Which external skill sources should get automated upstream drift checks first?
 - Which optional asset groups should the `basic` template split out first?
 - What concrete template complexity should trigger Banks adoption?
 - Should existing repository bootstrap update schema v1 or introduce schema v2 once adopted/conflicted assets are tracked?
