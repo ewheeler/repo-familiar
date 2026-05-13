@@ -1,0 +1,93 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - usage.qmd
+    - generator.qmd
+    - templates.qmd
+    - model-profiles.qmd
+    - tool-profiles.qmd
+    - advisory-profiles.qmd
+    - existing-repos.qmd
+    - pre-bootstrap.qmd
+    - examples.qmd
+    - architecture.qmd
+    - naming.qmd
+    - decisions.qmd
+    - research.qmd
+    - user-stories.qmd
+    - adr/0001-project-generator-as-primary-product.md
+    - adr/0002-vendor-generated-assets-by-default.md
+    - adr/0003-bootstrap-metadata-path.md
+    - adr/0004-minimal-bootstrap-metadata-schema.md
+    - adr/0005-structured-generated-assets.md
+    - adr/0006-generated-asset-kind-taxonomy.md
+    - adr/0007-model-profiles-location.md
+    - adr/0008-named-model-profile-schema.md
+    - adr/0009-existing-repository-bootstrap.md
+
+website:
+  title: "repo-familiar"
+  description: "Agentic engineering project generation, existing repository bootstrap, and documentation practices."
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: usage.qmd
+        text: Usage
+      - href: generator.qmd
+        text: Generator
+      - href: architecture.qmd
+        text: Architecture
+      - href: naming.qmd
+        text: Naming
+      - href: decisions.qmd
+        text: Decisions
+      - href: research.qmd
+        text: Research
+      - href: user-stories.qmd
+        text: User Stories
+  sidebar:
+    style: docked
+    contents:
+      - index.qmd
+      - usage.qmd
+      - section: Generator
+        contents:
+          - generator.qmd
+          - templates.qmd
+          - model-profiles.qmd
+          - tool-profiles.qmd
+          - advisory-profiles.qmd
+          - existing-repos.qmd
+          - pre-bootstrap.qmd
+          - examples.qmd
+      - architecture.qmd
+      - naming.qmd
+      - decisions.qmd
+      - section: ADRs
+        contents:
+          - adr/0001-project-generator-as-primary-product.md
+          - adr/0002-vendor-generated-assets-by-default.md
+          - adr/0003-bootstrap-metadata-path.md
+          - adr/0004-minimal-bootstrap-metadata-schema.md
+          - adr/0005-structured-generated-assets.md
+          - adr/0006-generated-asset-kind-taxonomy.md
+          - adr/0007-model-profiles-location.md
+          - adr/0008-named-model-profile-schema.md
+          - adr/0009-existing-repository-bootstrap.md
+      - research.qmd
+      - user-stories.qmd
+  page-footer:
+    left: "Personal agentic engineering notes."
+
+format:
+  html:
+    theme:
+      - cosmo
+      - styles.scss
+    toc: true
+    number-sections: false
+    code-copy: true
+    anchor-sections: true

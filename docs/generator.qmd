@@ -1,0 +1,284 @@
+---
+title: "Generator"
+---
+
+The current generator is a Python CLI with a small `questionary` interactive layer. Template rendering still uses the standard library `string.Template` so the downstream repository contract can stabilize before introducing a heavier renderer such as Banks or Cookiecutter.
+
+## Commands
+
+List available templates:
+
+```bash
+uv run python -m repo_familiar list-templates
+```
+
+List available model profiles:
+
+```bash
+uv run python -m repo_familiar list-model-profiles
+```
+
+List available advisory profiles, tool profiles, and skills:
+
+```bash
+uv run python -m repo_familiar list-tool-profiles
+uv run python -m repo_familiar list-memory-profiles
+uv run python -m repo_familiar list-prompt-profiles
+uv run python -m repo_familiar list-safety-profiles
+uv run python -m repo_familiar list-privacy-profiles
+uv run python -m repo_familiar list-repomap-profiles
+uv run python -m repo_familiar list-sandbox-profiles
+uv run python -m repo_familiar list-secrets-profiles
+uv run python -m repo_familiar list-design-profiles
+uv run python -m repo_familiar list-worktree-profiles
+uv run python -m repo_familiar list-skills
+```
+
+Check generated assets against bootstrap metadata:
+
+```bash
+uv run python -m repo_familiar check --path /path/to/repo
+uv run python -m repo_familiar check --path /path/to/repo --format json
+```
+
+Classify generated asset changes for possible upstream contribution:
+
+```bash
+uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
+uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo --format json
+```
+
+Preview upgrade readiness without writing files:
+
+```bash
+uv run python -m repo_familiar upgrade --path /path/to/repo
+uv run python -m repo_familiar upgrade --path /path/to/repo --format json
+```
+
+Get recommendations for an existing repository before bootstrapping:
+
+```bash
+uv run python -m repo_familiar advise --path /path/to/repo
+uv run python -m repo_familiar advise --path /path/to/repo --format json
+```
+
+Preview generation without writing files:
+
+```bash
+uv run python -m repo_familiar generate \
+  --name "Demo Project" \
+  --description "A generated demo." \
+  --output /tmp/demo-project \
+  --agent-harness opencode \
+  --model-profile default-coding \
+  --tool-profile cq \
+  --memory-profile memory-local \
+  --secrets-profile dotenv-local \
+  --skill grill-with-docs \
+  --dry-run
+```
+
+Generate a project:
+
+```bash
+uv run python -m repo_familiar generate \
+  --name "Demo Project" \
+  --description "A generated demo." \
+  --output /tmp/demo-project \
+  --agent-harness opencode \
+  --model-profile default-coding \
+  --tool-profile cq \
+  --memory-profile memory-local \
+  --secrets-profile dotenv-local \
+  --skill grill-with-docs
+```
+
+Generate a project interactively:
+
+```bash
+uv sync
+uv run python -m repo_familiar generate --interactive
+```
+
+The interactive path imports `questionary` lazily. `uv sync` installs the package and its interactive dependency.
+
+Audit an existing repository:
+
+```bash
+uv run python -m repo_familiar audit --path /path/to/repo
+uv run python -m repo_familiar audit --path /path/to/repo --format json
+uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
+```
+
+Preview existing repository bootstrap:
+
+```bash
+uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
+```
+
+Apply missing assets to an existing repository:
+
+```bash
+uv run python -m repo_familiar bootstrap-existing --path /path/to/repo --apply
+```
+
+Prompt for existing repository bootstrap options:
+
+```bash
+uv sync
+uv run python -m repo_familiar bootstrap-existing --interactive
+```
+
+Add targeted assets to an existing repository:
+
+```bash
+uv run python -m repo_familiar add-model \
+  --path /path/to/repo \
+  --model-profile default-coding \
+  --apply
+
+uv run python -m repo_familiar add-docs \
+  --path /path/to/repo \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill grill-with-docs \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill get-api-docs \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill upstream-improvement \
+  --apply
+
+uv run python -m repo_familiar add-tool \
+  --path /path/to/repo \
+  --tool cq \
+  --apply
+
+uv run python -m repo_familiar add-tool \
+  --path /path/to/repo \
+  --tool browser-automation \
+  --apply
+
+uv run python -m repo_familiar add-tool \
+  --path /path/to/repo \
+  --tool opencode-homebrew-path \
+  --apply
+
+uv run python -m repo_familiar add-memory \
+  --path /path/to/repo \
+  --memory-profile memory-local \
+  --apply
+
+uv run python -m repo_familiar add-prompts \
+  --path /path/to/repo \
+  --prompt-profile prompt-migration-gpt55 \
+  --apply
+
+uv run python -m repo_familiar add-repomap \
+  --path /path/to/repo \
+  --repomap-profile hamilton-dag \
+  --apply
+
+uv run python -m repo_familiar add-safety \
+  --path /path/to/repo \
+  --safety-profile prompt-output-safety \
+  --apply
+
+uv run python -m repo_familiar add-privacy \
+  --path /path/to/repo \
+  --privacy-profile data-privacy-review \
+  --apply
+
+uv run python -m repo_familiar add-sandbox \
+  --path /path/to/repo \
+  --sandbox-profile sandbox-light \
+  --apply
+
+uv run python -m repo_familiar add-secrets \
+  --path /path/to/repo \
+  --secrets-profile kvenv-azure-keyvault \
+  --apply
+
+uv run python -m repo_familiar add-design \
+  --path /path/to/repo \
+  --design-profile design-impeccable \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill a11y-web-scan \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill playwright-cli \
+  --apply
+
+uv run python -m repo_familiar add-skill \
+  --path /path/to/repo \
+  --skill rodney-browser \
+  --apply
+
+uv run python -m repo_familiar add-worktree \
+  --path /path/to/repo \
+  --worktree-profile parallel-worktrees \
+  --apply
+```
+
+## Safety Behavior
+
+The generator refuses to write into a non-empty output directory unless `--force` is passed. This prevents accidental overwrites while templates are still evolving.
+
+Use `--force` only when regenerating known generated output, such as an example snapshot.
+
+Existing repository bootstrap should build on the same safety posture: audit first, dry-run by default, and require explicit action for conflicts or replacements.
+
+When bootstrapping an existing repository, `.repo-familiar/bootstrap.yml` records `bootstrap_mode: existing_repository` and the assets actually written by that operation. Conflicts skipped for safety are not claimed as generated assets.
+
+Use `--asset-group` with `audit` or `bootstrap-existing` for scoped adoption. Supported groups are `agent`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, and `worktrees`.
+
+Generated asset records include `content_sha256` for drift detection. The metadata file itself is presence-checked but not self-hashed.
+
+`diff-upstream-candidate` is read-only. It classifies recorded generated assets as unchanged, modified, missing, or unchecked and adds a recommendation such as `review-for-upstream-improvement`, `review-profile-improvement`, `review-private-or-local-only`, or `restore-generated-asset`. Current Reference Source comparison is advisory; template-variable-heavy assets may report `reference-may-have-changed` until Bootstrap Metadata records richer template context.
+
+`upgrade` is read-only in the current implementation. It reports assets that would need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade. It deliberately reports no safe auto-apply path until Bootstrap Metadata records enough template context for exact rendered comparisons.
+
+## Generated Files
+
+The `basic` template currently writes:
+
+- `.gitignore`
+- `README.md`
+- `AGENTS.md`
+- `.agents/models.yml`
+- `.agents/tools.yml`
+- `.agents/memory.yml`
+- `.agents/prompts.yml`
+- `.agents/safety.yml`
+- `.agents/privacy.yml`
+- `.agents/repomap.yml`
+- `.agents/sandbox.yml`
+- `.agents/secrets.yml`
+- `.env.example`
+- `.agents/design.yml`
+- `.agents/worktrees.yml`
+- `.agents/skills/grill-with-docs/SKILL.md`
+- `.agents/skills/get-api-docs/SKILL.md` when selected
+- `.agents/skills/playwright-cli/SKILL.md` when selected
+- `.agents/skills/rodney-browser/SKILL.md` when selected
+- `.agents/skills/upstream-improvement/SKILL.md` when selected
+- `.agents/skills/a11y-web-scan/SKILL.md` when selected
+- other selected skill files under `.agents/skills/`
+- `docs/_quarto.yml`
+- `docs/index.qmd`
+- `docs/usage.qmd`
+- `docs/architecture.qmd`
+- `plan.md`
+- `.repo-familiar/bootstrap.yml`

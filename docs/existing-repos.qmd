@@ -1,0 +1,178 @@
+---
+title: "Existing Repositories"
+---
+
+`repo-familiar` supports bootstrapping existing repositories as a deliberate second mode, separate from generating a brand-new downstream repository.
+
+## Intended Flow
+
+1. Advise on the existing repository to choose a stage, profiles, tools, and memory practice.
+2. Audit the existing repository.
+3. Detect existing agent files, docs, model profiles, skills, and generator metadata.
+4. Produce a dry-run plan showing files to add, files that already exist, and conflicts.
+5. Apply only selected additive changes.
+6. Write or update `.repo-familiar/bootstrap.yml` to record what was added.
+
+## Safety Rules
+
+- Do not overwrite user-owned files by default.
+- Treat `--dry-run` as the default UX for existing repositories.
+- Require explicit flags for replacing or adopting existing files.
+- Keep secrets out of generated tool and model configuration.
+- Separate generator metadata in `.repo-familiar/` from runtime agent assets in `.agents/`.
+
+## Candidate Commands
+
+```bash
+uv run python -m repo_familiar advise --path /path/to/repo
+uv run python -m repo_familiar advise --path /path/to/repo --format json
+uv run python -m repo_familiar audit --path /path/to/repo
+uv run python -m repo_familiar audit --path /path/to/repo --format json
+uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
+uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
+uv run python -m repo_familiar bootstrap-existing --path /path/to/repo --apply
+uv run python -m repo_familiar bootstrap-existing --interactive
+uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding --apply
+uv run python -m repo_familiar add-docs --path /path/to/repo --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool cq --apply
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool browser-automation --apply
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-homebrew-path --apply
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
+uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile prompt-migration-gpt55 --apply
+uv run python -m repo_familiar add-repomap --path /path/to/repo --repomap-profile hamilton-dag --apply
+uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety --apply
+uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review --apply
+uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
+uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault --apply
+uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-impeccable --apply
+uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-profile parallel-worktrees --apply
+uv run python -m repo_familiar check --path /path/to/repo
+uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
+uv run python -m repo_familiar upgrade --path /path/to/repo
+```
+
+`bootstrap-existing`, `add-model`, `add-docs`, `add-skill`, `add-tool`, and advisory profile add commands are dry-run by default. Pass repeated profile flags to choose specific assets. Pass `--apply` to write missing assets. Pass `--force` only when replacing conflicting assets is intentional.
+
+`bootstrap-existing --interactive` uses `questionary` to prompt for repository path, asset groups, selected profiles, and whether to apply changes. It still defaults to dry-run behavior unless write confirmation is selected.
+
+Use `--asset-group` with `audit` or `bootstrap-existing` to scope work to selected groups: `agent`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, or `worktrees`.
+
+## Prompt Migration And Evals
+
+For prompt DAGs, do not rewrite prompts first. Start by inventorying prompts, classifying each prompt's DAG role, and adding fixtures at meaningful node boundaries. Then apply GPT-5.5 prompt guidance with minimal diffs and behavior comparisons.
+
+Recommended adoption:
+
+```bash
+uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile prompt-migration-gpt55 --apply
+uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile prompt-evals-dag --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill prompt-migration --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill prompt-eval-design --apply
+```
+
+Use `hamilton-dag` where Hamilton is already used:
+
+```bash
+uv run python -m repo_familiar add-repomap --path /path/to/repo --repomap-profile hamilton-dag --apply
+```
+
+Keep non-DAG helpers out of Hamilton modules when graph fingerprints are used for regression checks.
+
+## Prompt Safety And Privacy
+
+For policy, education, children, public sector, or user-facing AI systems, add:
+
+```bash
+uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety --apply
+uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill prompt-output-safety --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill privacy-review --apply
+```
+
+## Bootstrap Metadata
+
+Existing repository bootstrap should write `.repo-familiar/bootstrap.yml` with `bootstrap_mode: existing_repository`. The current implementation records assets actually written by the operation and does not claim skipped conflicts as generated assets.
+
+Generated asset records include `content_sha256` for written non-metadata assets. This allows `check` to report generated assets as `ok`, `modified`, `missing`, or `unchecked`.
+
+Use `diff-upstream-candidate` after local changes to classify generated asset drift before proposing improvements back to the Reference Source. It is read-only and should be paired with the `upstream-improvement` skill before copying downstream content upstream. Current Reference Source comparison is advisory; template-variable-heavy assets may report `reference-may-have-changed` until Bootstrap Metadata records richer template context.
+
+```bash
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill upstream-improvement --apply
+uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
+```
+
+Use `upgrade` to preview upgrade readiness without writing files:
+
+```bash
+uv run python -m repo_familiar upgrade --path /path/to/repo
+```
+
+The current `upgrade` command is read-only. It reports assets that need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade until richer template context is recorded.
+
+Potential future fields:
+
+```yaml
+bootstrap_mode: existing_repository
+adopted_assets: []
+conflicts: []
+```
+
+These fields should not be added to schema v1 until implementation needs them.
+
+## Current Status
+
+The first implementation can audit and add the same selected asset set used by new repository generation. It reports assets as missing, present, or conflicting and writes only missing assets unless `--force` is used.
+
+Targeted add commands reuse the same bootstrap engine with narrower asset groups, so adopting one class of defaults does not also create unrelated files.
+
+## Advice
+
+`advise` is read-only. It detects coarse repository signals such as docs, plans, tests, CI, frontend files, container config, agent files, and bootstrap metadata. Recommendation logic lives in `src/repo_familiar/advice_dag.py`, a Hamilton-compatible node module that keeps non-DAG command formatting helpers outside the graph. It recommends one of these stages:
+
+- `research-heavy`
+- `prototype-fast`
+- `production-maintenance`
+
+It also recommends asset groups, profile families, skills, and next commands.
+
+## Memory Usage
+
+Use memory tools when they speed recall without replacing committed context:
+
+- At session start, query for project decisions, conventions, recurring errors, and current stage.
+- After resolving a non-obvious bug, store the lesson and verification method.
+- After accepting an ADR or resolving terminology, store the decision summary and link to the committed doc.
+- After advancing stages, store why the stage changed and which profiles/tools were selected.
+- Do not store secrets, private personal data, or machine-specific paths.
+
+## Local Secrets
+
+The safest local default is to keep secret values outside the repository and inject them at process start.
+
+Recommended options:
+
+- `kvenv-azure-keyvault`: `.env` contains `kv://` references; `kvenv` resolves them from Azure Key Vault when launching a command.
+- `onepassword-op`: 1Password stores the values; `op run` or `op inject` provides them to the process.
+- `dotenv-local`: `.env.example` is committed, `.env` is ignored, and local values remain machine-local.
+
+For all options, never store real secret values in `.agents/*.yml`, `.repo-familiar/bootstrap.yml`, memory, or committed docs.
+
+## Accessibility Scanning
+
+For repositories with frontend code, Quarto sites, design docs, or other user-facing web outputs, `advise` recommends:
+
+- `a11y-scanner` tool profile
+- `design-a11y` design profile
+- `a11y-web-scan` skill
+
+Adopt them with:
+
+```bash
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool a11y-scanner --apply
+uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-a11y --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill a11y-web-scan --apply
+```
+
+For reporting, borrow the ADT Studio pattern: show selected pages/routes, rule deltas, top violations, and a manual-review split of confirmed, resolved, and residual items. Automated scans should be paired with manual keyboard, focus, screen reader, contrast, and responsive checks.

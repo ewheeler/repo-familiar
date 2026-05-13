@@ -1,0 +1,72 @@
+---
+title: "Tool Profiles"
+---
+
+Tool profiles are non-secret recommendations for tools or MCPs that a generated or bootstrapped repository should know about.
+
+They are written to `.agents/tools.yml` in downstream repositories. Machine-specific installation and credentials stay out of scope.
+
+Memory, sandbox, secrets, design, and worktree guidance use separate advisory profile files. See [Advisory Profiles](./advisory-profiles.qmd).
+
+## Current Profiles
+
+`cq`:
+
+```yaml
+purpose: query shared agent knowledge before implementation and before fixing errors
+config: MCP/server setup remains machine-specific and is not generated as a secret
+notes:
+  - Use before implementation tasks where tool, version, or integration gotchas may matter
+  - Record useful discoveries back into the knowledge commons
+```
+
+`a11y-scanner`:
+
+```yaml
+purpose: scan user-facing web outputs for automatically detectable accessibility issues
+config: Use project-appropriate tools such as pa11y, axe-core, @axe-core/playwright, Lighthouse, or Playwright MCP/browser automation
+notes:
+  - Run automated scans during design iteration and before production handoff
+  - Treat automated results as a floor, not a complete accessibility review
+  - Pair scans with keyboard navigation, screen reader, focus management, and responsive checks
+```
+
+`browser-automation`:
+
+```yaml
+purpose: let agents inspect rendered pages, interact with web apps, capture screenshots, check console errors, and run browser smoke checks
+config: Use the project-appropriate browser driver: Playwright CLI for agent-friendly snapshots and screenshots, or Rodney for persistent Chrome sessions and shell-scriptable checks
+notes:
+  - Prefer rendered pages or local preview servers over static source inspection for layout and interaction checks
+  - Use Playwright CLI when the agent needs snapshots, screenshots, console inspection, and interactive page exploration
+  - Use Rodney when persistent Chrome state, shell scripting, JavaScript assertions, accessibility tree queries, or directory-scoped sessions are useful
+  - Keep browser session directories such as .rodney/ out of version control
+  - Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary
+```
+
+`opencode-homebrew-path`:
+
+```yaml
+purpose: document how macOS Homebrew users can expose CLIs such as node, npm, npx, pnpm, uv, and quarto to OpenCode agent shells
+config: Agent-shell guidance only: if OpenCode uses /bin/zsh, put /opt/homebrew/bin and /usr/local/bin on PATH via ~/.zshenv so non-interactive tool calls can find Homebrew CLIs
+notes:
+  - This profile does not install Homebrew, mutate shell files, or configure a workstation automatically
+  - OpenCode tool calls may run in non-interactive shells that do not read ~/.zshrc
+  - For zsh, put export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" in ~/.zshenv
+  - Set OpenCode global config shell to /bin/zsh in ~/.config/opencode/opencode.json when needed
+  - Verify inside the agent with node --version, npm --version, npx --version, pnpm --version, uv --version, and quarto --version
+  - If pnpm is still unavailable after PATH is fixed, run corepack enable outside the repository
+```
+
+Adopt it in an existing repository:
+
+```bash
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-homebrew-path --apply
+```
+
+## Rules
+
+- Keep credentials and local machine paths out of tool profiles.
+- Treat tool profiles as repository guidance, not workstation installation.
+- Record selected tool profile names in `.repo-familiar/bootstrap.yml`.
+- Allow existing repository bootstrap to add tool profiles additively.

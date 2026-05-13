@@ -1,0 +1,79 @@
+schema_version: 1
+bootstrap_mode: "existing_repository"
+reference_source:
+  type: "local"
+  url: "local"
+  ref: "unknown"
+generated_at: "2026-05-11T00:00:00Z"
+generator:
+  name: repo-familiar
+  version: "0.1.0"
+selected_options:
+  template: "basic"
+  agent_harnesses:
+    - "opencode"
+  model_profiles:
+    - "default-coding"
+  tool_profiles:
+    - "cq"
+    - "a11y-scanner"
+  memory_profiles:
+    - "memory-local"
+  prompt_profiles: []
+  safety_profiles: []
+  privacy_profiles: []
+  repomap_profiles:
+    - "hamilton-dag"
+  sandbox_profiles:
+    - "sandbox-light"
+  secrets_profiles:
+    - "dotenv-local"
+    - "kvenv-azure-keyvault"
+  design_profiles:
+    - "design-impeccable"
+    - "design-a11y"
+  worktree_profiles:
+    - "parallel-worktrees"
+  skills:
+    - "get-api-docs"
+  docs: "quarto"
+generated_assets:
+  - path: ".agents/design.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/design.yml.tmpl"
+    content_sha256: "76b47f9a2501fea139457570edfb0427b845796bf0fb18930b1f40bf6b0a0c9f"
+  - path: ".agents/memory.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/memory.yml.tmpl"
+    content_sha256: "0b79f11d9d51527c218cc916588526067c85fe51ce3e43c00f4599aa4f8b2fe2"
+  - path: ".agents/repomap.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/repomap.yml.tmpl"
+    content_sha256: "732d233a39f90f1db49fda553cfbf3e47006876954a72fce756a38077761b7b9"
+  - path: ".agents/sandbox.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/sandbox.yml.tmpl"
+    content_sha256: "ec09738bc7dd37248574a265eb7d2d472f99b22b38bd64fe304a314e3a0ba32e"
+  - path: ".agents/secrets.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/secrets.yml.tmpl"
+    content_sha256: "337cf33368b5fab894c599a206bd15ebd3ad70dfb7e567785947d54aa13d775b"
+  - path: ".agents/tools.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/tools.yml.tmpl"
+    content_sha256: "6a1671028d7c1aff0b2fb54923e5e1031dd4e95f7c76b2937a0e66eb068bb814"
+  - path: ".agents/worktrees.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/worktrees.yml.tmpl"
+    content_sha256: "d9bb39e578bb1a407a80d6c56e440638a861a4cb4b9603c747a48f1c0f8d3aa9"
+  - path: ".env.example"
+    kind: "template_config"
+    source: "templates/basic/.env.example.tmpl"
+    content_sha256: "b865e9edc487611bfc378cbeb8d6f42100988709e93e6fbaab1d99e76b01b497"
+  - path: ".agents/skills/get-api-docs/SKILL.md"
+    kind: "skill"
+    source: "templates/skills/get-api-docs/SKILL.md.tmpl"
+    content_sha256: "71544bc39990347203ad2f8f47ec77930feffba19969f9c09f46ee94655af9f5"
+  - path: ".repo-familiar/bootstrap.yml"
+    kind: "metadata"
+    source: "generator:bootstrap"

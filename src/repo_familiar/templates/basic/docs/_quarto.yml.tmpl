@@ -1,0 +1,25 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - usage.qmd
+    - architecture.qmd
+
+website:
+  title: "$project_name"
+  description: "$project_description"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: usage.qmd
+        text: Usage
+      - href: architecture.qmd
+        text: Architecture
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-copy: true

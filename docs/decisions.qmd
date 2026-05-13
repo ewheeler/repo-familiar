@@ -1,0 +1,49 @@
+---
+title: "Decisions"
+---
+
+This page records important project decisions as the repository evolves.
+
+## Decision Log
+
+| Date | Decision | Status | Notes |
+|---|---|---|---|
+| 2026-05-10 | Use Quarto for documentation | Accepted | Keeps implementation notes, research, decisions, and stories in one inspectable site. |
+| 2026-05-10 | [Make project generation the primary product](./adr/0001-project-generator-as-primary-product.md) | Accepted | Dotfiles are the portability metaphor; downstream repository bootstrap is the product boundary. |
+| 2026-05-10 | [Vendor generated assets by default](./adr/0002-vendor-generated-assets-by-default.md) | Accepted | Generated repositories should be stable and self-contained, with explicit upgrade behavior later. |
+| 2026-05-10 | [Use `.repo-familiar/bootstrap.yml` for bootstrap metadata](./adr/0003-bootstrap-metadata-path.md) | Accepted | Keeps generator metadata namespaced and separate from agent runtime instructions. |
+| 2026-05-10 | [Use a minimal bootstrap metadata schema](./adr/0004-minimal-bootstrap-metadata-schema.md) | Accepted | Captures provenance and selected options without becoming a dependency lockfile. |
+| 2026-05-10 | [Use structured generated asset records](./adr/0005-structured-generated-assets.md) | Accepted | Preserves asset kind, source, and checksums for drift detection and future upgrade behavior. |
+| 2026-05-10 | [Use a small generated asset kind taxonomy](./adr/0006-generated-asset-kind-taxonomy.md) | Accepted | Keeps generated asset classification useful without overfitting categories too early. |
+| 2026-05-10 | [Store model profiles in `.agents/models.yml`](./adr/0007-model-profiles-location.md) | Accepted | Runtime model defaults stay with agent assets; bootstrap metadata records selected profile names. |
+| 2026-05-10 | [Use named model profile handles](./adr/0008-named-model-profile-schema.md) | Accepted | Keeps model defaults stable and pragmatic without over-normalizing provider metadata. |
+| 2026-05-10 | [Support existing repository bootstrap](./adr/0009-existing-repository-bootstrap.md) | Accepted | Existing repos should be audited and patched additively rather than force-migrated. |
+| 2026-05-10 | Implement a stdlib-first generator skeleton | Accepted | Proves the generation contract before choosing a heavier template engine. |
+| 2026-05-10 | Refuse non-empty output directories by default | Accepted | Prevents accidental overwrites while template behavior is still evolving. |
+| 2026-05-10 | Commit deterministic generated example snapshots | Accepted | Keeps examples useful as documentation and regression fixtures. |
+| 2026-05-10 | Record only written assets for existing bootstrap metadata | Accepted | Avoids claiming ownership of user files that were skipped as conflicts. |
+| 2026-05-10 | Use targeted asset groups for add-skill and add-tool | Accepted | Allows incremental adoption without creating unrelated defaults. |
+| 2026-05-10 | Expose asset groups for granular bootstrap | Accepted | Lets users audit/apply docs, models, tools, skills, plans, config, or metadata independently. |
+| 2026-05-10 | Add targeted add-model and add-docs commands | Accepted | Makes common existing-repo adoption flows explicit without requiring full bootstrap. |
+| 2026-05-10 | Add generated asset checksums | Accepted | Enables drift detection for generated assets without self-hashing bootstrap metadata. |
+| 2026-05-10 | Add generated repository check command | Accepted | Gives users a safe read-only way to detect missing or modified generated assets. |
+| 2026-05-10 | Add advisory profile families | Accepted | Memory, sandbox, design, and worktree guidance are first-class, non-secret profile selections. |
+| 2026-05-10 | Keep advisory profiles non-installing | Accepted | Generated repositories record guidance and selected profile names without mutating workstation state. |
+| 2026-05-10 | Add read-only repository advice | Accepted | Existing repositories should get stage/profile/memory recommendations before bootstrap writes. |
+| 2026-05-10 | Add advisory secrets profiles | Accepted | Repositories can document dotenv, kvenv, and local secret injection without storing secret values. |
+| 2026-05-10 | Add accessibility scanning as design support | Accepted | User-facing web outputs should have automated a11y scan guidance plus manual review reminders. |
+| 2026-05-10 | Use compact accessibility remediation summaries | Accepted | ADT-style rule deltas and manual-review queues are more actionable than raw scanner logs. |
+| 2026-05-10 | Add prompt migration and eval profiles | Accepted | Prompt DAGs should preserve baseline behavior and migrate prompts with fixtures and measurable deltas. |
+| 2026-05-10 | Prefer Hamilton DAGs for repo maps | Accepted | Hamilton DAG visualizations align with existing project preferences and prompt/data pipeline review. |
+| 2026-05-10 | Add prompt safety and privacy review profiles | Accepted | User-facing and policy-sensitive AI repos need explicit safety and privacy review guidance. |
+| 2026-05-10 | Treat agent setup as dotfiles | Accepted | Makes agent preferences portable across repositories without drifting into general workstation setup. |
+| 2026-05-10 | Keep Quarto render targets explicit | Accepted | Prevents repository-level Markdown files from becoming unintended site pages. |
+| 2026-05-11 | Use `questionary` for first interactive flows | Accepted | Keeps interaction inside the current Python CLI without committing to a template framework. |
+| 2026-05-11 | Keep rendering on `string.Template` for now | Accepted | Introduce Banks later only when prompt or project templates need richer rendering. |
+| 2026-05-11 | Move advice decisions into a Hamilton-compatible node module | Accepted | Keeps recommendation logic graph-shaped while command formatting helpers stay outside the DAG module. |
+
+## Open Decisions
+
+- Decide whether later template growth needs Banks, Cookiecutter, or another renderer/generator.
+- Expand the interactive prompt set after real bootstraps reveal which defaults should be asked versus inferred.
+- Decide the schema additions needed to distinguish generated, adopted, and conflicted assets.

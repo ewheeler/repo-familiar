@@ -1,0 +1,73 @@
+---
+title: "User Stories"
+---
+
+## Bootstrap A New Repository
+
+As a developer, I want to generate a new project with agent instructions, skills, documentation, and planning artifacts so that a fresh repository starts with the working conventions I already trust.
+
+This is the primary product story for `repo-familiar`; other repository features should support this flow.
+
+Acceptance criteria:
+
+- The setup flow asks for project type, agent harnesses, model/provider preferences, and documentation depth.
+- The generated repository includes `.agents/`, `AGENTS.md`, selected advisory profiles, selected skills, a project plan, and optional Quarto docs.
+- The generated repository includes `.agents/models.yml` when model/provider profiles are selected.
+- The generated plan records technical preferences and explicit tradeoffs.
+- The generated repository includes `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version.
+
+Current status: a non-interactive Python generator can create the baseline asset set. Interactive prompts remain future work.
+
+## Bootstrap An Existing Repository
+
+As a developer, I want to add selected `repo-familiar` defaults to an existing repository so that active projects can adopt agent instructions, skills, model profiles, tools, and docs without being recreated.
+
+Acceptance criteria:
+
+- The bootstrap flow audits existing files before proposing changes.
+- The existing-repository flow is audit-first and non-destructive by default; `bootstrap-existing` previews changes unless `--apply` is passed.
+- Existing user-owned files are not overwritten without explicit approval.
+- The flow can add `.agents/`, selected profile files, selected skills, Quarto docs, `plan.md`, `.env.example`, and `.repo-familiar/bootstrap.yml` where appropriate.
+- Bootstrap metadata records which assets were added and which selected options were applied.
+
+## Keep Generated Projects Stable
+
+As a developer, I want generated projects to contain vendored copies of selected assets so that a repository remains usable even if the reference source changes later.
+
+Acceptance criteria:
+
+- Skills, instructions, docs scaffolds, and plans are copied into the downstream repository by default.
+- `.repo-familiar/bootstrap.yml` records `schema_version`, `reference_source`, `generated_at`, `generator`, `selected_options`, and structured `generated_assets` records.
+- Generated asset records use the initial `kind` vocabulary: `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
+- Any future refresh from `repo-familiar` happens through an explicit upgrade command, not live synchronization.
+
+## Choose Agent Harnesses
+
+As a developer, I want to select which agent harnesses a project supports so that generated files match the tools I will actually use.
+
+Acceptance criteria:
+
+- The setup flow records selected harness names such as OpenCode, Conductor, Hermes, and Pi; harness-specific adapter files remain future work.
+- Harness-specific files are generated only when needed.
+- Shared behavior remains centralized in agent-agnostic files where possible.
+
+## Choose Model Profiles
+
+As a developer, I want selected model/provider defaults written into `.agents/models.yml` so that agents can understand preferred models without reading generator metadata.
+
+Acceptance criteria:
+
+- `.agents/models.yml` includes selected non-secret model/provider profiles.
+- `.repo-familiar/bootstrap.yml` records selected profile names under `selected_options.model_profiles`.
+- Profile names are stable handles that can be used by templates and future upgrade tooling.
+- Provider secrets are excluded from generated model profile files.
+
+## Review Plans Before Coding
+
+As a developer, I want a docs-review skill to challenge generated plans before implementation so that assumptions, missing decisions, and vague requirements are caught early.
+
+Acceptance criteria:
+
+- The generated project includes enough documentation for a review skill to inspect.
+- The review produces concrete questions or revisions.
+- Accepted revisions are reflected in the project plan and documentation site.

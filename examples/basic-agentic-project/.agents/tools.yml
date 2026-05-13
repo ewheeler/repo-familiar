@@ -1,0 +1,7 @@
+profiles:
+  cq:
+    purpose: "query shared agent knowledge before implementation and before fixing errors"
+    config: "MCP/server setup remains machine-specific and is not generated as a secret"
+    notes:
+      - "Use before implementation tasks where tool, version, or integration gotchas may matter"
+      - "Record useful discoveries back into the knowledge commons"

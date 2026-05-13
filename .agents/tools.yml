@@ -1,0 +1,24 @@
+profiles:
+  cq:
+    purpose: "query shared agent knowledge before implementation and before fixing errors"
+    config: "MCP/server setup remains machine-specific and is not generated as a secret"
+    notes:
+      - "Use before implementation tasks where tool, version, or integration gotchas may matter"
+      - "Record useful discoveries back into the knowledge commons"
+  a11y-scanner:
+    purpose: "scan user-facing web outputs for automatically detectable accessibility issues"
+    config: "Use project-appropriate tools such as pa11y, axe-core, @axe-core/playwright, Lighthouse, or Playwright MCP/browser automation"
+    notes:
+      - "Run automated scans during design iteration and before production handoff"
+      - "Treat automated results as a floor, not a complete accessibility review"
+      - "Pair scans with keyboard navigation, screen reader, focus management, and responsive checks"
+  opencode-homebrew-path:
+    purpose: "document how macOS Homebrew users can expose CLIs such as node, npm, npx, pnpm, uv, and quarto to OpenCode agent shells"
+    config: "Agent-shell guidance only: if OpenCode uses /bin/zsh, put /opt/homebrew/bin and /usr/local/bin on PATH via ~/.zshenv so non-interactive tool calls can find Homebrew CLIs"
+    notes:
+      - "This profile does not install Homebrew, mutate shell files, or configure a workstation automatically"
+      - "OpenCode tool calls may run in non-interactive shells that do not read ~/.zshrc"
+      - "For zsh, put export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" in ~/.zshenv"
+      - "Set OpenCode global config shell to /bin/zsh in ~/.config/opencode/opencode.json when needed"
+      - "Verify inside the agent with node --version, npm --version, npx --version, pnpm --version, uv --version, and quarto --version"
+      - "If pnpm is still unavailable after PATH is fixed, run corepack enable outside the repository"

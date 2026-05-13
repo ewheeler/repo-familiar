@@ -1,0 +1,51 @@
+---
+title: "Templates"
+---
+
+Templates are the primary product surface of `repo-familiar`. They describe which assets are vendored into a downstream repository and how selected options are reflected in generated files.
+
+## Current Template
+
+The first template is `basic`.
+
+It is intentionally small and focused on the core contract:
+
+- Agent instructions in `AGENTS.md`.
+- Runtime model defaults in `.agents/models.yml`.
+- Tool setup guidance in `.agents/tools.yml`.
+- Advisory profile guidance in `.agents/memory.yml`, `.agents/prompts.yml`, `.agents/safety.yml`, `.agents/privacy.yml`, `.agents/repomap.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, and `.agents/worktrees.yml`.
+- Vendored skills in `.agents/skills/`.
+- Generator provenance in `.repo-familiar/bootstrap.yml`.
+- Quarto documentation scaffold in `docs/`.
+- Safe local environment placeholders in `.env.example`.
+- Initial planning artifact in `plan.md`.
+- Project-level `README.md` and `.gitignore`.
+
+## Template Renderer
+
+The current renderer uses Python's standard library `string.Template`. The CLI now has a `questionary` prompt layer, but rendering remains intentionally simple while the generator contract is still changing.
+
+Banks should be introduced later when prompt or project templates outgrow `string.Template`. Cookiecutter remains a possible future option once optional asset rules require a broader project-generation framework.
+
+## Template Variables
+
+The `basic` template currently uses:
+
+- `project_name`
+- `project_slug`
+- `project_description`
+- `agent_harnesses_list`
+- `model_profiles_yaml`
+- `selected_model_profiles_list`
+- `tool_profiles_yaml`
+- `selected_tool_profiles_list`
+- advisory profile YAML/list variables for memory, prompts, safety, privacy, repomap, sandbox, secrets, design, and worktrees
+- `selected_skills_list`
+
+## Future Template Work
+
+- Split common assets from optional Quarto, model, advisory profile, skill, and harness assets.
+- Add harness-specific adapters only when selected.
+- Add richer skill vendoring from external sources once source provenance is normalized.
+- Add upgrade-aware merge behavior for generated assets.
+- Reuse asset selection rules for existing repository bootstrap, where files may already exist and conflicts need explicit handling.

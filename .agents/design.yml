@@ -1,0 +1,15 @@
+profiles:
+  design-impeccable:
+    tool: "impeccable"
+    purpose: "shared design vocabulary and anti-pattern checks for frontend or published docs work"
+    guidance:
+      - "Use design critique before polishing UI or documentation sites"
+      - "Avoid generic AI frontend defaults and overused visual patterns"
+      - "Keep project design guidance in repository docs such as DESIGN.md when adopted"
+  design-a11y:
+    tool: "axe-core, pa11y, Lighthouse, Playwright, or equivalent accessibility scanners"
+    purpose: "accessibility-first design checks for user-facing web outputs"
+    guidance:
+      - "Scan rendered pages or app routes for WCAG A/AA issues before design polish is considered complete"
+      - "Include keyboard navigation, focus order, labels, headings, landmarks, contrast, alt text, and form semantics in review"
+      - "Document known issues and suppressions explicitly instead of silently excluding broad selectors or rules"

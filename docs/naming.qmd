@@ -1,0 +1,67 @@
+---
+title: "Naming"
+---
+
+This note records the naming exploration that led to `repo-familiar`, with a bias toward ghost, spirit, guardian, or helper-spirit mythology.
+
+The product is a **Project Generator** and **Reference Source** for reusable **Agentic Engineering Defaults**. A good name should suggest portable guidance that follows a developer into each **Downstream Repository**, without implying a workstation dotfiles installer or a cloud service.
+
+## Naming Criteria
+
+- Suggests helper, guardian, place-spirit, or portable companion.
+- Works for a local-first developer tool and project generator.
+- Has a plausible CLI/package name.
+- Avoids obvious collisions with active AI, developer-tooling, package-registry, or CSS/framework projects.
+- Avoids culturally loaded or overused terms where possible.
+
+## Shortlist
+
+| Name | Mythic Meaning | Product Fit | Collision Risk | Notes |
+|---|---|---|---|---|
+| `Genius Loci` | Roman spirit of a place | Excellent for repo-specific context, docs, and agent behavior | Medium | Strong metaphor for each repository having a local spirit/context. Phrase is less package-friendly; `loci` alone is taken. |
+| `Repo Familiar` | Familiar spirit bound to a practitioner | Excellent literal fit | Low-medium | Clear and practical. Less mythic, but easiest to understand and lowest exact package collision in this scan. |
+| `Fylgja` | Norse follower/guardian spirit | Excellent for defaults that follow you between repos | High | Best mythological metaphor, but already a visible CSS library/ecosystem. |
+| `Lares` | Roman household guardian spirits | Good for protective project defaults | High | Nice guardian metaphor, but exact package/project collisions exist in analytics/ML and package registries. |
+| `Domovoi` | Slavic household spirit | Good for a repo-house guardian | Medium-high | Strong household-spirit metaphor, but harder to spell and already used by AWS/serverless tooling. |
+| `Familiar` | Helper spirit | Good but generic | High | Clear, but heavily used, including an AI memory/screen-watching project. |
+| `Egregore` | Shared thoughtform | Good for collective memory/conventions | Very high | Exact collision with AI/shared-memory projects; avoid for this product. |
+| `Djinn` / `Jinn` | Spirit with agency/power | Mixed | High | Familiar agent metaphor, but culturally loaded and already used by dev tools/AI-adjacent projects. |
+| `Daemon` | Guiding spirit and software background process | Mixed | Very high | Too overloaded in software; avoid. |
+
+## Collision Check
+
+Checked on 2026-05-11 using GitHub repository search, npm registry exact package endpoints, and PyPI exact package endpoints. This is not a trademark search; it is only an obvious developer-tooling collision scan.
+
+| Candidate | GitHub Signal | npm Exact Package | PyPI Exact Package | Assessment |
+|---|---|---|---|---|
+| `fylgja` | 31 repo-name matches; `fylgja/fylgja` is an active CSS library with `fylgja.dev` | Exists | Not found | Strong name, but exact ecosystem collision. |
+| `familiar` | 3,786 repo-name matches; `familiar-software/familiar` is an AI memory/screen-watching project | Exists; git helper CLI | Exists; D&D helper package | Avoid as a single-word product name. |
+| `lares` | 455 repo-name matches; visible R analytics/ML package | Exists | Exists; LLM validation/evaluation package | Collision-prone. |
+| `genius-loci` / `Genius Loci` | 22 repo-name matches; visible Dynamo/Revit package | `genius-loci` not found; `loci` exists | `genius-loci` not found; `loci` exists | Best mythic metaphor if the public name can be `Genius Loci`; avoid `loci` as the package name. |
+| `daemon` | 12,207 repo-name matches; many major software projects | Exists | Exists | Too overloaded. |
+| `egregore` | 51 repo-name matches; `egregore-labs/egregore` is a shared intelligence layer | Exists | Exists; AI agent framework | Avoid; too close to this product space. |
+| `domovoi` | 45 repo-name matches; `cloud-utils/domovoi` is an AWS Lambda event handler manager | Exists | Exists | Interesting, but existing serverless/tooling use weakens it. |
+| `djinn` | 837 repo-name matches; ML, Haskell, and binding-generation tools appear | Exists | Exists; Tornado wrapper | Collision-prone. |
+| `jinn` | 2,370 repo-name matches; includes an AI gateway daemon | Exists; Node scaffolding tool | Exists | Avoid; exact adjacent collision. |
+| `repo-familiar` | No exact npm/PyPI package; GitHub phrase search found only weak unrelated matches | Not found | Not found | Safest practical name from this batch, but less mythic. |
+
+## Recommendations
+
+1. **Use `Genius Loci` if the product identity should center on repository-specific spirit/context.** It maps cleanly to the domain: each repository has its own place-spirit made of docs, ADRs, skills, profiles, and bootstrap metadata. Use a less-colliding package/CLI handle such as `genius-loci-tools`, `repo-loci`, or keep the current package until a final naming pass.
+2. **Use `Repo Familiar` if clarity and low collision matter more than mystique.** It says exactly what the tool is: a familiar that follows repo work and carries defaults.
+3. **Use `Fylgja` only if the Norse follower-spirit metaphor is worth accepting the CSS ecosystem collision.** It is the most elegant single-word mythic name, but `fylgja` is already an active developer-facing brand.
+4. **Avoid `Egregore`, `Daemon`, `Familiar`, `Djinn`, and `Jinn` as standalone product names.** They are either too overloaded, culturally loaded, or already used by AI/developer-tooling projects.
+
+## Possible Direction
+
+Public/product name: **Genius Loci**
+
+Working tagline: "A repository spirit for agentic engineering defaults."
+
+CLI/package candidates to check next:
+
+- `repo-loci`
+- `loci-kit`
+- `genius-loci-tools`
+- `repo-familiar`
+- `familiaris`

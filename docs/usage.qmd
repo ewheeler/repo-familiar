@@ -1,0 +1,161 @@
+---
+title: "Usage"
+---
+
+## Intended New Repository Flow
+
+1. Start a new repository from a `repo-familiar` template.
+2. Select project type, agent harnesses, model/provider preferences, advisory profiles, skills, and documentation mode with flags or `questionary` prompts.
+3. Generate `.agents/`, `AGENTS.md`, starter skills, and a project plan.
+4. Generate a Quarto documentation scaffold for plans, decisions, research, and user stories.
+5. Run a docs-review skill to challenge the generated plan before implementation begins.
+
+Generated assets should be copied into the downstream repository by default. The generator should also write `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version so future upgrade tooling can reason about what was created.
+
+## Current Generator CLI
+
+Run the minimal generator from this checkout:
+
+```bash
+uv run python -m repo_familiar generate \
+  --name "Demo Project" \
+  --description "A generated demo." \
+  --output /path/to/demo-project \
+  --agent-harness opencode \
+  --model-profile default-coding \
+  --memory-profile memory-local \
+  --skill grill-with-docs
+```
+
+The generator writes a basic downstream repository with vendored assets, advisory profile files, selected skills, Quarto docs, and bootstrap metadata.
+
+Use `--interactive` to answer prompts instead of passing every flag:
+
+```bash
+uv sync
+uv run python -m repo_familiar generate --interactive
+```
+
+`questionary` is imported only for interactive commands. `uv sync` installs it from project dependencies.
+
+Use `--dry-run` to preview the generated assets before writing them. The generator refuses to write into a non-empty directory unless `--force` is passed.
+
+To include multiple harnesses or model profiles, repeat the flags:
+
+```bash
+uv run python -m repo_familiar generate \
+  --name "Demo Project" \
+  --output /path/to/demo-project \
+  --agent-harness opencode \
+  --agent-harness hermes \
+  --model-profile default-coding \
+  --model-profile budget-review \
+  --prompt-profile prompt-migration-gpt55 \
+  --repomap-profile hamilton-dag
+```
+
+Minimum metadata:
+
+```yaml
+schema_version: 1
+bootstrap_mode: new_repository
+reference_source:
+  type: git
+  url: https://github.com/<owner>/repo-familiar
+  ref: <tag-or-commit>
+generated_at: <iso-8601 timestamp>
+generator:
+  name: repo-familiar
+  version: <version-or-commit>
+selected_options:
+  template: <template-name>
+  agent_harnesses: []
+  model_profiles: []
+  tool_profiles: []
+  memory_profiles: []
+  prompt_profiles: []
+  safety_profiles: []
+  privacy_profiles: []
+  repomap_profiles: []
+  sandbox_profiles: []
+  secrets_profiles: []
+  design_profiles: []
+  worktree_profiles: []
+  skills: []
+  docs: quarto
+generated_assets:
+  - path: AGENTS.md
+    kind: agent_instructions
+    source: templates/basic/AGENTS.md.tmpl
+    content_sha256: <sha256>
+  - path: .agents/models.yml
+    kind: template_config
+    source: templates/basic/.agents/models.yml.tmpl
+    content_sha256: <sha256>
+  - path: docs/_quarto.yml
+    kind: documentation
+    source: templates/basic/docs/_quarto.yml.tmpl
+    content_sha256: <sha256>
+```
+
+Allowed `kind` values for the first schema are `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
+
+## Model Profiles
+
+Generated projects should use `.agents/models.yml` for model/provider profiles. Bootstrap metadata records selected profile names only:
+
+```yaml
+selected_options:
+  model_profiles:
+    - default-coding
+    - budget-review
+```
+
+Do not store provider secrets in `.agents/models.yml` or `.repo-familiar/bootstrap.yml`.
+
+Example model profile file:
+
+```yaml
+profiles:
+  default-coding:
+    provider: openai
+    model: gpt-5.5
+    use: general coding and repository maintenance
+    harnesses:
+      - opencode
+    notes:
+      latency: medium
+      cost: high
+      strengths:
+        - codebase editing
+        - documentation
+```
+
+Profile names should be treated as stable handles for generation choices and future upgrades.
+
+## Existing Repository Setup
+
+Before changing an existing repository, ask for advice and audit the proposed changes:
+
+```bash
+uv run python -m repo_familiar advise --path /path/to/repo
+uv run python -m repo_familiar audit --path /path/to/repo
+```
+
+Use targeted add commands when you only want one class of defaults:
+
+```bash
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
+```
+
+## Project Plan Inputs
+
+A generated plan should capture:
+
+- Project goals and non-goals.
+- Technical preferences and explicit constraints.
+- Agent harnesses and `.agents/models.yml` model-provider assumptions.
+- Documentation expectations.
+- Initial milestones and review checkpoints.

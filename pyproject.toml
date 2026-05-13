@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repo-familiar"
+version = "0.1.0"
+description = "Project generator for agentic engineering defaults."
+requires-python = ">=3.11"
+dependencies = ["questionary>=2.0"]
+
+[project.scripts]
+repo-familiar = "repo_familiar.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+repo_familiar = [
+  "templates/basic/.gitignore.tmpl",
+  "templates/basic/*",
+  "templates/basic/.agents/*",
+  "templates/basic/docs/*",
+  "templates/skills/a11y-web-scan/*",
+  "templates/skills/get-api-docs/*",
+  "templates/skills/grill-with-docs/*",
+  "templates/skills/playwright-cli/*",
+  "templates/skills/privacy-review/*",
+  "templates/skills/prompt-eval-design/*",
+  "templates/skills/prompt-migration/*",
+  "templates/skills/prompt-output-safety/*",
+  "templates/skills/rodney-browser/*",
+  "templates/skills/upstream-improvement/*",
+]

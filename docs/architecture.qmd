@@ -1,0 +1,173 @@
+---
+title: "Architecture"
+---
+
+## Layers
+
+`repo-familiar` is organized around four layers:
+
+- Skills: reusable capabilities that can be installed into project-local agent directories.
+- Templates: the primary product surface for generating repository layout, docs, plans, and agent instructions.
+- Documentation: a Quarto site that records usage, architecture, decisions, research, and stories.
+- Examples: complete reference projects that show generated outputs in context.
+
+## Generator Skeleton
+
+The first implementation is a Python CLI under `src/repo_familiar`. It uses package templates from `src/repo_familiar/templates/basic`, renders them with standard library `string.Template`, and adds optional `questionary` prompts without requiring Cookiecutter or Banks yet.
+
+Repository advice is split between signal detection in `generator.py` and Hamilton-compatible decision nodes in `advice_dag.py`. Command formatting and other non-DAG helpers stay outside the node module so future Hamilton graph fingerprints are not polluted by runtime helper functions.
+
+The generated asset set currently includes:
+
+- `AGENTS.md`
+- `.agents/models.yml`
+- `.agents/tools.yml`
+- `.agents/memory.yml`
+- `.agents/prompts.yml`
+- `.agents/safety.yml`
+- `.agents/privacy.yml`
+- `.agents/repomap.yml`
+- `.agents/sandbox.yml`
+- `.agents/secrets.yml`
+- `.env.example`
+- `.agents/design.yml`
+- `.agents/worktrees.yml`
+- `.agents/skills/grill-with-docs/SKILL.md`
+- other selected skills under `.agents/skills/`
+- `docs/_quarto.yml`
+- `docs/index.qmd`
+- `docs/usage.qmd`
+- `docs/architecture.qmd`
+- `plan.md`
+- `.repo-familiar/bootstrap.yml`
+
+This keeps the first generator easy to smoke test while preserving the option to adopt Banks or Cookiecutter once the template contract proves it needs richer rendering or generation behavior.
+
+## Generated Project Assets
+
+The repository should optimize for generating downstream project assets, not managing general workstation state.
+
+`repo-familiar` supports two bootstrap modes:
+
+- New repository generation: create a downstream repository from selected templates.
+- Existing repository bootstrap: audit and add selected defaults to a repository that already has user-owned files.
+
+Existing repository bootstrap is additive and non-destructive by default. It prefers dry-run plans, explicit conflict reporting, and selected asset application over broad rewrites.
+
+The `basic` template can generate:
+
+- `.agents/` for shared instructions and skills.
+- `AGENTS.md` for repository-level working rules.
+- `docs/` for the project Quarto site.
+- `plan.md` or an equivalent planning document.
+- `.env.example` for safe local environment placeholders.
+- Optional harness adapters for tools with specialized conventions.
+- `.repo-familiar/bootstrap.yml` metadata recording the `repo-familiar` source, version, selected options, and generated asset set.
+
+Generated assets should be vendored into the downstream repository by default. Future update behavior should be explicit, likely through an upgrade command, rather than live synchronization back to this reference source.
+
+The `.repo-familiar/` namespace is reserved for generator-owned metadata. It is separate from `.agents/`, which should remain focused on agent runtime instructions and skills.
+
+The first `.repo-familiar/bootstrap.yml` schema should include only provenance and generation choices:
+
+```yaml
+schema_version: 1
+bootstrap_mode: new_repository
+reference_source:
+  type: git
+  url: https://github.com/<owner>/repo-familiar
+  ref: <tag-or-commit>
+generated_at: <iso-8601 timestamp>
+generator:
+  name: repo-familiar
+  version: <version-or-commit>
+selected_options:
+  template: <template-name>
+  agent_harnesses: []
+  model_profiles: []
+  tool_profiles: []
+  memory_profiles: []
+  prompt_profiles: []
+  safety_profiles: []
+  privacy_profiles: []
+  repomap_profiles: []
+  sandbox_profiles: []
+  secrets_profiles: []
+  design_profiles: []
+  worktree_profiles: []
+  skills: []
+  docs: quarto
+generated_assets:
+  - path: AGENTS.md
+    kind: agent_instructions
+    source: templates/basic/AGENTS.md.tmpl
+    content_sha256: <sha256>
+  - path: .agents/models.yml
+    kind: template_config
+    source: templates/basic/.agents/models.yml.tmpl
+    content_sha256: <sha256>
+  - path: .agents/tools.yml
+    kind: template_config
+    source: templates/basic/.agents/tools.yml.tmpl
+    content_sha256: <sha256>
+  - path: .agents/skills/grill-with-docs/SKILL.md
+    kind: skill
+    source: templates/skills/grill-with-docs/SKILL.md.tmpl
+  - path: docs/_quarto.yml
+    kind: documentation
+    source: templates/basic/docs/_quarto.yml.tmpl
+    content_sha256: <sha256>
+```
+
+`generated_assets` should use structured records immediately. Non-metadata assets include `content_sha256` so generated repositories can be checked for drift. `.repo-familiar/bootstrap.yml` is not self-hashed.
+
+The initial closed `kind` vocabulary is:
+
+- `agent_instructions`
+- `skill`
+- `documentation`
+- `template_config`
+- `project_plan`
+- `metadata`
+
+## Model Profiles
+
+Generated repositories should store model/provider defaults in `.agents/models.yml`. These profiles are agent-facing runtime configuration and should include only non-secret information such as provider names, model IDs, intended use cases, cost or latency notes, and harness compatibility.
+
+`.repo-familiar/bootstrap.yml` should record selected profile names under `selected_options.model_profiles`, not duplicate full profile definitions.
+
+Initial schema:
+
+```yaml
+profiles:
+  default-coding:
+    provider: openai
+    model: gpt-5.5
+    use: general coding and repository maintenance
+    harnesses:
+      - opencode
+    notes:
+      latency: medium
+      cost: high
+      strengths:
+        - codebase editing
+        - documentation
+```
+
+Profile names are stable handles. Provider metadata should stay pragmatic until real templates need stronger normalization.
+
+## Tool Profiles And Skills
+
+Generated repositories should store non-secret tool setup guidance in `.agents/tools.yml`. Selected tool profile names are recorded in `.repo-familiar/bootstrap.yml` under `selected_options.tool_profiles`.
+
+Selected skills are vendored under `.agents/skills/` and recorded as `skill` assets in bootstrap metadata.
+
+Memory, prompt, safety, privacy, repo-map, sandbox, secrets, design, and worktree profiles are advisory profile families. They are written to `.agents/*.yml` files and recorded by name in bootstrap metadata.
+
+## Python Defaults
+
+Python-oriented templates should default to `uv`, Hamilton, Banks, Hydra/OmegaConf, Structlog, fsspec/universal-pathlib, Polars, and Pydantic when those choices fit the project.
+
+Banks should be introduced after prompt or project templates outgrow `string.Template`, not before the template contract proves that it needs richer rendering.
+
+Hamilton DAG images should be treated as architecture artifacts, not just implementation byproducts.

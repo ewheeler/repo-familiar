@@ -1,0 +1,104 @@
+---
+title: "Pre-Bootstrap Checklist"
+---
+
+Before bootstrapping real existing repositories, use this sequence.
+
+## 1. Advise
+
+```bash
+uv run python -m repo_familiar advise --path /path/to/repo
+```
+
+Use the recommendation to choose a starting stage and profile set. Default to `research-heavy` when terminology, docs, or project intent are thin.
+
+## 2. Audit
+
+```bash
+uv run python -m repo_familiar audit --path /path/to/repo
+```
+
+Inspect conflicts before writing anything. If the repository already has important docs or agent files, prefer targeted add commands over full bootstrap.
+
+## 3. Start With Memory And Grill-With-Docs
+
+For most existing repositories, first add memory guidance, the plan-review skill, and the API docs lookup skill:
+
+```bash
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
+```
+
+## 4. Add Docs Or Models Next
+
+Add docs if the project lacks durable project memory:
+
+```bash
+uv run python -m repo_familiar add-docs --path /path/to/repo --apply
+```
+
+Add model profiles if agents need explicit model/provider defaults:
+
+```bash
+uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding --apply
+```
+
+## 5. Add Safety And Parallelism When Needed
+
+For prompt DAGs, model migration, or prompt-heavy repos, add prompt and repo-map guidance before rewriting prompts:
+
+```bash
+uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile prompt-migration-gpt55 --apply
+uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile prompt-evals-dag --apply
+uv run python -m repo_familiar add-repomap --path /path/to/repo --repomap-profile hamilton-dag --apply
+```
+
+For user-facing AI, policy, education, children, or privacy-sensitive repos, add safety and privacy guidance:
+
+```bash
+uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety --apply
+uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review --apply
+```
+
+Use sandboxing before running unknown scripts, generated code, package installs, or risky test suites:
+
+```bash
+uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
+```
+
+Use worktree guidance for parallel prototypes or multiple agents:
+
+```bash
+uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-profile parallel-worktrees --apply
+```
+
+## 6. Check Drift
+
+After bootstrap, use:
+
+```bash
+uv run python -m repo_familiar check --path /path/to/repo
+```
+
+Use `check` before later upgrades or stage transitions.
+
+## 7. Classify Upstream Candidates
+
+After local changes to generated assets, use:
+
+```bash
+uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
+```
+
+Pair this with the `upstream-improvement` skill before copying any downstream change back into the Reference Source.
+
+## 8. Preview Upgrade Readiness
+
+Before any future write-capable upgrade, use the read-only preview:
+
+```bash
+uv run python -m repo_familiar upgrade --path /path/to/repo
+```
+
+The current command does not write files. It reports user-review items, blockers, and unavailable update candidates.

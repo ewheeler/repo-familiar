@@ -1,0 +1,8 @@
+profiles:
+  sandbox-light:
+    tool: "zerobox"
+    purpose: "run generated code, tests, installs, and unknown scripts with constrained writes and network"
+    guidance:
+      - "Default to no network for generated or unknown code"
+      - "Allow writes only to explicit build, temp, or output directories"
+      - "Use snapshots or restore behavior for risky package or codegen commands"

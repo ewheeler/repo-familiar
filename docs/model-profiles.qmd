@@ -1,0 +1,45 @@
+---
+title: "Model Profiles"
+---
+
+Model profiles are non-secret model/provider defaults written into `.agents/models.yml` in generated repositories.
+
+Profile names are stable handles. `.repo-familiar/bootstrap.yml` records selected profile names under `selected_options.model_profiles`, while `.agents/models.yml` stores the runtime details agents should read.
+
+## Current Profiles
+
+`default-coding`:
+
+```yaml
+provider: openai
+model: gpt-5.5
+use: general coding and repository maintenance
+harnesses:
+  - opencode
+notes:
+  latency: medium
+  cost: high
+  strengths:
+    - codebase editing
+    - documentation
+```
+
+`budget-review`:
+
+```yaml
+provider: anthropic
+model: claude-sonnet-4-5
+use: cheaper review and planning passes
+harnesses:
+  - opencode
+notes:
+  latency: medium
+  cost: medium
+```
+
+## Rules
+
+- Keep provider secrets out of `.agents/models.yml`.
+- Keep profile names stable once generated repositories may reference them.
+- Prefer pragmatic fields over fully normalized provider metadata until templates require more structure.
+- Record selected profile names in bootstrap metadata for provenance and future upgrades.

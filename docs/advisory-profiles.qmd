@@ -1,0 +1,99 @@
+---
+title: "Advisory Profiles"
+---
+
+Advisory profiles describe optional repository capabilities without installing or configuring machine-specific tools. They are non-secret, project-local guidance files under `.agents/`.
+
+## Profile Families
+
+| Family | File | Purpose |
+|---|---|---|
+| Memory | `.agents/memory.yml` | Cross-session decisions, lessons, and repeated error patterns. |
+| Prompt | `.agents/prompts.yml` | Prompt migration and eval guidance for prompt DAGs and model-version shifts. |
+| Safety | `.agents/safety.yml` | Prompt/output safety review guidance for user-facing or policy-sensitive AI behavior. |
+| Privacy | `.agents/privacy.yml` | Data flow, PII, retention, logging, and memory exposure review guidance. |
+| Repo Map | `.agents/repomap.yml` | Codebase graph guidance, with Hamilton DAG preferred where applicable. |
+| Sandbox | `.agents/sandbox.yml` | Safe execution guidance for generated code, unknown scripts, package installs, and autonomous sessions. |
+| Secrets | `.agents/secrets.yml` and `.env.example` | Local environment loading and secret-reference guidance without storing real secrets. |
+| Design | `.agents/design.yml` | Design vocabulary, critique, anti-pattern checks, and visual quality guidance. |
+| Worktree | `.agents/worktrees.yml` | Parallel agent/prototype workflows with isolated worktrees and services. |
+
+Selected profile names are recorded in `.repo-familiar/bootstrap.yml` under `selected_options`.
+
+## Current Profiles
+
+Memory:
+
+- `memory-local`: local-first memory using tools such as `omega-memory` or `cq`.
+
+Prompt:
+
+- `prompt-migration-gpt55`: migrate older prompt DAGs toward GPT-5.5 guidance with fixtures and minimal diffs.
+- `prompt-evals-dag`: evaluate prompt DAG behavior at meaningful node boundaries.
+
+Safety:
+
+- `prompt-output-safety`: review prompts and outputs for unsafe, inappropriate, or policy-sensitive behavior.
+
+Privacy:
+
+- `data-privacy-review`: classify data flows and review prompts, logs, memory, analytics, and exports for privacy risks.
+
+Repo Map:
+
+- `hamilton-dag`: use Hamilton DAG visualizations and fingerprints for prompt/data pipelines and codebase graphing.
+
+Sandbox:
+
+- `sandbox-light`: lightweight command sandboxing using tools such as `zerobox`.
+- `sandbox-agent-runtime`: policy-governed autonomous agent runtime using tools such as OpenShell.
+
+Secrets:
+
+- `dotenv-local`: committed `.env.example`, ignored `.env`, and explicit dotenv loading conventions.
+- `kvenv-azure-keyvault`: `.env` values as `kv://` Azure Key Vault references and `kvenv -- <command>` execution.
+- `onepassword-op`: 1Password CLI `op run` or `op inject` for process-time secret injection.
+
+Design:
+
+- `design-impeccable`: shared design vocabulary and anti-pattern checks using Impeccable-style guidance.
+- `design-a11y`: accessibility-first design checks for user-facing web outputs.
+
+Worktree:
+
+- `parallel-worktrees`: parallel prototype or agent work using git worktrees and tools such as Coasts.
+
+## Commands
+
+```bash
+uv run python -m repo_familiar list-memory-profiles
+uv run python -m repo_familiar list-prompt-profiles
+uv run python -m repo_familiar list-safety-profiles
+uv run python -m repo_familiar list-privacy-profiles
+uv run python -m repo_familiar list-repomap-profiles
+uv run python -m repo_familiar list-sandbox-profiles
+uv run python -m repo_familiar list-secrets-profiles
+uv run python -m repo_familiar list-design-profiles
+uv run python -m repo_familiar list-worktree-profiles
+```
+
+Targeted existing repository adoption:
+
+```bash
+uv run python -m repo_familiar add-memory --path /repo --memory-profile memory-local --apply
+uv run python -m repo_familiar add-prompts --path /repo --prompt-profile prompt-migration-gpt55 --apply
+uv run python -m repo_familiar add-safety --path /repo --safety-profile prompt-output-safety --apply
+uv run python -m repo_familiar add-privacy --path /repo --privacy-profile data-privacy-review --apply
+uv run python -m repo_familiar add-repomap --path /repo --repomap-profile hamilton-dag --apply
+uv run python -m repo_familiar add-sandbox --path /repo --sandbox-profile sandbox-light --apply
+uv run python -m repo_familiar add-secrets --path /repo --secrets-profile kvenv-azure-keyvault --apply
+uv run python -m repo_familiar add-design --path /repo --design-profile design-impeccable --apply
+uv run python -m repo_familiar add-worktree --path /repo --worktree-profile parallel-worktrees --apply
+```
+
+## Rules
+
+- Advisory profiles do not install tools.
+- Advisory profiles do not store secrets.
+- Machine-specific setup belongs outside generated repository files.
+- Bootstrap metadata records selected profile names, not credentials or local machine state.
