@@ -48,6 +48,16 @@ class ExampleSnapshotTests(unittest.TestCase):
                     relative_path,
                 )
 
+    def test_basic_example_agent_instructions_include_engineering_defaults(self) -> None:
+        agents = (EXAMPLE_ROOT / "AGENTS.md").read_text()
+
+        self.assertIn("## Engineering Defaults", agents)
+        self.assertIn("Use red/green TDD", agents)
+        self.assertIn("real browser flow", agents)
+        self.assertIn("screen readers", agents)
+        self.assertIn("Universal Design for Learning", agents)
+        self.assertIn("right-to-left language support", agents)
+
 
 if __name__ == "__main__":
     unittest.main()

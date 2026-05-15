@@ -18,6 +18,7 @@ from .generator import (
     list_memory_profiles,
     list_model_profiles,
     list_privacy_profiles,
+    list_public_interest_profiles,
     list_prompt_profiles,
     list_repomap_profiles,
     list_safety_profiles,
@@ -62,6 +63,7 @@ SELECTION_ATTRS = (
     "secrets_profiles",
     "design_profiles",
     "worktree_profiles",
+    "public_interest_profiles",
     "skills",
 )
 
@@ -80,6 +82,7 @@ TARGETED_ADD_COMMANDS = {
     "add-secrets": TargetedAddCommand("secrets_profiles", "add-secrets requires at least one --secrets-profile", ("secrets_profiles",), ("secrets", "metadata")),
     "add-design": TargetedAddCommand("design_profiles", "add-design requires at least one --design-profile", ("design_profiles",), ("design", "metadata")),
     "add-worktree": TargetedAddCommand("worktree_profiles", "add-worktree requires at least one --worktree-profile", ("worktree_profiles",), ("worktrees", "metadata")),
+    "add-public-interest": TargetedAddCommand("public_interest_profiles", "add-public-interest requires at least one --public-interest-profile", ("public_interest_profiles",), ("public-interest", "metadata")),
 }
 
 
@@ -102,11 +105,27 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("list-secrets-profiles", help="list available secrets profiles")
     subparsers.add_parser("list-design-profiles", help="list available design profiles")
     subparsers.add_parser("list-worktree-profiles", help="list available worktree profiles")
+    subparsers.add_parser("list-public-interest-profiles", help="list available public interest profiles")
     subparsers.add_parser("list-skills", help="list available skills")
 
     advise = subparsers.add_parser("advise", help="recommend bootstrap stage, profiles, and memory use for a repository")
     advise.add_argument("--path", required=True, type=Path, help="existing repository path")
+    advise.add_argument(
+        "--intent",
+        action="append",
+        dest="intended_work",
+        choices=("significant-refactor", "prompt-migration", "production-maintenance", "security-review", "docs-setup"),
+        default=None,
+        help="intended near-term work; may be passed multiple times",
+    )
     advise.add_argument("--format", choices=("text", "json"), default="text")
+
+    resolve = subparsers.add_parser("resolve-conflicts", help="preview safe conflict-resolution suggestions for existing repository bootstrap")
+    resolve.add_argument("--path", required=True, type=Path, help="existing repository path")
+    resolve.add_argument("--name", default=None, help="project display name; defaults to directory name")
+    _add_selection_arguments(resolve)
+    _add_asset_group_argument(resolve)
+    resolve.add_argument("--format", choices=("text", "json"), default="text")
 
     check = subparsers.add_parser("check", help="check generated assets against bootstrap metadata")
     check.add_argument("--path", required=True, type=Path, help="generated or bootstrapped repository path")
@@ -253,6 +272,14 @@ def build_parser() -> argparse.ArgumentParser:
     add_worktree.add_argument("--force", action="store_true", help="overwrite conflicting worktree assets")
     add_worktree.add_argument("--format", choices=("text", "json"), default="text")
 
+    add_public_interest = subparsers.add_parser("add-public-interest", help="add selected public interest profiles to an existing repository")
+    add_public_interest.add_argument("--path", required=True, type=Path, help="existing repository path")
+    add_public_interest.add_argument("--name", default=None, help="project display name; defaults to directory name")
+    _add_selection_arguments(add_public_interest)
+    add_public_interest.add_argument("--apply", action="store_true", help="write missing public interest profile assets")
+    add_public_interest.add_argument("--force", action="store_true", help="overwrite conflicting public interest assets")
+    add_public_interest.add_argument("--format", choices=("text", "json"), default="text")
+
     return parser
 
 
@@ -321,6 +348,13 @@ def _add_selection_arguments(parser: argparse.ArgumentParser) -> None:
         help="worktree profile to include; may be passed multiple times",
     )
     parser.add_argument(
+        "--public-interest-profile",
+        action="append",
+        dest="public_interest_profiles",
+        default=None,
+        help="public interest profile to include; may be passed multiple times",
+    )
+    parser.add_argument(
         "--skill",
         action="append",
         dest="skills",
@@ -342,7 +376,7 @@ def _add_asset_group_argument(parser: argparse.ArgumentParser) -> None:
         "--asset-group",
         action="append",
         dest="asset_groups",
-        choices=("all", "agent", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "prompts", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"),
+        choices=("all", "agent", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "public-interest", "prompts", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"),
         default=None,
         help="asset group to audit/apply; may be passed multiple times",
     )
@@ -412,6 +446,11 @@ def main(argv: list[str] | None = None) -> int:
             print(profile)
         return 0
 
+    if args.command == "list-public-interest-profiles":
+        for profile in list_public_interest_profiles():
+            print(profile)
+        return 0
+
     if args.command == "list-skills":
         for skill in list_skills():
             print(skill)
@@ -428,6 +467,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "advise":
         return _advise(args)
+
+    if args.command == "resolve-conflicts":
+        return _resolve_conflicts(args)
 
     if args.command == "audit":
         return _audit(args)
@@ -470,6 +512,7 @@ def main(argv: list[str] | None = None) -> int:
             secrets_profiles=_tuple_or_default(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault")),
             design_profiles=_tuple_or_default(args.design_profiles, ()),
             worktree_profiles=_tuple_or_default(args.worktree_profiles, ()),
+            public_interest_profiles=_tuple_or_default(args.public_interest_profiles, ()),
             skills=_tuple_or_default(args.skills, ("grill-with-docs",)),
             reference_type=args.reference_type,
             reference_url=args.reference_url,
@@ -507,11 +550,30 @@ def _audit(args: argparse.Namespace) -> int:
 
 def _advise(args: argparse.Namespace) -> int:
     try:
-        report = advise_existing_repository(args.path)
+        report = advise_existing_repository(args.path, _tuple_or_default(getattr(args, "intended_work", None), ()))
     except (NotADirectoryError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     _print_advice_or_json(report, args.format)
+    return 0
+
+
+def _resolve_conflicts(args: argparse.Namespace) -> int:
+    try:
+        report = audit_existing_repository(_existing_options(args))
+        suggestions = _conflict_suggestions(args.path, report.conflicts, _planned_assets_by_path(_existing_options(args)))
+    except (FileExistsError, NotADirectoryError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    if args.format == "json":
+        print(json.dumps({"path": str(args.path), "suggestions": suggestions}, indent=2))
+        return 0
+    print(f"Conflict resolution preview: {args.path}")
+    print("No files were changed.")
+    for suggestion in suggestions:
+        print(f"- {suggestion['path']}: {suggestion['strategy']} ({suggestion['recommendation']})")
+        for detail in suggestion.get("details", []):
+            print(f"  - {detail}")
     return 0
 
 
@@ -565,6 +627,7 @@ def _current_reference_assets(path: Path) -> dict[str, object]:
         secrets_profiles=metadata.selected_options.get("secrets_profiles", ("dotenv-local", "kvenv-azure-keyvault")),
         design_profiles=metadata.selected_options.get("design_profiles", ()),
         worktree_profiles=metadata.selected_options.get("worktree_profiles", ()),
+        public_interest_profiles=metadata.selected_options.get("public_interest_profiles", ()),
         skills=metadata.selected_options.get("skills", ("grill-with-docs",)),
         reference_type=metadata.reference_type,
         reference_url=metadata.reference_url,
@@ -632,6 +695,7 @@ def _existing_options(args: argparse.Namespace) -> ExistingBootstrapOptions:
         secrets_profiles=_tuple_or_default(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault")),
         design_profiles=_tuple_or_default(args.design_profiles, ()),
         worktree_profiles=_tuple_or_default(args.worktree_profiles, ()),
+        public_interest_profiles=_tuple_or_default(args.public_interest_profiles, ()),
         skills=_tuple_or_default(args.skills, ("grill-with-docs",)),
         reference_type=args.reference_type,
         reference_url=args.reference_url,
@@ -644,6 +708,12 @@ def _existing_options(args: argparse.Namespace) -> ExistingBootstrapOptions:
 
 def _print_audit_report(report) -> None:
     print(f"Audit: {report.path}")
+    print(f"Comparison basis: {report.comparison_basis}")
+    print(f"Asset groups: {', '.join(report.asset_groups)}")
+    print("Selected options:")
+    for key, value in report.selected_options.items():
+        rendered = ", ".join(value) if isinstance(value, tuple) else value
+        print(f"- {key}: {rendered or '(none)'}")
     print(
         "Summary: "
         f"{len(report.missing)} missing, "
@@ -678,6 +748,12 @@ def _print_report_or_json(report, output_format: str, *, dry_run: bool = False) 
 def _report_to_dict(report) -> dict:
     return {
         "path": str(report.path),
+        "comparison_basis": report.comparison_basis,
+        "asset_groups": list(report.asset_groups),
+        "selected_options": {
+            key: list(value) if isinstance(value, tuple) else value
+            for key, value in report.selected_options.items()
+        },
         "summary": {
             "missing": len(report.missing),
             "present": len(report.present),
@@ -846,6 +922,8 @@ def _print_advice_or_json(report, output_format: str) -> None:
         print(json.dumps(_advice_to_dict(report), indent=2))
         return
     print(f"Advice: {report.path}")
+    if report.intended_work:
+        print(f"Intended work: {', '.join(report.intended_work)}")
     print(f"Recommended stage: {report.recommended_stage}")
     print("Recommended asset groups:")
     for group in report.recommended_asset_groups:
@@ -862,6 +940,7 @@ def _print_advice_or_json(report, output_format: str) -> None:
     _print_named_values("secrets", report.recommended_secrets_profiles)
     _print_named_values("design", report.recommended_design_profiles)
     _print_named_values("worktree", report.recommended_worktree_profiles)
+    _print_named_values("public_interest", report.recommended_public_interest_profiles)
     _print_named_values("skills", report.recommended_skills)
     print("Rationale:")
     for item in report.rationale:
@@ -882,6 +961,7 @@ def _print_named_values(label: str, values: tuple[str, ...]) -> None:
 def _advice_to_dict(report) -> dict:
     return {
         "path": str(report.path),
+        "intended_work": list(report.intended_work),
         "signals": report.signals.__dict__,
         "recommended_stage": report.recommended_stage,
         "recommended_asset_groups": list(report.recommended_asset_groups),
@@ -897,12 +977,77 @@ def _advice_to_dict(report) -> dict:
             "secrets_profiles": list(report.recommended_secrets_profiles),
             "design_profiles": list(report.recommended_design_profiles),
             "worktree_profiles": list(report.recommended_worktree_profiles),
+            "public_interest_profiles": list(report.recommended_public_interest_profiles),
             "skills": list(report.recommended_skills),
         },
         "rationale": list(report.rationale),
         "memory_guidance": list(report.memory_guidance),
         "next_commands": list(report.next_commands),
     }
+
+
+def _planned_assets_by_path(options: ExistingBootstrapOptions) -> dict[str, object]:
+    generation_options = GenerationOptions(
+        name=options.name or options.path.name,
+        description=options.description,
+        output_dir=options.path,
+        template=options.template,
+        docs=options.docs,
+        agent_harnesses=options.agent_harnesses,
+        model_profiles=options.model_profiles,
+        tool_profiles=options.tool_profiles,
+        memory_profiles=options.memory_profiles,
+        prompt_profiles=options.prompt_profiles,
+        safety_profiles=options.safety_profiles,
+        privacy_profiles=options.privacy_profiles,
+        repomap_profiles=options.repomap_profiles,
+        sandbox_profiles=options.sandbox_profiles,
+        secrets_profiles=options.secrets_profiles,
+        design_profiles=options.design_profiles,
+        worktree_profiles=options.worktree_profiles,
+        public_interest_profiles=options.public_interest_profiles,
+        skills=options.skills,
+        reference_type=options.reference_type,
+        reference_url=options.reference_url,
+        reference_ref=options.reference_ref,
+        generated_at=options.generated_at,
+        bootstrap_mode="existing_repository",
+        dry_run=True,
+    )
+    return {asset.path: asset for asset in plan_project(generation_options)}
+
+
+def _conflict_suggestions(path: Path, conflicts, planned_by_path: dict[str, object]) -> list[dict]:
+    suggestions = []
+    for conflict in conflicts:
+        planned = planned_by_path.get(conflict.path)
+        existing_path = path / conflict.path
+        if not planned or not existing_path.is_file():
+            suggestions.append({"path": conflict.path, "strategy": "manual-review", "recommendation": "review manually", "details": []})
+            continue
+        existing = existing_path.read_text()
+        generated = planned.content
+        if conflict.path == ".gitignore":
+            additions = _missing_gitignore_lines(existing, generated)
+            suggestions.append({"path": conflict.path, "strategy": "line-union", "recommendation": "append missing ignore patterns", "details": additions})
+        elif conflict.path == "AGENTS.md":
+            additions = _missing_markdown_headings(existing, generated)
+            suggestions.append({"path": conflict.path, "strategy": "markdown-heading-merge", "recommendation": "append missing generated sections", "details": additions})
+        elif conflict.path in ("README.md", "plan.md") or conflict.path.startswith(".agents/"):
+            suggestions.append({"path": conflict.path, "strategy": "preview-only", "recommendation": "preserve existing file and review generated version manually", "details": []})
+        else:
+            suggestions.append({"path": conflict.path, "strategy": "manual-review", "recommendation": "review manually", "details": []})
+    return suggestions
+
+
+def _missing_gitignore_lines(existing: str, generated: str) -> list[str]:
+    existing_lines = {line.strip() for line in existing.splitlines() if line.strip() and not line.strip().startswith("#")}
+    return [line for line in generated.splitlines() if line.strip() and not line.strip().startswith("#") and line.strip() not in existing_lines]
+
+
+def _missing_markdown_headings(existing: str, generated: str) -> list[str]:
+    existing_headings = {line.strip() for line in existing.splitlines() if line.startswith("#")}
+    return [line.strip() for line in generated.splitlines() if line.startswith("#") and line.strip() not in existing_headings]
 
 
 def _tuple_or_default(value, default: tuple[str, ...]) -> tuple[str, ...]:

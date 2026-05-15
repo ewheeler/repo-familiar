@@ -9,6 +9,7 @@ from .generator import (
     list_memory_profiles,
     list_model_profiles,
     list_privacy_profiles,
+    list_public_interest_profiles,
     list_prompt_profiles,
     list_repomap_profiles,
     list_safety_profiles,
@@ -55,6 +56,7 @@ def prompt_generation_options(args) -> GenerationOptions:
         secrets_profiles=_ask_many(questionary, "Secrets profiles", list_secrets_profiles(), _tuple_from_args(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault"))),
         design_profiles=_ask_many(questionary, "Design profiles", list_design_profiles(), _tuple_from_args(args.design_profiles, ())),
         worktree_profiles=_ask_many(questionary, "Worktree profiles", list_worktree_profiles(), _tuple_from_args(args.worktree_profiles, ())),
+        public_interest_profiles=_ask_many(questionary, "Public interest profiles", list_public_interest_profiles(), _tuple_from_args(args.public_interest_profiles, ())),
         skills=_ask_many(questionary, "Skills", list_skills(), _tuple_from_args(args.skills, ("grill-with-docs",))),
         reference_type=args.reference_type,
         reference_url=args.reference_url,
@@ -73,7 +75,7 @@ def prompt_existing_options(args) -> tuple[ExistingBootstrapOptions, bool]:
     asset_groups = _ask_many(
         questionary,
         "Asset groups",
-        ["agent", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "prompts", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"],
+        ["agent", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "public-interest", "prompts", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"],
         _tuple_from_args(args.asset_groups, ("memory", "metadata", "skills")),
     )
     apply = args.apply or _ask_confirm(questionary, "Write missing assets now?", default=False)
@@ -96,6 +98,7 @@ def prompt_existing_options(args) -> tuple[ExistingBootstrapOptions, bool]:
         secrets_profiles=_ask_many(questionary, "Secrets profiles", list_secrets_profiles(), _tuple_from_args(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault"))),
         design_profiles=_ask_many(questionary, "Design profiles", list_design_profiles(), _tuple_from_args(args.design_profiles, ())),
         worktree_profiles=_ask_many(questionary, "Worktree profiles", list_worktree_profiles(), _tuple_from_args(args.worktree_profiles, ())),
+        public_interest_profiles=_ask_many(questionary, "Public interest profiles", list_public_interest_profiles(), _tuple_from_args(args.public_interest_profiles, ())),
         skills=_ask_many(questionary, "Skills", list_skills(), _tuple_from_args(args.skills, ("grill-with-docs",))),
         reference_type=args.reference_type,
         reference_url=args.reference_url,

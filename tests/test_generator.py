@@ -45,6 +45,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertTrue((output_dir / ".agents/memory.yml").exists())
             self.assertTrue((output_dir / ".agents/models.yml").exists())
             self.assertTrue((output_dir / ".agents/privacy.yml").exists())
+            self.assertTrue((output_dir / ".agents/public-interest.yml").exists())
             self.assertTrue((output_dir / ".agents/prompts.yml").exists())
             self.assertTrue((output_dir / ".agents/repomap.yml").exists())
             self.assertTrue((output_dir / ".agents/sandbox.yml").exists())
@@ -73,6 +74,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('path: ".agents/tools.yml"', bootstrap)
             self.assertIn('path: ".agents/memory.yml"', bootstrap)
             self.assertIn('path: ".agents/secrets.yml"', bootstrap)
+            self.assertIn('path: ".agents/public-interest.yml"', bootstrap)
             self.assertIn('path: ".agents/skill-sources.yml"', bootstrap)
             self.assertIn('path: ".env.example"', bootstrap)
             self.assertIn('secrets_profiles:', bootstrap)
@@ -86,7 +88,7 @@ class GeneratorTests(unittest.TestCase):
             models = (output_dir / ".agents/models.yml").read_text()
             self.assertIn("default-coding:", models)
             self.assertIn("budget-review:", models)
-            self.assertEqual(len(assets), 25)
+            self.assertEqual(len(assets), 26)
 
     def test_refuses_non_empty_output_without_force(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -114,7 +116,7 @@ class GeneratorTests(unittest.TestCase):
                 )
             )
 
-            self.assertEqual(len(assets), 25)
+            self.assertEqual(len(assets), 26)
             self.assertFalse(output_dir.exists())
 
     def test_cli_lists_templates_and_model_profiles(self) -> None:
@@ -159,6 +161,7 @@ class GeneratorTests(unittest.TestCase):
             ("list-prompt-profiles", "prompt-migration-gpt55"),
             ("list-safety-profiles", "prompt-output-safety"),
             ("list-privacy-profiles", "data-privacy-review"),
+            ("list-public-interest-profiles", "child-rights-digital"),
             ("list-repomap-profiles", "hamilton-dag"),
             ("list-sandbox-profiles", "sandbox-light"),
             ("list-secrets-profiles", "kvenv-azure-keyvault"),
@@ -407,6 +410,9 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(result, 0)
             payload = json.loads(stdout.getvalue())
             self.assertEqual(payload["path"], str(repo))
+            self.assertEqual(payload["comparison_basis"], "default full bootstrap audit")
+            self.assertEqual(payload["asset_groups"], ["all"])
+            self.assertEqual(payload["selected_options"]["skills"], ["grill-with-docs"])
             self.assertEqual(payload["summary"]["present"], 0)
             self.assertGreater(len(payload["missing"]), 0)
             self.assertEqual(payload["present"], [])
@@ -436,6 +442,41 @@ class GeneratorTests(unittest.TestCase):
             payload = json.loads(stdout.getvalue())
             paths = {asset["path"] for asset in payload["missing"]}
             self.assertEqual(paths, {".agents/models.yml", ".repo-familiar/bootstrap.yml"})
+            self.assertEqual(payload["comparison_basis"], "scoped asset-group audit")
+
+    def test_advise_intent_json_output_is_parseable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+            (repo / ".github/workflows").mkdir(parents=True)
+            (repo / "tests").mkdir()
+            (repo / "CONTEXT.md").write_text("# Context\n")
+            (repo / "plan.md").write_text("# Plan\n")
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                result = main(["advise", "--path", str(repo), "--intent", "significant-refactor", "--format", "json"])
+
+            self.assertEqual(result, 0)
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(payload["recommended_stage"], "implementation-planning")
+            self.assertEqual(payload["intended_work"], ["significant-refactor"])
+            self.assertIn("improve-codebase-architecture", payload["recommended_profiles"]["skills"])
+
+    def test_resolve_conflicts_previews_safe_strategies(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+            (repo / "AGENTS.md").write_text("# Existing Agents\n")
+            (repo / ".gitignore").write_text(".env\n")
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                result = main(["resolve-conflicts", "--path", str(repo), "--asset-group", "agent", "--asset-group", "config", "--format", "json"])
+
+            self.assertEqual(result, 0)
+            payload = json.loads(stdout.getvalue())
+            strategies = {item["path"]: item["strategy"] for item in payload["suggestions"]}
+            self.assertEqual(strategies["AGENTS.md"], "markdown-heading-merge")
+            self.assertEqual(strategies[".gitignore"], "line-union")
 
     def test_add_model_only_writes_model_profile_and_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -526,6 +567,7 @@ class GeneratorTests(unittest.TestCase):
             ("add-prompts", "--prompt-profile", "prompt-migration-gpt55", ".agents/prompts.yml", "prompt-migration-gpt55:"),
             ("add-safety", "--safety-profile", "prompt-output-safety", ".agents/safety.yml", "prompt-output-safety:"),
             ("add-privacy", "--privacy-profile", "data-privacy-review", ".agents/privacy.yml", "data-privacy-review:"),
+            ("add-public-interest", "--public-interest-profile", "child-rights-digital", ".agents/public-interest.yml", "child-rights-digital:"),
             ("add-repomap", "--repomap-profile", "hamilton-dag", ".agents/repomap.yml", "hamilton-dag:"),
             ("add-design", "--design-profile", "design-impeccable", ".agents/design.yml", "design-impeccable:"),
             ("add-worktree", "--worktree-profile", "parallel-worktrees", ".agents/worktrees.yml", "parallel-worktrees:"),

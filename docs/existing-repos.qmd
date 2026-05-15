@@ -25,10 +25,12 @@ title: "Existing Repositories"
 
 ```bash
 uv run python -m repo_familiar advise --path /path/to/repo
+uv run python -m repo_familiar advise --path /path/to/repo --intent significant-refactor
 uv run python -m repo_familiar advise --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo
 uv run python -m repo_familiar audit --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
+uv run python -m repo_familiar resolve-conflicts --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --path /path/to/repo --apply
 uv run python -m repo_familiar bootstrap-existing --interactive
@@ -43,6 +45,7 @@ uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile
 uv run python -m repo_familiar add-repomap --path /path/to/repo --repomap-profile hamilton-dag --apply
 uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety --apply
 uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review --apply
+uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
 uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault --apply
 uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-impeccable --apply
@@ -57,6 +60,10 @@ uv run python -m repo_familiar upgrade --path /path/to/repo
 `bootstrap-existing --interactive` uses `questionary` to prompt for repository path, asset groups, selected profiles, and whether to apply changes. It still defaults to dry-run behavior unless write confirmation is selected.
 
 Use `--asset-group` with `audit` or `bootstrap-existing` to scope work to selected groups: `agent`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, or `worktrees`.
+
+Audit output includes the comparison basis, selected option set, and asset groups. This is important when checking whether a full-adoption audit is using default selections or explicit selections.
+
+Use `resolve-conflicts` before touching user-owned conflicts. It is read-only and previews merge strategies such as heading-based `AGENTS.md` additions and line-union `.gitignore` additions.
 
 ## Prompt Migration And Evals
 
@@ -86,6 +93,7 @@ For policy, education, children, public sector, or user-facing AI systems, add:
 ```bash
 uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety --apply
 uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review --apply
+uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill prompt-output-safety --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill privacy-review --apply
 ```
@@ -133,9 +141,10 @@ Targeted add commands reuse the same bootstrap engine with narrower asset groups
 
 - `research-heavy`
 - `prototype-fast`
+- `implementation-planning`
 - `production-maintenance`
 
-It also recommends asset groups, profile families, skills, and next commands.
+It also recommends asset groups, profile families, skills, and next commands. Use `--intent` when the planned work is known, such as `significant-refactor`, `prompt-migration`, `production-maintenance`, `security-review`, or `docs-setup`.
 
 ## Memory Usage
 

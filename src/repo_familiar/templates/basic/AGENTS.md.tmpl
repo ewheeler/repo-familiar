@@ -9,6 +9,29 @@ This repository was generated with `repo-familiar`.
 - Keep agent runtime configuration in `.agents/`.
 - Keep generator provenance in `.repo-familiar/bootstrap.yml`.
 
+## Engineering Defaults
+
+- Use red/green TDD for behavior changes whenever practical.
+- For user-reported bugs, add or update a regression test that would have caught the issue.
+- Prefer focused tests first, then run the project's documented test command before handoff when shared behavior changes.
+- Keep fixes narrow and preserve existing content/workflows unless the task explicitly asks for broader refactoring.
+- Prefer built-in, well-supported framework/library features before custom implementations.
+- For site, layout, navigation, or browser-sensitive changes, verify behavior in a real browser flow when browser tooling is available.
+- Browser checks should assert visible behavior when relevant: layout, viewport position, scrolling, interactability, and geometry, not only DOM presence.
+- For layout-sensitive work, check more than one viewport width when practical.
+- Ensure web markup and rendered content are accessible to screen readers and keyboard users: semantic structure, headings, landmarks, labels, alt text, focus order, and visible focus states matter.
+- Anchor web and learning-facing experiences in Universal Design for Learning (UDL): provide multiple ways to perceive information, navigate/interact, and understand or act on content.
+- Treat automated accessibility scans as a baseline, not proof of accessibility; pair them with manual review of keyboard flow, screen reader semantics, contrast, zoom/reflow, and error messaging.
+- Design layouts and UI primitives with future internationalization in mind, including right-to-left language support: prefer logical CSS properties, avoid hard-coded left/right assumptions, and keep text expansion in mind.
+
+## Public Interest Digital Defaults
+
+- Treat safety, dignity, privacy, accessibility, inclusion, and maintainability as product requirements, not optional review passes.
+- Prefer data minimization, transparent user-facing behavior, and clear human escalation or correction paths when decisions affect people.
+- Design for constrained environments: low connectivity, low-end devices, shared devices, varied literacy, multiple languages, assistive technology, and intermittent access.
+- Avoid dark patterns, manipulative engagement mechanics, unnecessary profiling, and surveillance-like defaults.
+- Prefer boring, well-supported technology and document operational assumptions so partners or local teams can inherit the system.
+
 ## Agent Harnesses
 
 $agent_harnesses_list
@@ -78,6 +101,12 @@ $selected_design_profiles_list
 Selected worktree guidance is defined in `.agents/worktrees.yml`:
 
 $selected_worktree_profiles_list
+
+## Public Interest Profiles
+
+Selected public-interest digital guidance is defined in `.agents/public-interest.yml`:
+
+$selected_public_interest_profiles_list
 
 ## Skills
 

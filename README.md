@@ -66,8 +66,10 @@ uv run python -m repo_familiar list-sandbox-profiles
 uv run python -m repo_familiar list-secrets-profiles
 uv run python -m repo_familiar list-design-profiles
 uv run python -m repo_familiar list-worktree-profiles
+uv run python -m repo_familiar list-public-interest-profiles
 uv run python -m repo_familiar list-skills
 uv run python -m repo_familiar advise --path /path/to/existing-repo
+uv run python -m repo_familiar advise --path /path/to/existing-repo --intent significant-refactor
 uv run python -m repo_familiar check --path /path/to/generated-project
 ```
 
@@ -86,6 +88,7 @@ uv run python -m repo_familiar generate \
   --secrets-profile kvenv-azure-keyvault \
   --sandbox-profile sandbox-light \
   --design-profile design-impeccable \
+  --public-interest-profile public-interest-digital \
   --worktree-profile parallel-worktrees \
   --skill cq \
   --skill grill-with-docs \
@@ -116,7 +119,7 @@ uv run python -m repo_familiar generate --interactive
 
 `questionary` is imported lazily for interactive commands and installed by `uv sync`.
 
-This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/worktrees.yml`, `.agents/skill-sources.yml`, selected skills, a Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
+This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/public-interest.yml`, `.agents/worktrees.yml`, `.agents/skill-sources.yml`, selected skills, a Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
 
 Generated repositories should receive vendored copies of the selected assets by default. Each generated repository should also include `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version used to create it. Live synchronization can come later as an explicit upgrade command, but initial bootstraps should be stable and self-contained.
 
@@ -141,6 +144,7 @@ selected_options:
   sandbox_profiles: []
   secrets_profiles: []
   design_profiles: []
+  public_interest_profiles: []
   worktree_profiles: []
   skills: []
   docs: quarto
@@ -182,7 +186,7 @@ Model/provider profiles should be generated into `.agents/models.yml` for agent-
 
 Tool profiles should be generated into `.agents/tools.yml` as non-secret repository guidance. `.repo-familiar/bootstrap.yml` records selected tool profile names under `selected_options.tool_profiles`.
 
-Memory, sandbox, design, and worktree profiles are advisory profile families. They generate `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/design.yml`, and `.agents/worktrees.yml` and record selected names in `.repo-familiar/bootstrap.yml`.
+Memory, sandbox, design, public-interest, and worktree profiles are advisory profile families. They generate `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/design.yml`, `.agents/public-interest.yml`, and `.agents/worktrees.yml` and record selected names in `.repo-familiar/bootstrap.yml`.
 
 Secrets profiles are also advisory. They generate `.agents/secrets.yml` and `.env.example`, ignore real local env files, and record selected profile names without storing secret values.
 
@@ -233,6 +237,7 @@ uv run python -m repo_familiar advise --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo
 uv run python -m repo_familiar audit --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
+uv run python -m repo_familiar resolve-conflicts --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --path /path/to/repo --apply
 uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
@@ -250,10 +255,11 @@ uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile 
 uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
 uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault --apply
 uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-impeccable --apply
+uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-profile parallel-worktrees --apply
 ```
 
-Existing bootstrap metadata uses `bootstrap_mode: existing_repository` and records only assets written by the operation. Conflicts skipped for safety are reported but not claimed as generated assets.
+Existing bootstrap metadata uses `bootstrap_mode: existing_repository` and records only assets written by the operation. Conflicts skipped for safety are reported but not claimed as generated assets. Audit output shows the comparison basis, selected options, and asset groups so users can tell whether they are reviewing default selections, scoped asset groups, or an intended full-adoption selection set.
 
 Granular bootstrap can use `--asset-group` with `agent`, `config`, `docs`, `metadata`, `models`, `plan`, `skills`, or `tools`. The `skills` group includes selected skill files and `.agents/skill-sources.yml` provenance for future upstream drift checks.
 
@@ -266,6 +272,8 @@ uv run python -m repo_familiar check --path /path/to/repo --format json
 Use `diff-upstream-candidate` to classify generated asset changes before proposing reusable improvements back to this Reference Source. Pair it with the `upstream-improvement` skill so private details and local-only changes are filtered before any upstream PR is drafted.
 
 Use `upgrade` as a read-only readiness preview before any future write-capable upgrade. It reports user-review items, blockers, and unavailable update candidates without changing files.
+
+Use `resolve-conflicts` to preview safe merge strategies before touching user-owned conflicting files. The first pass is read-only: it suggests Markdown heading merges for `AGENTS.md`, line-union additions for `.gitignore`, and manual review for other conflicted assets.
 
 Memory should be used at session start to recall project decisions and repeated issues, after resolving non-obvious problems, after accepting ADRs, and when advancing stages. Repository docs and bootstrap metadata remain the canonical record; memory accelerates recall rather than replacing committed context.
 
@@ -287,6 +295,8 @@ For policy, education, children, or other sensitive user-facing AI outputs, add 
 
 For broad agent discipline, add `session-focus` before long multi-step work, `qa-test-design` before designing test coverage, and `security-audit` before shipping code that touches auth, secrets, dependencies, or user-facing surfaces.
 
+For child-facing, humanitarian, civic, education, or public-sector projects, add `child-rights-digital` or `public-interest-digital` public-interest profiles so safeguarding, inclusion, low-connectivity realities, localization, accountability, and maintainability remain visible during implementation.
+
 Skill provenance for selected skills is recorded in `.agents/skill-sources.yml`. It distinguishes local skills, adapted local skills, imported-local skills with unknown upstreams, and external skills such as `cq`, `mattpocock/skills`, Context Hub, and selected `omega-memory/omega-skills` imports. Any skill dogfooded in this Reference Source is also a selectable downstream skill, so future upgrade or drift commands can compare all vendored skills against upstream sources from one manifest.
 
 ## Agent-Agnostic Defaults
@@ -297,6 +307,7 @@ Downstream repositories should be able to use these assets without binding thems
 - `.agents/skill-sources.yml` for selected skill provenance and future upstream drift checks.
 - `AGENTS.md` for repository-level working rules.
 - `.agents/tools.yml` for non-secret tool profile guidance.
+- `.agents/public-interest.yml` for child-rights or public-interest digital guidance when selected.
 - Optional harness-specific adapters when a tool requires a different file location or naming convention.
 - A project plan that records technical preferences, boundaries, and first implementation milestones.
 - `.repo-familiar/bootstrap.yml` metadata that records the `repo-familiar` reference source and version used for generation.

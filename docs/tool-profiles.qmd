@@ -6,7 +6,7 @@ Tool profiles are non-secret recommendations for tools or MCPs that a generated 
 
 They are written to `.agents/tools.yml` in downstream repositories. Machine-specific installation and credentials stay out of scope.
 
-Memory, sandbox, secrets, design, and worktree guidance use separate advisory profile files. See [Advisory Profiles](./advisory-profiles.qmd).
+Memory, sandbox, secrets, design, public-interest, and worktree guidance use separate advisory profile files. See [Advisory Profiles](./advisory-profiles.qmd).
 
 ## Current Profiles
 

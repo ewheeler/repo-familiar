@@ -30,12 +30,13 @@
 - OpenCode/Homebrew PATH setup guidance exists through the `opencode-homebrew-path` tool profile.
 - Prompt migration/eval profiles exist for GPT-5.5 prompt migrations and prompt DAG eval design.
 - Safety and privacy profiles exist for prompt/output safety and data/privacy review.
+- Public-interest profiles exist for child-rights, humanitarian, civic, education, and public-sector digital guidance.
 - Repo map profiles exist with `hamilton-dag` as the preferred graph approach.
 - Advisory profile files are generated under `.agents/` and selected profile names are recorded in bootstrap metadata.
 - Skill source provenance is generated in `.agents/skill-sources.yml` for selected skills, so future drift checks can compare vendored/imported skills against upstream sources where known.
 - Root `.agents/` dogfoods the Reference Source asset set: profile family files, selectable skills, and non-secret tool/advisory guidance live in this repository as working defaults as well as generated templates.
 - Every root dogfooded skill is registered as a selectable downstream skill and has a matching template under `src/repo_familiar/templates/skills/`.
-- `advise` recommends stage, profile families, asset groups, next commands, and memory usage for an existing repository.
+- `advise` recommends stage, profile families, asset groups, next commands, and memory usage for an existing repository. It accepts `--intent` so intended near-term work can adjust recommendations beyond observed repo maturity.
 - `advise` decision logic lives in `src/repo_familiar/advice_dag.py` as Hamilton-compatible nodes; command formatting helpers remain outside the DAG module.
 - Core generator seams have been deepened: Bootstrap Metadata, profile registry, asset planning, repository advice orchestration, and targeted CLI add commands now live behind dedicated Modules or descriptor tables.
 - `examples/basic-agentic-project` is a deterministic generated snapshot and regression fixture.
@@ -119,6 +120,7 @@ These are the suggested tool/component categories to dogfood in this Reference S
 | Repo map and graphing | `hamilton-dag` | `.agents/repomap.yml` advisory profile | Python pipelines, prompt DAGs, dataflow, or graph fingerprints matter. |
 | Safety review | `prompt-output-safety` profile and skill; `security-audit` for code/security review | `.agents/safety.yml` plus skill | User-facing AI, policy-sensitive, education, child-related, high-impact outputs, auth, secrets, or dependency risk exists. |
 | Privacy review | `data-privacy-review` profile and `privacy-review` skill | `.agents/privacy.yml` plus skill | Repos handle PII, child data, logs, analytics, memory, prompts, or exported artifacts. |
+| Public-interest digital | `child-rights-digital`, `public-interest-digital` | `.agents/public-interest.yml` advisory profile | Child-facing, humanitarian, civic, education, public-sector, or public-interest services need safeguarding, inclusion, localization, low-connectivity, transparency, and handover guidance. |
 | Accessibility and design | `a11y-scanner`, `design-a11y`, `design-impeccable`, `a11y-web-scan` | Tool, design profiles, and skill | Frontend code, Quarto sites, design docs, or user-facing web outputs exist. Browser automation can support the manual/browser recheck portion. |
 | Sandboxing | `sandbox-light`, optionally `sandbox-agent-runtime` | `.agents/sandbox.yml` advisory profile | Agents run generated code, package installs, unknown scripts, risky tests, or long autonomous sessions. |
 | Secret handling | `dotenv-local`, `kvenv-azure-keyvault`, `onepassword-op` | `.agents/secrets.yml` and commented `.env.example` | Any repo needs local env guidance without committing real secret values. |
@@ -284,9 +286,11 @@ Status: done for first profile set.
 - Add `memory_profiles` and `.agents/memory.yml`.
 - Add `sandbox_profiles` and `.agents/sandbox.yml`.
 - Add `design_profiles` and `.agents/design.yml`.
+- Add `public_interest_profiles` and `.agents/public-interest.yml`.
 - Add `worktree_profiles` and `.agents/worktrees.yml`.
 - Add `secrets_profiles`, `.agents/secrets.yml`, and `.env.example`.
 - Add list and targeted add commands for each profile family.
+- Add public-interest advisory profiles and targeted add command. Done.
 - Dogfood the current advisory profile families in root `.agents/`. Done.
 
 Acceptance criteria:
@@ -303,6 +307,7 @@ Status: done for first Hamilton-compatible heuristic pass; orchestration is extr
 - Detect coarse repository signals such as docs, tests, CI, Quarto, frontend files, container config, agent instructions, and bootstrap metadata.
 - Recommend stage, asset groups, model/tool/advisory profiles, skills, next commands, and memory use.
 - Move decision nodes to `advice_dag.py` so the logic can be run or visualized as a Hamilton graph later.
+- `advise --intent` accounts for intended near-term work such as `significant-refactor`, `prompt-migration`, `production-maintenance`, `security-review`, and `docs-setup`. Done for the first heuristic pass.
 
 Acceptance criteria:
 
@@ -358,7 +363,10 @@ Status: done for the current additive bootstrap model.
 - Add selected `add-model` and `add-docs` flows. Done.
 - Add targeted advisory profile add commands for memory, prompts, safety, privacy, repomap, sandbox, secrets, design, and worktrees. Done.
 - Add `--asset-group` to audit and bootstrap existing repositories. Done.
-- Decide later whether bootstrap metadata needs `adopted_assets` and `conflicts` fields.
+- `audit` output makes its comparison basis explicit, including default full bootstrap audit, scoped asset-group audit, or selected-options full bootstrap audit. Done.
+- `audit` surfaces the selected option set used for the audit so users can tell whether a full adoption audit is actually using default selections. Done.
+- Added `resolve-conflicts` as a non-destructive preview for existing-repo conflicts. It starts with Markdown heading merge suggestions for `AGENTS.md`, line-union suggestions for `.gitignore`, and preview/manual-review recommendations for other conflicts. Done for the first preview-only pass.
+- Metadata v2 decision inputs from dogfooding: likely needs `adopted_assets`, `conflicts`, `bootstrap_history`, selected user intent, selected option snapshots, and conflict-resolution strategy records once merge/apply behavior exists.
 - Add JSON output for scripted audits. Done for `audit` and bootstrap results.
 
 Acceptance criteria:
@@ -422,15 +430,19 @@ Acceptance criteria:
 
 Priority 1: Dogfood on one low-risk existing repository using the narrow adoption set. Use `advise`, `audit`, then add only memory, `cq`, `session-focus`, `grill-with-docs`, `get-api-docs`, and `opencode-homebrew-path` unless the repo clearly triggers more.
 
-Priority 2: Dogfood `diff-upstream-candidate` plus `upstream-improvement` on this Reference Source and one generated/bootstrapped Downstream Repository before adding PR automation. Capture whether Bootstrap Metadata needs project name/description or rendered-context fields to make current Reference Source comparison exact.
+Priority 2: Continue dogfooding `advise --intent` and tune intent-to-stage/profile heuristics based on real downstream runs, especially significant refactors and prompt-heavy policy repos.
 
-Priority 3: Dogfood the read-only `upgrade` command on this Reference Source and one Downstream Repository. Capture which metadata fields are needed before a write-capable updater can safely exist.
+Priority 3: Extend `resolve-conflicts` from preview-only suggestions to explicit interactive resolution for `AGENTS.md` and `.gitignore`, while keeping default bootstrap behavior non-destructive.
 
-Priority 4: Decide whether Existing Repository Bootstrap needs schema v2 fields such as `adopted_assets`, `conflicts`, `bootstrap_history`, or stage progression metadata after two or three real bootstraps.
+Priority 4: Decide metadata v2 shape for adopted assets, skipped conflicts, conflict-resolution strategies, bootstrap history, and user intent before adding write-capable conflict merges.
 
-Priority 5: Re-run `improve-codebase-architecture` after dogfooding `diff-upstream-candidate` and before implementing write-capable upgrade behavior.
+Priority 5: Dogfood `diff-upstream-candidate` plus `upstream-improvement` on this Reference Source and one generated/bootstrapped Downstream Repository before adding PR automation. Capture whether Bootstrap Metadata needs project name/description or rendered-context fields to make current Reference Source comparison exact.
 
-Priority 6: Consider `prepare-upstream-pr` only after two or three manual upstream improvement proposals expose repeated steps.
+Priority 6: Dogfood the read-only `upgrade` command on this Reference Source and one Downstream Repository. Capture which metadata fields are needed before a write-capable updater can safely exist.
+
+Priority 7: Re-run `improve-codebase-architecture` after dogfooding `diff-upstream-candidate` and before implementing write-capable upgrade behavior.
+
+Priority 8: Consider `prepare-upstream-pr` only after two or three manual upstream improvement proposals expose repeated steps.
 
 ## Verification Commands
 

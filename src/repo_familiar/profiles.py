@@ -228,6 +228,30 @@ WORKTREE_PROFILES = {
     }
 }
 
+PUBLIC_INTEREST_PROFILES = {
+    "child-rights-digital": {
+        "tool": "child rights, safeguarding, inclusive design, and public-interest technology review",
+        "purpose": "guide child-facing digital work toward safety, dignity, inclusion, accountability, and maintainability",
+        "guidance": [
+            "Treat child safety, dignity, agency, and safeguarding as first-order design constraints",
+            "Prefer data minimization, clear consent, limited retention, and safe escalation paths",
+            "Design for low-connectivity, low-end devices, shared devices, assistive technology, and varied literacy or language contexts",
+            "Avoid dark patterns, manipulative engagement mechanics, unnecessary profiling, and surveillance-like defaults",
+            "Plan for localization, right-to-left layouts, culturally appropriate content, and handover to local partners or public institutions",
+        ],
+    },
+    "public-interest-digital": {
+        "tool": "public-interest digital delivery review",
+        "purpose": "keep civic, humanitarian, education, and public-sector digital services transparent, inclusive, resilient, and maintainable",
+        "guidance": [
+            "Prefer boring, well-supported technology that local teams can inherit and operate",
+            "Make data collection, automation, AI use, and recommendation logic legible to users where relevant",
+            "Treat poor connectivity, old devices, shared access, translation, accessibility, and support pathways as normal operating conditions",
+            "Document operational assumptions, ownership, monitoring, and handover paths before production maintenance",
+        ],
+    },
+}
+
 SKILLS = {
     "a11y-web-scan": "Plan and run accessibility scans for user-facing web outputs",
     "caveman": "Use ultra-compressed communication when brevity is explicitly requested",
@@ -431,6 +455,7 @@ def validate_profile_selections(selections: dict[str, tuple[str, ...]]) -> None:
     _validate("secrets profile", selections.get("secrets_profiles", ()), SECRETS_PROFILES)
     _validate("design profile", selections.get("design_profiles", ()), DESIGN_PROFILES)
     _validate("worktree profile", selections.get("worktree_profiles", ()), WORKTREE_PROFILES)
+    _validate("public interest profile", selections.get("public_interest_profiles", ()), PUBLIC_INTEREST_PROFILES)
     _validate("skill", selections.get("skills", ()), SKILLS)
 
 

@@ -61,6 +61,7 @@ For user-facing AI, policy, education, children, or privacy-sensitive repos, add
 ```bash
 uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety --apply
 uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review --apply
+uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill security-audit --apply
 ```
 

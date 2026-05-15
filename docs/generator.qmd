@@ -26,6 +26,7 @@ uv run python -m repo_familiar list-memory-profiles
 uv run python -m repo_familiar list-prompt-profiles
 uv run python -m repo_familiar list-safety-profiles
 uv run python -m repo_familiar list-privacy-profiles
+uv run python -m repo_familiar list-public-interest-profiles
 uv run python -m repo_familiar list-repomap-profiles
 uv run python -m repo_familiar list-sandbox-profiles
 uv run python -m repo_familiar list-secrets-profiles
@@ -59,6 +60,7 @@ Get recommendations for an existing repository before bootstrapping:
 
 ```bash
 uv run python -m repo_familiar advise --path /path/to/repo
+uv run python -m repo_familiar advise --path /path/to/repo --intent significant-refactor
 uv run python -m repo_familiar advise --path /path/to/repo --format json
 ```
 
@@ -112,6 +114,13 @@ Audit an existing repository:
 uv run python -m repo_familiar audit --path /path/to/repo
 uv run python -m repo_familiar audit --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
+```
+
+Preview conflict-resolution suggestions without writing files:
+
+```bash
+uv run python -m repo_familiar resolve-conflicts --path /path/to/repo
+uv run python -m repo_familiar resolve-conflicts --path /path/to/repo --asset-group agent --asset-group config
 ```
 
 Preview existing repository bootstrap:
@@ -210,6 +219,11 @@ uv run python -m repo_familiar add-privacy \
   --privacy-profile data-privacy-review \
   --apply
 
+uv run python -m repo_familiar add-public-interest \
+  --path /path/to/repo \
+  --public-interest-profile child-rights-digital \
+  --apply
+
 uv run python -m repo_familiar add-sandbox \
   --path /path/to/repo \
   --sandbox-profile sandbox-light \
@@ -256,6 +270,8 @@ Existing repository bootstrap should build on the same safety posture: audit fir
 
 When bootstrapping an existing repository, `.repo-familiar/bootstrap.yml` records `bootstrap_mode: existing_repository` and the assets actually written by that operation. Conflicts skipped for safety are not claimed as generated assets.
 
+Audit output reports the comparison basis, selected options, and asset groups. Use this to distinguish a default full bootstrap audit from a scoped asset-group audit or an intended full-adoption audit with explicit selections.
+
 Use `--asset-group` with `audit` or `bootstrap-existing` for scoped adoption. Supported groups are `agent`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, and `worktrees`.
 
 Generated asset records include `content_sha256` for drift detection. The metadata file itself is presence-checked but not self-hashed.
@@ -263,6 +279,8 @@ Generated asset records include `content_sha256` for drift detection. The metada
 `diff-upstream-candidate` is read-only. It classifies recorded generated assets as unchanged, modified, missing, or unchecked and adds a recommendation such as `review-for-upstream-improvement`, `review-profile-improvement`, `review-private-or-local-only`, or `restore-generated-asset`. Current Reference Source comparison is advisory; template-variable-heavy assets may report `reference-may-have-changed` until Bootstrap Metadata records richer template context.
 
 `upgrade` is read-only in the current implementation. It reports assets that would need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade. It deliberately reports no safe auto-apply path until Bootstrap Metadata records enough template context for exact rendered comparisons.
+
+`resolve-conflicts` is also read-only. It previews merge strategies for conflicted files, starting with Markdown heading suggestions for `AGENTS.md` and line-union suggestions for `.gitignore`.
 
 ## Generated Files
 
@@ -277,6 +295,7 @@ The `basic` template currently writes:
 - `.agents/prompts.yml`
 - `.agents/safety.yml`
 - `.agents/privacy.yml`
+- `.agents/public-interest.yml`
 - `.agents/repomap.yml`
 - `.agents/sandbox.yml`
 - `.agents/secrets.yml`

@@ -12,6 +12,7 @@ Advisory profiles describe optional repository capabilities without installing o
 | Prompt | `.agents/prompts.yml` | Prompt migration and eval guidance for prompt DAGs and model-version shifts. |
 | Safety | `.agents/safety.yml` | Prompt/output safety review guidance for user-facing or policy-sensitive AI behavior. |
 | Privacy | `.agents/privacy.yml` | Data flow, PII, retention, logging, and memory exposure review guidance. |
+| Public Interest | `.agents/public-interest.yml` | Child-rights, safeguarding, inclusive delivery, public-interest technology, and handover guidance. |
 | Repo Map | `.agents/repomap.yml` | Codebase graph guidance, with Hamilton DAG preferred where applicable. |
 | Sandbox | `.agents/sandbox.yml` | Safe execution guidance for generated code, unknown scripts, package installs, and autonomous sessions. |
 | Secrets | `.agents/secrets.yml` and `.env.example` | Local environment loading and secret-reference guidance without storing real secrets. |
@@ -38,6 +39,11 @@ Safety:
 Privacy:
 
 - `data-privacy-review`: classify data flows and review prompts, logs, memory, analytics, and exports for privacy risks.
+
+Public Interest:
+
+- `child-rights-digital`: guide child-facing digital work toward safety, dignity, inclusion, accountability, and maintainability.
+- `public-interest-digital`: keep civic, humanitarian, education, and public-sector digital services transparent, inclusive, resilient, and maintainable.
 
 Repo Map:
 
@@ -70,6 +76,7 @@ uv run python -m repo_familiar list-memory-profiles
 uv run python -m repo_familiar list-prompt-profiles
 uv run python -m repo_familiar list-safety-profiles
 uv run python -m repo_familiar list-privacy-profiles
+uv run python -m repo_familiar list-public-interest-profiles
 uv run python -m repo_familiar list-repomap-profiles
 uv run python -m repo_familiar list-sandbox-profiles
 uv run python -m repo_familiar list-secrets-profiles
@@ -84,6 +91,7 @@ uv run python -m repo_familiar add-memory --path /repo --memory-profile memory-l
 uv run python -m repo_familiar add-prompts --path /repo --prompt-profile prompt-migration-gpt55 --apply
 uv run python -m repo_familiar add-safety --path /repo --safety-profile prompt-output-safety --apply
 uv run python -m repo_familiar add-privacy --path /repo --privacy-profile data-privacy-review --apply
+uv run python -m repo_familiar add-public-interest --path /repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-repomap --path /repo --repomap-profile hamilton-dag --apply
 uv run python -m repo_familiar add-sandbox --path /repo --sandbox-profile sandbox-light --apply
 uv run python -m repo_familiar add-secrets --path /repo --secrets-profile kvenv-azure-keyvault --apply

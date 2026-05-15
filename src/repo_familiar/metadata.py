@@ -18,6 +18,7 @@ SELECTED_OPTION_KEYS = (
     "secrets_profiles",
     "design_profiles",
     "worktree_profiles",
+    "public_interest_profiles",
     "skills",
 )
 

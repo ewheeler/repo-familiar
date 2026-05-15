@@ -26,6 +26,7 @@ class RepositorySignals:
 @dataclass(frozen=True)
 class AdviceReport:
     path: Path
+    intended_work: tuple[str, ...]
     signals: RepositorySignals
     recommended_stage: str
     recommended_asset_groups: tuple[str, ...]
@@ -40,35 +41,52 @@ class AdviceReport:
     recommended_secrets_profiles: tuple[str, ...]
     recommended_design_profiles: tuple[str, ...]
     recommended_worktree_profiles: tuple[str, ...]
+    recommended_public_interest_profiles: tuple[str, ...]
     recommended_skills: tuple[str, ...]
     rationale: tuple[str, ...]
     memory_guidance: tuple[str, ...]
     next_commands: tuple[str, ...]
 
 
-def advise_existing_repository(path: Path) -> AdviceReport:
+def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) -> AdviceReport:
     if not path.exists() or not path.is_dir():
         raise NotADirectoryError(f"Repository path is not a directory: {path}")
     signals = detect_repository_signals(path)
-    stage = advice_dag.recommended_stage(signals)
-    rationale = advice_dag.stage_rationale(signals, stage)
+    base_stage = advice_dag.recommended_stage(signals)
+    stage = _stage_for_intent(base_stage, intended_work)
+    rationale = [*advice_dag.stage_rationale(signals, stage)]
+    if intended_work:
+        rationale.append(f"User intent adjusts recommendations: {', '.join(intended_work)}.")
     has_user_facing_web = advice_dag.has_user_facing_web(signals)
     has_prompt_dag = advice_dag.has_prompt_dag(path)
     is_policy_or_education = advice_dag.is_policy_or_education(path)
-    asset_groups = advice_dag.recommended_asset_groups(stage, signals, has_user_facing_web)
-    sandbox_profiles = advice_dag.recommended_sandbox_profiles(stage, signals)
+    sandbox_profiles = _extend(advice_dag.recommended_sandbox_profiles(stage, signals), _intent_sandbox_profiles(intended_work))
     tool_profiles = advice_dag.recommended_tool_profiles(has_user_facing_web)
     design_profiles = advice_dag.recommended_design_profiles(has_user_facing_web)
-    prompt_profiles = advice_dag.recommended_prompt_profiles(has_prompt_dag)
-    safety_profiles = advice_dag.recommended_safety_profiles(has_prompt_dag, has_user_facing_web, is_policy_or_education)
-    privacy_profiles = advice_dag.recommended_privacy_profiles(is_policy_or_education, has_user_facing_web)
+    prompt_profiles = _extend(advice_dag.recommended_prompt_profiles(has_prompt_dag), _intent_prompt_profiles(intended_work))
+    safety_profiles = _extend(advice_dag.recommended_safety_profiles(has_prompt_dag, has_user_facing_web, is_policy_or_education), _intent_safety_profiles(intended_work))
+    privacy_profiles = _extend(advice_dag.recommended_privacy_profiles(is_policy_or_education, has_user_facing_web), _intent_privacy_profiles(intended_work))
     repomap_profiles = advice_dag.recommended_repomap_profiles(has_prompt_dag, signals)
     worktree_profiles = advice_dag.recommended_worktree_profiles(stage, signals)
+    public_interest_profiles = _recommended_public_interest_profiles(is_policy_or_education)
     secrets_profiles = advice_dag.recommended_secrets_profiles()
-    skills = advice_dag.recommended_skills(has_user_facing_web, has_prompt_dag, safety_profiles, privacy_profiles)
-    next_commands = recommended_commands(path, asset_groups, prompt_profiles, safety_profiles, privacy_profiles, repomap_profiles, sandbox_profiles, secrets_profiles, design_profiles, worktree_profiles)
+    skills = _extend(advice_dag.recommended_skills(has_user_facing_web, has_prompt_dag, safety_profiles, privacy_profiles), _intent_skills(intended_work))
+    asset_groups = _asset_groups_for_recommendations(
+        advice_dag.recommended_asset_groups(stage, signals, has_user_facing_web),
+        prompt_profiles,
+        safety_profiles,
+        privacy_profiles,
+        repomap_profiles,
+        sandbox_profiles,
+        secrets_profiles,
+        design_profiles,
+        worktree_profiles,
+        public_interest_profiles,
+    )
+    next_commands = recommended_commands(path, asset_groups, skills, prompt_profiles, safety_profiles, privacy_profiles, repomap_profiles, sandbox_profiles, secrets_profiles, design_profiles, worktree_profiles, public_interest_profiles)
     return AdviceReport(
         path=path,
+        intended_work=intended_work,
         signals=signals,
         recommended_stage=stage,
         recommended_asset_groups=asset_groups,
@@ -83,11 +101,98 @@ def advise_existing_repository(path: Path) -> AdviceReport:
         recommended_secrets_profiles=secrets_profiles,
         recommended_design_profiles=design_profiles,
         recommended_worktree_profiles=worktree_profiles,
+        recommended_public_interest_profiles=public_interest_profiles,
         recommended_skills=skills,
         rationale=tuple(rationale),
         memory_guidance=advice_dag.memory_guidance(),
         next_commands=tuple(next_commands),
     )
+
+
+def _stage_for_intent(base_stage: str, intended_work: tuple[str, ...]) -> str:
+    if any(intent in intended_work for intent in ("significant-refactor", "prompt-migration", "docs-setup")):
+        return "implementation-planning"
+    if "production-maintenance" in intended_work:
+        return "production-maintenance"
+    return base_stage
+
+
+def _intent_skills(intended_work: tuple[str, ...]) -> tuple[str, ...]:
+    skills: list[str] = ["cq", "session-focus"]
+    if "significant-refactor" in intended_work:
+        skills.extend(["improve-codebase-architecture", "tdd", "qa-test-design"])
+    if "prompt-migration" in intended_work:
+        skills.extend(["prompt-migration", "prompt-eval-design"])
+    if "security-review" in intended_work:
+        skills.append("security-audit")
+    if "production-maintenance" in intended_work:
+        skills.extend(["diagnose", "security-audit"])
+    if "docs-setup" in intended_work:
+        skills.extend(["grill-with-docs", "to-prd", "to-issues"])
+    return tuple(skills)
+
+
+def _intent_prompt_profiles(intended_work: tuple[str, ...]) -> tuple[str, ...]:
+    if "prompt-migration" in intended_work:
+        return ("prompt-migration-gpt55", "prompt-evals-dag")
+    return ()
+
+
+def _intent_safety_profiles(intended_work: tuple[str, ...]) -> tuple[str, ...]:
+    if any(intent in intended_work for intent in ("security-review", "production-maintenance")):
+        return ("prompt-output-safety",)
+    return ()
+
+
+def _intent_privacy_profiles(intended_work: tuple[str, ...]) -> tuple[str, ...]:
+    if "security-review" in intended_work:
+        return ("data-privacy-review",)
+    return ()
+
+
+def _intent_sandbox_profiles(intended_work: tuple[str, ...]) -> tuple[str, ...]:
+    if any(intent in intended_work for intent in ("significant-refactor", "production-maintenance")):
+        return ("sandbox-light",)
+    return ()
+
+
+def _recommended_public_interest_profiles(is_policy_or_education: bool) -> tuple[str, ...]:
+    if is_policy_or_education:
+        return ("child-rights-digital", "public-interest-digital")
+    return ()
+
+
+def _extend(base: tuple[str, ...], additions: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys((*base, *additions)))
+
+
+def _asset_groups_for_recommendations(
+    base_groups: tuple[str, ...],
+    prompt_profiles: tuple[str, ...],
+    safety_profiles: tuple[str, ...],
+    privacy_profiles: tuple[str, ...],
+    repomap_profiles: tuple[str, ...],
+    sandbox_profiles: tuple[str, ...],
+    secrets_profiles: tuple[str, ...],
+    design_profiles: tuple[str, ...],
+    worktree_profiles: tuple[str, ...],
+    public_interest_profiles: tuple[str, ...],
+) -> tuple[str, ...]:
+    groups = list(base_groups)
+    for has_profiles, group in (
+        (prompt_profiles, "prompts"),
+        (safety_profiles, "safety"),
+        (privacy_profiles, "privacy"),
+        (repomap_profiles, "repomap"),
+        (sandbox_profiles, "sandbox"),
+        (secrets_profiles, "secrets"),
+        (design_profiles, "design"),
+        (worktree_profiles, "worktrees"),
+        (public_interest_profiles, "public-interest"),
+    ):
+        if has_profiles:
+            groups.append(group)
+    return tuple(dict.fromkeys(groups))
 
 
 def detect_repository_signals(path: Path) -> RepositorySignals:
@@ -110,6 +215,7 @@ def detect_repository_signals(path: Path) -> RepositorySignals:
 def recommended_commands(
     path: Path,
     asset_groups: tuple[str, ...],
+    skills: tuple[str, ...],
     prompt_profiles: tuple[str, ...],
     safety_profiles: tuple[str, ...],
     privacy_profiles: tuple[str, ...],
@@ -118,6 +224,7 @@ def recommended_commands(
     secrets_profiles: tuple[str, ...],
     design_profiles: tuple[str, ...],
     worktree_profiles: tuple[str, ...],
+    public_interest_profiles: tuple[str, ...],
 ) -> list[str]:
     quoted_path = json.dumps(str(path))
     group_args = " ".join(f"--asset-group {group}" for group in asset_groups)
@@ -126,6 +233,8 @@ def recommended_commands(
         f"uv run python -m repo_familiar bootstrap-existing --path {quoted_path} {group_args}",
         f"uv run python -m repo_familiar add-memory --path {quoted_path} --memory-profile memory-local",
     ]
+    for skill in skills:
+        commands.append(f"uv run python -m repo_familiar add-skill --path {quoted_path} --skill {skill}")
     for prompt_profile in prompt_profiles:
         commands.append(f"uv run python -m repo_familiar add-prompts --path {quoted_path} --prompt-profile {prompt_profile}")
     for safety_profile in safety_profiles:
@@ -142,4 +251,6 @@ def recommended_commands(
         commands.append(f"uv run python -m repo_familiar add-design --path {quoted_path} --design-profile {design_profile}")
     for worktree_profile in worktree_profiles:
         commands.append(f"uv run python -m repo_familiar add-worktree --path {quoted_path} --worktree-profile {worktree_profile}")
+    for public_interest_profile in public_interest_profiles:
+        commands.append(f"uv run python -m repo_familiar add-public-interest --path {quoted_path} --public-interest-profile {public_interest_profile}")
     return commands

@@ -13,6 +13,7 @@ This repository was generated with `repo-familiar`.
 - `.agents/prompts.yml` contains selected prompt migration and evaluation guidance.
 - `.agents/safety.yml` contains selected prompt/output safety guidance.
 - `.agents/privacy.yml` contains selected data and privacy review guidance.
+- `.agents/public-interest.yml` contains selected public-interest digital guidance.
 - `.agents/repomap.yml` contains selected codebase graph guidance.
 - `.agents/sandbox.yml` contains selected sandbox guidance.
 - `.agents/secrets.yml` contains selected local environment and secret-loading guidance.
@@ -60,6 +61,10 @@ If `quarto` is installed outside your shell `PATH` on macOS, try `/usr/local/bin
 
 
 ## Privacy Profiles
+
+
+
+## Public Interest Profiles
 
 
 

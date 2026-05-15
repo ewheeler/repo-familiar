@@ -26,6 +26,7 @@ The generated asset set currently includes:
 - `.agents/prompts.yml`
 - `.agents/safety.yml`
 - `.agents/privacy.yml`
+- `.agents/public-interest.yml`
 - `.agents/repomap.yml`
 - `.agents/sandbox.yml`
 - `.agents/secrets.yml`
@@ -90,6 +91,7 @@ selected_options:
   prompt_profiles: []
   safety_profiles: []
   privacy_profiles: []
+  public_interest_profiles: []
   repomap_profiles: []
   sandbox_profiles: []
   secrets_profiles: []

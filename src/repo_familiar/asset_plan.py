@@ -19,6 +19,7 @@ ASSET_KINDS = {
     ".agents/memory.yml": "template_config",
     ".agents/models.yml": "template_config",
     ".agents/privacy.yml": "template_config",
+    ".agents/public-interest.yml": "template_config",
     ".agents/prompts.yml": "template_config",
     ".agents/repomap.yml": "template_config",
     ".agents/sandbox.yml": "template_config",
@@ -114,6 +115,8 @@ def asset_in_groups(path: str, asset_groups: tuple[str, ...]) -> bool:
     if "safety" in asset_groups and path == ".agents/safety.yml":
         return True
     if "privacy" in asset_groups and path == ".agents/privacy.yml":
+        return True
+    if "public-interest" in asset_groups and path == ".agents/public-interest.yml":
         return True
     if "repomap" in asset_groups and path == ".agents/repomap.yml":
         return True

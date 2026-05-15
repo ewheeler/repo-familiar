@@ -44,6 +44,7 @@ class GenerationOptions:
     secrets_profiles: tuple[str, ...] = ("dotenv-local", "kvenv-azure-keyvault")
     design_profiles: tuple[str, ...] = ()
     worktree_profiles: tuple[str, ...] = ()
+    public_interest_profiles: tuple[str, ...] = ()
     skills: tuple[str, ...] = ("grill-with-docs",)
     reference_type: str = "local"
     reference_url: str = "local"
@@ -73,6 +74,7 @@ class ExistingBootstrapOptions:
     secrets_profiles: tuple[str, ...] = ("dotenv-local", "kvenv-azure-keyvault")
     design_profiles: tuple[str, ...] = ()
     worktree_profiles: tuple[str, ...] = ()
+    public_interest_profiles: tuple[str, ...] = ()
     skills: tuple[str, ...] = ("grill-with-docs",)
     reference_type: str = "local"
     reference_url: str = "local"
@@ -85,6 +87,9 @@ class ExistingBootstrapOptions:
 @dataclass(frozen=True)
 class AuditReport:
     path: Path
+    comparison_basis: str
+    selected_options: dict[str, tuple[str, ...] | str]
+    asset_groups: tuple[str, ...]
     missing: tuple[GeneratedAsset, ...]
     present: tuple[GeneratedAsset, ...]
     conflicts: tuple[GeneratedAsset, ...]
@@ -176,10 +181,54 @@ def audit_existing_repository(options: ExistingBootstrapOptions) -> AuditReport:
 
     return AuditReport(
         path=options.path,
+        comparison_basis=_comparison_basis(options),
+        selected_options=_selected_options_summary(generation_options),
+        asset_groups=options.asset_groups,
         missing=tuple(missing),
         present=tuple(present),
         conflicts=tuple(conflicts),
     )
+
+
+def _comparison_basis(options: ExistingBootstrapOptions) -> str:
+    if options.asset_groups != ("all",):
+        return "scoped asset-group audit"
+    if _has_non_default_existing_selections(options):
+        return "selected-options full bootstrap audit"
+    return "default full bootstrap audit"
+
+
+def _has_non_default_existing_selections(options: ExistingBootstrapOptions) -> bool:
+    defaults = ExistingBootstrapOptions(path=options.path)
+    return any(
+        getattr(options, attr) != getattr(defaults, attr)
+        for attr in (
+            "agent_harnesses", "model_profiles", "tool_profiles", "memory_profiles",
+            "prompt_profiles", "safety_profiles", "privacy_profiles", "repomap_profiles",
+            "sandbox_profiles", "secrets_profiles", "design_profiles", "worktree_profiles", "public_interest_profiles", "skills",
+        )
+    )
+
+
+def _selected_options_summary(options: GenerationOptions) -> dict[str, tuple[str, ...] | str]:
+    return {
+        "template": options.template,
+        "docs": options.docs,
+        "agent_harnesses": options.agent_harnesses,
+        "model_profiles": options.model_profiles,
+        "tool_profiles": options.tool_profiles,
+        "memory_profiles": options.memory_profiles,
+        "prompt_profiles": options.prompt_profiles,
+        "safety_profiles": options.safety_profiles,
+        "privacy_profiles": options.privacy_profiles,
+        "repomap_profiles": options.repomap_profiles,
+        "sandbox_profiles": options.sandbox_profiles,
+        "secrets_profiles": options.secrets_profiles,
+        "design_profiles": options.design_profiles,
+        "worktree_profiles": options.worktree_profiles,
+        "public_interest_profiles": options.public_interest_profiles,
+        "skills": options.skills,
+    }
 
 
 def bootstrap_existing_repository(options: ExistingBootstrapOptions) -> BootstrapExistingResult:
@@ -258,8 +307,8 @@ def check_generated_repository(path: Path) -> CheckReport:
     )
 
 
-def advise_existing_repository(path: Path) -> AdviceReport:
-    return _advise_existing_repository(path)
+def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) -> AdviceReport:
+    return _advise_existing_repository(path, intended_work)
 
 
 def list_templates() -> list[str]:
@@ -315,6 +364,10 @@ def list_worktree_profiles() -> list[str]:
     return profile_registry.list_names(profile_registry.WORKTREE_PROFILES)
 
 
+def list_public_interest_profiles() -> list[str]:
+    return profile_registry.list_names(profile_registry.PUBLIC_INTEREST_PROFILES)
+
+
 def list_skills() -> list[str]:
     return profile_registry.list_names(profile_registry.SKILLS)
 
@@ -333,6 +386,7 @@ def _validate_options(options: GenerationOptions) -> None:
             "secrets_profiles": options.secrets_profiles,
             "design_profiles": options.design_profiles,
             "worktree_profiles": options.worktree_profiles,
+            "public_interest_profiles": options.public_interest_profiles,
             "skills": options.skills,
         }
     )
@@ -389,6 +443,8 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
         "selected_design_profiles_list": _markdown_list(options.design_profiles),
         "worktree_profiles_yaml": profile_registry.render_advisory_profiles(profile_registry.WORKTREE_PROFILES, options.worktree_profiles),
         "selected_worktree_profiles_list": _markdown_list(options.worktree_profiles),
+        "public_interest_profiles_yaml": profile_registry.render_advisory_profiles(profile_registry.PUBLIC_INTEREST_PROFILES, options.public_interest_profiles),
+        "selected_public_interest_profiles_list": _markdown_list(options.public_interest_profiles),
         "selected_skills_list": _markdown_list(options.skills),
         "skill_sources_yaml": profile_registry.render_skill_sources(options.skills),
     }
@@ -418,6 +474,7 @@ def _render_bootstrap(options: GenerationOptions, assets: list[GeneratedAsset]) 
             "secrets_profiles": options.secrets_profiles,
             "design_profiles": options.design_profiles,
             "worktree_profiles": options.worktree_profiles,
+            "public_interest_profiles": options.public_interest_profiles,
             "skills": options.skills,
         },
         docs=options.docs,
@@ -465,6 +522,7 @@ def _generation_options_from_existing(options: ExistingBootstrapOptions) -> Gene
         secrets_profiles=options.secrets_profiles,
         design_profiles=options.design_profiles,
         worktree_profiles=options.worktree_profiles,
+        public_interest_profiles=options.public_interest_profiles,
         skills=options.skills,
         reference_type=options.reference_type,
         reference_url=options.reference_url,

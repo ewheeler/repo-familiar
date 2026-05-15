@@ -30,6 +30,7 @@ selected_options:
     - "kvenv-azure-keyvault"
   design_profiles: []
   worktree_profiles: []
+  public_interest_profiles: []
   skills:
     - "grill-with-docs"
   docs: "quarto"
@@ -53,6 +54,10 @@ generated_assets:
   - path: ".agents/prompts.yml"
     kind: "template_config"
     source: "templates/basic/.agents/prompts.yml.tmpl"
+    content_sha256: "82f0cfd8c2f9b31a271efe027e006c14f588259f8aedee68dbc5644a4fbe9a77"
+  - path: ".agents/public-interest.yml"
+    kind: "template_config"
+    source: "templates/basic/.agents/public-interest.yml.tmpl"
     content_sha256: "82f0cfd8c2f9b31a271efe027e006c14f588259f8aedee68dbc5644a4fbe9a77"
   - path: ".agents/repomap.yml"
     kind: "template_config"
@@ -93,11 +98,11 @@ generated_assets:
   - path: "AGENTS.md"
     kind: "agent_instructions"
     source: "templates/basic/AGENTS.md.tmpl"
-    content_sha256: "14e26c848156dd558a35b7f6be7affbf2fdc5601c936ee07912efb25ecdba291"
+    content_sha256: "6ba3f0dacf9428c0668d2daaa7a9491a2c37e861fa6abcb50e7a4519e6f4b137"
   - path: "README.md"
     kind: "documentation"
     source: "templates/basic/README.md.tmpl"
-    content_sha256: "c19f8e5d6a2b6012a430069bac5ac2e0f57bc9d3ef188e7289d09a7c8ea89bd8"
+    content_sha256: "cecba8ca2df7be3d96ddad6df349827eec7e04dfbba4fa941023b99e4f90ce0d"
   - path: "docs/_quarto.yml"
     kind: "documentation"
     source: "templates/basic/docs/_quarto.yml.tmpl"
