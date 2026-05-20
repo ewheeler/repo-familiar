@@ -34,6 +34,7 @@
 - Repo map profiles exist with `hamilton-dag` as the preferred graph approach.
 - Advisory profile files are generated under `.agents/` and selected profile names are recorded in bootstrap metadata.
 - Skill source provenance is generated in `.agents/skill-sources.yml` for selected skills, so future drift checks can compare vendored/imported skills against upstream sources where known.
+- Downstream refresh remains explicit: future tooling should preview and optionally refresh selected generated assets, not live-sync repositories back to this Reference Source.
 - Root `.agents/` dogfoods the Reference Source asset set: profile family files, selectable skills, and non-secret tool/advisory guidance live in this repository as working defaults as well as generated templates.
 - Every root dogfooded skill is registered as a selectable downstream skill and has a matching template under `src/repo_familiar/templates/skills/`.
 - `advise` recommends stage, profile families, asset groups, next commands, and memory usage for an existing repository. It accepts `--intent` so intended near-term work can adjust recommendations beyond observed repo maturity.
@@ -260,6 +261,8 @@ Acceptance criteria:
 - Bootstrap metadata remains sufficient to reason about old generated repositories.
 - Current `upgrade` command is read-only and writes no files.
 - No safe auto-apply path is exposed until Bootstrap Metadata records enough template context for exact rendered comparisons.
+- Next evolution: add an explicit `refresh-selected-assets` or expanded `upgrade --preview/--apply` workflow that compares selected generated assets against current Reference Source output, separates safe unchanged assets from local edits, and never overwrites local changes silently.
+- Refresh strategies should be asset-aware: skills update only when unchanged from recorded checksums, `.agents/*.yml` can merge profile keys when safe, `.agents/skill-sources.yml` can refresh provenance when unmodified, `AGENTS.md` should use heading-based merge preview, `.gitignore` should use line-union merge, and `README.md`/`plan.md` should remain manual-review by default.
 
 ### 8. Add Drift Detection
 
@@ -440,9 +443,11 @@ Priority 5: Dogfood `diff-upstream-candidate` plus `upstream-improvement` on thi
 
 Priority 6: Dogfood the read-only `upgrade` command on this Reference Source and one Downstream Repository. Capture which metadata fields are needed before a write-capable updater can safely exist.
 
-Priority 7: Re-run `improve-codebase-architecture` after dogfooding `diff-upstream-candidate` and before implementing write-capable upgrade behavior.
+Priority 7: Design the explicit selected-asset refresh workflow. Prefer evolving `upgrade` or adding `refresh-selected-assets --preview`; avoid any command named or behaving like automatic sync.
 
-Priority 8: Consider `prepare-upstream-pr` only after two or three manual upstream improvement proposals expose repeated steps.
+Priority 8: Re-run `improve-codebase-architecture` after dogfooding `diff-upstream-candidate` and before implementing write-capable upgrade behavior.
+
+Priority 9: Consider `prepare-upstream-pr` only after two or three manual upstream improvement proposals expose repeated steps.
 
 ## Verification Commands
 
@@ -477,4 +482,5 @@ uv run python -m repo_familiar generate \
 - What concrete template complexity should trigger Banks adoption?
 - Should existing repository bootstrap update schema v1 or introduce schema v2 once adopted/conflicted assets are tracked?
 - Should future upgrade behavior use checksum drift, three-way merge, or explicit user prompts for each changed generated asset?
+- Should the explicit refresh command be an expanded `upgrade` command or a separate `refresh-selected-assets` command?
 - Should upstream-improvement start as a skill only, or should it also get a first-class CLI command once two or three real upstream PRs expose the repeated steps?

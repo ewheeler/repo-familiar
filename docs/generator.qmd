@@ -280,6 +280,8 @@ Generated asset records include `content_sha256` for drift detection. The metada
 
 `upgrade` is read-only in the current implementation. It reports assets that would need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade. It deliberately reports no safe auto-apply path until Bootstrap Metadata records enough template context for exact rendered comparisons.
 
+The next upgrade evolution should be an explicit selected-asset refresh, not automatic sync. A future `upgrade --preview` or `refresh-selected-assets --preview` should compare selected generated assets, skill templates, profile output, and skill-source provenance against the current Reference Source. Apply mode should stay opt-in and conservative: auto-update only unchanged generated files, use line-union `.gitignore` merges, preview `AGENTS.md` heading merges, and default `README.md`/`plan.md` to manual review.
+
 `resolve-conflicts` is also read-only. It previews merge strategies for conflicted files, starting with Markdown heading suggestions for `AGENTS.md` and line-union suggestions for `.gitignore`.
 
 ## Generated Files

@@ -4,8 +4,15 @@ profiles:
     purpose: "shared design vocabulary and anti-pattern checks for frontend or published docs work"
     guidance:
       - "Use design critique before polishing UI or documentation sites"
+      - "Use `npx impeccable detect <path-or-url>` when deterministic design anti-pattern checks are useful"
       - "Avoid generic AI frontend defaults and overused visual patterns"
       - "Keep project design guidance in repository docs such as DESIGN.md when adopted"
+    setup:
+      - "Install the optional Impeccable skill with `npx skills add pbakaus/impeccable` when the agent harness supports skills"
+      - "Install the optional CLI with npm/npx when deterministic checks are useful"
+    verify:
+      - "npx impeccable --help"
+      - "Confirm the Impeccable skill appears in the target agent harness when installed"
   design-a11y:
     tool: "axe-core, pa11y, Lighthouse, Playwright, or equivalent accessibility scanners"
     purpose: "accessibility-first design checks for user-facing web outputs"
@@ -13,3 +20,8 @@ profiles:
       - "Scan rendered pages or app routes for WCAG A/AA issues before design polish is considered complete"
       - "Include keyboard navigation, focus order, labels, headings, landmarks, contrast, alt text, and form semantics in review"
       - "Document known issues and suppressions explicitly instead of silently excluding broad selectors or rules"
+    setup:
+      - "Use existing project accessibility tooling when present"
+      - "For Node projects, install @axe-core/playwright, pa11y, or Lighthouse as project-local dev dependencies when needed"
+    verify:
+      - "Run one accessibility scan against a local rendered page before release handoff"

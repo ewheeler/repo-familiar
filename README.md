@@ -186,6 +186,8 @@ Model/provider profiles should be generated into `.agents/models.yml` for agent-
 
 Tool profiles should be generated into `.agents/tools.yml` as non-secret repository guidance. `.repo-familiar/bootstrap.yml` records selected tool profile names under `selected_options.tool_profiles`.
 
+Tool, advisory, and skill-source records may include `setup` and `verify` guidance. These commands are opt-in instructions only; `repo-familiar` does not install tools or mutate the workstation automatically.
+
 Memory, sandbox, design, public-interest, and worktree profiles are advisory profile families. They generate `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/design.yml`, `.agents/public-interest.yml`, and `.agents/worktrees.yml` and record selected names in `.repo-familiar/bootstrap.yml`.
 
 Secrets profiles are also advisory. They generate `.agents/secrets.yml` and `.env.example`, ignore real local env files, and record selected profile names without storing secret values.
@@ -272,6 +274,8 @@ uv run python -m repo_familiar check --path /path/to/repo --format json
 Use `diff-upstream-candidate` to classify generated asset changes before proposing reusable improvements back to this Reference Source. Pair it with the `upstream-improvement` skill so private details and local-only changes are filtered before any upstream PR is drafted.
 
 Use `upgrade` as a read-only readiness preview before any future write-capable upgrade. It reports user-review items, blockers, and unavailable update candidates without changing files.
+
+Future refresh behavior should stay explicit rather than becoming live sync. The intended next evolution is a read-first `upgrade`/`refresh-selected-assets --preview` workflow that compares selected generated assets, skill templates, profile output, and `.agents/skill-sources.yml` provenance against the current Reference Source. Apply mode should be opt-in, asset-group scoped, and safe by default: update only unchanged generated files automatically, merge `.gitignore` by line union, preview `AGENTS.md` heading merges, and leave `README.md`/`plan.md` for manual review unless the user explicitly chooses otherwise.
 
 Use `resolve-conflicts` to preview safe merge strategies before touching user-owned conflicting files. The first pass is read-only: it suggests Markdown heading merges for `AGENTS.md`, line-union additions for `.gitignore`, and manual review for other conflicted assets.
 

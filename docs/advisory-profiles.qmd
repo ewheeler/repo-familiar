@@ -21,6 +21,8 @@ Advisory profiles describe optional repository capabilities without installing o
 
 Selected profile names are recorded in `.repo-familiar/bootstrap.yml` under `selected_options`.
 
+Profiles may include `setup` and `verify` guidance. These fields are advisory: they tell a user or agent how to install or validate optional tools, but `repo-familiar` does not run the commands automatically.
+
 ## Current Profiles
 
 Memory:
@@ -62,7 +64,7 @@ Secrets:
 
 Design:
 
-- `design-impeccable`: shared design vocabulary and anti-pattern checks using Impeccable-style guidance.
+- `design-impeccable`: shared design vocabulary and anti-pattern checks using Impeccable-style guidance. When the agent harness supports skills, install the optional skill with `npx skills add pbakaus/impeccable`; use `npx impeccable detect <path-or-url>` for deterministic design anti-pattern checks.
 - `design-a11y`: accessibility-first design checks for user-facing web outputs.
 
 Worktree:

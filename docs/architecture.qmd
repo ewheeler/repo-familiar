@@ -67,6 +67,8 @@ The `basic` template can generate:
 
 Generated assets should be vendored into the downstream repository by default. Future update behavior should be explicit, likely through an upgrade command, rather than live synchronization back to this reference source.
 
+The planned refresh model is preview-first and selected-asset based. It should compare generated assets, profile render output, skill templates, and skill-source provenance against the current Reference Source, then classify safe updates, local edits, missing assets, and conflicts. Any apply path should be opt-in and asset-aware rather than a background sync.
+
 The `.repo-familiar/` namespace is reserved for generator-owned metadata. It is separate from `.agents/`, which should remain focused on agent runtime instructions and skills.
 
 The first `.repo-familiar/bootstrap.yml` schema should include only provenance and generation choices:

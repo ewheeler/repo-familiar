@@ -53,6 +53,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("provider:", models)
         self.assertIn("browser-automation:", tools)
         self.assertIn("screenshots", tools)
+        self.assertIn("setup:", tools)
+        self.assertIn("verify:", tools)
         self.assertIn("memory-local:", memory)
 
     def test_generated_profile_files_match_registry_renderers(self) -> None:
@@ -101,6 +103,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/andrewyng/context-hub/blob/main/cli/skills/get-api-docs/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("chub --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("playwright-cli --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
 
 
 def _all_profile_options() -> GenerationOptions:

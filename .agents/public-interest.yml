@@ -8,6 +8,10 @@ profiles:
       - "Design for low-connectivity, low-end devices, shared devices, assistive technology, and varied literacy or language contexts"
       - "Avoid dark patterns, manipulative engagement mechanics, unnecessary profiling, and surveillance-like defaults"
       - "Plan for localization, right-to-left layouts, culturally appropriate content, and handover to local partners or public institutions"
+    setup:
+      - "Identify applicable child-safeguarding, privacy, accessibility, and localization review requirements before implementation"
+    verify:
+      - "Document child-rights, safeguarding, privacy, and escalation assumptions before production maintenance"
   public-interest-digital:
     tool: "public-interest digital delivery review"
     purpose: "keep civic, humanitarian, education, and public-sector digital services transparent, inclusive, resilient, and maintainable"
@@ -16,3 +20,7 @@ profiles:
       - "Make data collection, automation, AI use, and recommendation logic legible to users where relevant"
       - "Treat poor connectivity, old devices, shared access, translation, accessibility, and support pathways as normal operating conditions"
       - "Document operational assumptions, ownership, monitoring, and handover paths before production maintenance"
+    setup:
+      - "Identify public-sector, partner-handover, localization, accessibility, and low-connectivity constraints before implementation"
+    verify:
+      - "Document operational ownership, handover assumptions, and support paths before production maintenance"

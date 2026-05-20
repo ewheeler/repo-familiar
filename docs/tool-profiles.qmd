@@ -6,6 +6,8 @@ Tool profiles are non-secret recommendations for tools or MCPs that a generated 
 
 They are written to `.agents/tools.yml` in downstream repositories. Machine-specific installation and credentials stay out of scope.
 
+Tool profiles can include `setup` and `verify` fields. These are instructions for users or agents to run explicitly; generation and bootstrap commands do not install tools automatically.
+
 Memory, sandbox, secrets, design, public-interest, and worktree guidance use separate advisory profile files. See [Advisory Profiles](./advisory-profiles.qmd).
 
 ## Current Profiles

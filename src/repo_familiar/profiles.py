@@ -31,6 +31,14 @@ TOOL_PROFILES = {
     "cq": {
         "purpose": "query shared agent knowledge before implementation and before fixing errors",
         "config": "MCP/server setup remains machine-specific and is not generated as a secret",
+        "setup": [
+            "Install and configure the cq MCP/server outside the repository following https://github.com/mozilla-ai/cq",
+            "Enable cq tools in the agent harness before relying on the cq skill",
+        ],
+        "verify": [
+            "Confirm cq MCP tools are available in the agent harness",
+            "Run cq status when the local setup exposes a cq CLI/server status command",
+        ],
         "notes": [
             "Use before implementation tasks where tool, version, or integration gotchas may matter",
             "Record useful discoveries back into the knowledge commons",
@@ -39,6 +47,14 @@ TOOL_PROFILES = {
     "a11y-scanner": {
         "purpose": "scan user-facing web outputs for automatically detectable accessibility issues",
         "config": "Use project-appropriate tools such as pa11y, axe-core, @axe-core/playwright, Lighthouse, or Playwright MCP/browser automation",
+        "setup": [
+            "Use existing project accessibility tooling when present",
+            "For Node projects, prefer project-local dev dependencies such as pa11y, @axe-core/playwright, or Lighthouse",
+        ],
+        "verify": [
+            "npx pa11y --help",
+            "npx lighthouse --help",
+        ],
         "notes": [
             "Run automated scans during design iteration and before production handoff",
             "Treat automated results as a floor, not a complete accessibility review",
@@ -48,6 +64,14 @@ TOOL_PROFILES = {
     "browser-automation": {
         "purpose": "let agents inspect rendered pages, interact with web apps, capture screenshots, check console errors, and run browser smoke checks",
         "config": "Use the project-appropriate browser driver: Playwright CLI for agent-friendly snapshots and screenshots, or Rodney for persistent Chrome sessions and shell-scriptable checks",
+        "setup": [
+            "Install Playwright CLI with npm install -g @playwright/cli@latest or use npx playwright-cli when available project-locally",
+            "Install or build Rodney from https://github.com/simonw/rodney when persistent Chrome sessions or accessibility tree queries are needed",
+        ],
+        "verify": [
+            "playwright-cli --help or npx playwright-cli --help",
+            "rodney --help",
+        ],
         "notes": [
             "Prefer rendered pages or local preview servers over static source inspection for layout and interaction checks",
             "Use Playwright CLI when the agent needs snapshots, screenshots, console inspection, and interactive page exploration",
@@ -59,12 +83,21 @@ TOOL_PROFILES = {
     "opencode-homebrew-path": {
         "purpose": "document how macOS Homebrew users can expose CLIs such as node, npm, npx, pnpm, uv, and quarto to OpenCode agent shells",
         "config": "Agent-shell guidance only: if OpenCode uses /bin/zsh, put /opt/homebrew/bin and /usr/local/bin on PATH via ~/.zshenv so non-interactive tool calls can find Homebrew CLIs",
+        "setup": [
+            "For zsh, put export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" in ~/.zshenv",
+            "Set OpenCode global config shell to /bin/zsh in ~/.config/opencode/opencode.json when needed",
+        ],
+        "verify": [
+            "node --version",
+            "npm --version",
+            "npx --version",
+            "pnpm --version",
+            "uv --version",
+            "quarto --version",
+        ],
         "notes": [
             "This profile does not install Homebrew, mutate shell files, or configure a workstation automatically",
             "OpenCode tool calls may run in non-interactive shells that do not read ~/.zshrc",
-            "For zsh, put export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\" in ~/.zshenv",
-            "Set OpenCode global config shell to /bin/zsh in ~/.config/opencode/opencode.json when needed",
-            "Verify inside the agent with node --version, npm --version, npx --version, pnpm --version, uv --version, and quarto --version",
             "If pnpm is still unavailable after PATH is fixed, run corepack enable outside the repository",
         ],
     }
@@ -74,6 +107,12 @@ MEMORY_PROFILES = {
     "memory-local": {
         "tool": "omega-memory or cq",
         "purpose": "local-first cross-session decisions, lessons, and repeated error patterns",
+        "setup": [
+            "Configure omega-memory or cq outside the repository; keep memory stores local-first unless a team explicitly opts into sync",
+        ],
+        "verify": [
+            "Confirm the selected memory tool is available in the agent harness before relying on cross-session recall",
+        ],
         "guidance": [
             "Prefer local-first memory stores for project-specific decisions and lessons",
             "Keep credentials and private personal data out of repository memory profiles",
@@ -135,6 +174,12 @@ REPOMAP_PROFILES = {
     "hamilton-dag": {
         "tool": "Hamilton DAG visualization and graph fingerprints",
         "purpose": "map dataflow, prompt chains, and pipeline abstractions using Hamilton DAGs",
+        "setup": [
+            "Install Hamilton in the project environment when DAG visualization or fingerprints are needed",
+        ],
+        "verify": [
+            "python -c \"import hamilton; print(hamilton.__version__)\"",
+        ],
         "guidance": [
             "Use Hamilton DAG images as architecture artifacts for prompt and data pipelines",
             "Keep non-DAG helper functions outside Hamilton modules when graph fingerprints matter",
@@ -148,6 +193,12 @@ SANDBOX_PROFILES = {
     "sandbox-light": {
         "tool": "zerobox",
         "purpose": "run generated code, tests, installs, and unknown scripts with constrained writes and network",
+        "setup": [
+            "Install or configure the chosen sandbox tool outside repo-familiar before running untrusted commands",
+        ],
+        "verify": [
+            "Run the sandbox tool's help/status command before using it for package installs or generated code",
+        ],
         "guidance": [
             "Default to no network for generated or unknown code",
             "Allow writes only to explicit build, temp, or output directories",
@@ -157,6 +208,12 @@ SANDBOX_PROFILES = {
     "sandbox-agent-runtime": {
         "tool": "OpenShell",
         "purpose": "policy-governed runtime for longer autonomous agent sessions",
+        "setup": [
+            "Configure OpenShell policies outside the repository before using this profile for autonomous sessions",
+        ],
+        "verify": [
+            "Run the OpenShell policy validation or status command for the target workspace",
+        ],
         "guidance": [
             "Use declarative filesystem, network, process, and inference policies",
             "Treat credential providers as runtime injection, not repository secrets",
@@ -169,6 +226,13 @@ SECRETS_PROFILES = {
     "dotenv-local": {
         "tool": "python-dotenv, dotenvx, framework-native dotenv loading, or shell export",
         "purpose": "local development environment variables with committed examples and ignored real values",
+        "setup": [
+            "Commit .env.example with placeholders and keep real .env files ignored",
+            "Use the framework-native dotenv loader or add a development-only loader explicitly",
+        ],
+        "verify": [
+            "Confirm .env is ignored and .env.example contains no real secret values",
+        ],
         "guidance": [
             "Commit .env.example with placeholder names and non-secret defaults only",
             "Ignore .env, .env.*, and local override files except .env.example",
@@ -178,6 +242,14 @@ SECRETS_PROFILES = {
     "kvenv-azure-keyvault": {
         "tool": "kvenv",
         "purpose": "use Azure Key Vault references in dotenv files so agents see references, not secret values",
+        "setup": [
+            "Install kvenv outside the repository and authenticate with Azure CLI",
+            "Use kv:// references in dotenv files instead of literal secrets",
+        ],
+        "verify": [
+            "kvenv --help",
+            "Run one non-production command through kvenv to confirm references resolve",
+        ],
         "guidance": [
             "Use kv:// references in .env files instead of literal secrets",
             "Authenticate with Azure CLI outside the repository",
@@ -187,6 +259,14 @@ SECRETS_PROFILES = {
     "onepassword-op": {
         "tool": "1Password CLI op run",
         "purpose": "inject local or team-managed secrets into process environments without writing them to repo files",
+        "setup": [
+            "Install the 1Password CLI and sign in outside the repository",
+            "Store secrets in 1Password and commit only references or placeholders",
+        ],
+        "verify": [
+            "op --version",
+            "op whoami",
+        ],
         "guidance": [
             "Store secrets in 1Password and commit only reference placeholders or .env.example",
             "Run local commands through op run or op inject when secret values are needed",
@@ -199,8 +279,17 @@ DESIGN_PROFILES = {
     "design-impeccable": {
         "tool": "impeccable",
         "purpose": "shared design vocabulary and anti-pattern checks for frontend or published docs work",
+        "setup": [
+            "Install the optional Impeccable skill with `npx skills add pbakaus/impeccable` when the agent harness supports skills",
+            "Install the optional CLI with npm/npx when deterministic checks are useful",
+        ],
+        "verify": [
+            "npx impeccable --help",
+            "Confirm the Impeccable skill appears in the target agent harness when installed",
+        ],
         "guidance": [
             "Use design critique before polishing UI or documentation sites",
+            "Use `npx impeccable detect <path-or-url>` when deterministic design anti-pattern checks are useful",
             "Avoid generic AI frontend defaults and overused visual patterns",
             "Keep project design guidance in repository docs such as DESIGN.md when adopted",
         ],
@@ -208,6 +297,13 @@ DESIGN_PROFILES = {
     "design-a11y": {
         "tool": "axe-core, pa11y, Lighthouse, Playwright, or equivalent accessibility scanners",
         "purpose": "accessibility-first design checks for user-facing web outputs",
+        "setup": [
+            "Use existing project accessibility tooling when present",
+            "For Node projects, install @axe-core/playwright, pa11y, or Lighthouse as project-local dev dependencies when needed",
+        ],
+        "verify": [
+            "Run one accessibility scan against a local rendered page before release handoff",
+        ],
         "guidance": [
             "Scan rendered pages or app routes for WCAG A/AA issues before design polish is considered complete",
             "Include keyboard navigation, focus order, labels, headings, landmarks, contrast, alt text, and form semantics in review",
@@ -232,6 +328,12 @@ PUBLIC_INTEREST_PROFILES = {
     "child-rights-digital": {
         "tool": "child rights, safeguarding, inclusive design, and public-interest technology review",
         "purpose": "guide child-facing digital work toward safety, dignity, inclusion, accountability, and maintainability",
+        "setup": [
+            "Identify applicable child-safeguarding, privacy, accessibility, and localization review requirements before implementation",
+        ],
+        "verify": [
+            "Document child-rights, safeguarding, privacy, and escalation assumptions before production maintenance",
+        ],
         "guidance": [
             "Treat child safety, dignity, agency, and safeguarding as first-order design constraints",
             "Prefer data minimization, clear consent, limited retention, and safe escalation paths",
@@ -243,6 +345,12 @@ PUBLIC_INTEREST_PROFILES = {
     "public-interest-digital": {
         "tool": "public-interest digital delivery review",
         "purpose": "keep civic, humanitarian, education, and public-sector digital services transparent, inclusive, resilient, and maintainable",
+        "setup": [
+            "Identify public-sector, partner-handover, localization, accessibility, and low-connectivity constraints before implementation",
+        ],
+        "verify": [
+            "Document operational ownership, handover assumptions, and support paths before production maintenance",
+        ],
         "guidance": [
             "Prefer boring, well-supported technology that local teams can inherit and operate",
             "Make data collection, automation, AI use, and recommendation logic legible to users where relevant",
@@ -492,6 +600,8 @@ def render_tool_profiles(profile_names: tuple[str, ...]) -> str:
         if notes:
             lines.append("    notes:")
             lines.extend(_yaml_list(notes, indent="      "))
+        _append_optional_list(lines, profile, "setup", indent="    ")
+        _append_optional_list(lines, profile, "verify", indent="    ")
     return "\n".join(lines)
 
 
@@ -506,6 +616,8 @@ def render_advisory_profiles(registry: dict, profile_names: tuple[str, ...]) -> 
         if guidance:
             lines.append("    guidance:")
             lines.extend(_yaml_list(guidance, indent="      "))
+        _append_optional_list(lines, profile, "setup", indent="    ")
+        _append_optional_list(lines, profile, "verify", indent="    ")
     return "\n".join(lines) if lines else "  {}"
 
 
@@ -519,7 +631,57 @@ def render_skill_sources(skill_names: tuple[str, ...]) -> str:
         notes = source.get("notes")
         if notes:
             lines.append(f"    notes: {_yaml_scalar(notes)}")
+        _append_optional_list(lines, {"setup": _skill_setup(name, source)}, "setup", indent="    ")
+        _append_optional_list(lines, {"verify": _skill_verify(name, source)}, "verify", indent="    ")
     return "\n".join(lines) if lines else "  {}"
+
+
+def _skill_setup(name: str, source: dict) -> list[str]:
+    if "setup" in source:
+        return source["setup"]
+    source_url = source.get("source_url", "")
+    if "mattpocock/skills" in source_url:
+        return [
+            f"Select with repo-familiar using `--skill {name}` when generating or bootstrapping a repository",
+            "For source installs outside repo-familiar, run `npx skills@latest add mattpocock/skills`",
+        ]
+    if "omega-memory/omega-skills" in source_url:
+        return [
+            f"Select with repo-familiar using `--skill {name}` when generating or bootstrapping a repository",
+            "For source installs outside repo-familiar, copy the matching skill from omega-memory/omega-skills",
+        ]
+    if "microsoft/playwright-cli" in source_url:
+        return [
+            "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx playwright-cli`",
+        ]
+    if "context-hub" in source_url:
+        return [
+            "Install chub with `npm install -g @aisuite/chub` if `chub --help` is unavailable",
+        ]
+    if "mozilla-ai/cq" in source_url:
+        return [
+            "Install and configure the cq MCP/server outside the repository following https://github.com/mozilla-ai/cq",
+        ]
+    if "simonw/rodney" in source_url:
+        return [
+            "Install or build Rodney from https://github.com/simonw/rodney when browser automation needs persistent Chrome state",
+        ]
+    return [f"Select with repo-familiar using `--skill {name}` when generating or bootstrapping a repository"]
+
+
+def _skill_verify(name: str, source: dict) -> list[str]:
+    if "verify" in source:
+        return source["verify"]
+    source_url = source.get("source_url", "")
+    if "microsoft/playwright-cli" in source_url:
+        return ["playwright-cli --help or npx playwright-cli --help"]
+    if "context-hub" in source_url:
+        return ["chub --help"]
+    if "mozilla-ai/cq" in source_url:
+        return ["Confirm cq MCP tools are available in the agent harness"]
+    if "simonw/rodney" in source_url:
+        return ["rodney --help"]
+    return [f"Confirm `.agents/skills/{name}/SKILL.md` exists after generation or bootstrap"]
 
 
 def _validate(label: str, values: tuple[str, ...], registry: dict) -> None:
@@ -531,6 +693,13 @@ def _validate(label: str, values: tuple[str, ...], registry: dict) -> None:
 
 def _yaml_list(values, *, indent: str) -> list[str]:
     return [f"{indent}- {_yaml_scalar(value)}" for value in values]
+
+
+def _append_optional_list(lines: list[str], profile: dict, key: str, *, indent: str) -> None:
+    values = profile.get(key, [])
+    if values:
+        lines.append(f"{indent}{key}:")
+        lines.extend(_yaml_list(values, indent=f"{indent}  "))
 
 
 def _yaml_scalar(value) -> str:

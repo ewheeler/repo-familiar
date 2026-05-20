@@ -50,4 +50,5 @@ The `basic` template currently uses:
 - Add harness-specific adapters only when selected.
 - Add automated upstream drift checks for external skill sources recorded in `.agents/skill-sources.yml`.
 - Add upgrade-aware merge behavior for generated assets.
+- Design explicit selected-asset refresh behavior that can preview profile, skill, provenance, and generated-doc updates without live-syncing downstream repositories.
 - Reuse asset selection rules for existing repository bootstrap, where files may already exist and conflicts need explicit handling.

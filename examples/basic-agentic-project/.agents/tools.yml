@@ -5,3 +5,9 @@ profiles:
     notes:
       - "Use before implementation tasks where tool, version, or integration gotchas may matter"
       - "Record useful discoveries back into the knowledge commons"
+    setup:
+      - "Install and configure the cq MCP/server outside the repository following https://github.com/mozilla-ai/cq"
+      - "Enable cq tools in the agent harness before relying on the cq skill"
+    verify:
+      - "Confirm cq MCP tools are available in the agent harness"
+      - "Run cq status when the local setup exposes a cq CLI/server status command"
