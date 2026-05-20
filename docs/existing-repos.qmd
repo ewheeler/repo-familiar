@@ -48,6 +48,7 @@ uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profil
 uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
 uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault --apply
+uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile sops-age --sops-age-recipient age1... --apply
 uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-impeccable --apply
 uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-profile parallel-worktrees --apply
 uv run python -m repo_familiar check --path /path/to/repo
@@ -167,6 +168,7 @@ Recommended options:
 - `kvenv-azure-keyvault`: `.env` contains `kv://` references; `kvenv` resolves them from Azure Key Vault when launching a command.
 - `onepassword-op`: 1Password stores the values; `op run` or `op inject` provides them to the process.
 - `dotenv-local`: `.env.example` is committed, `.env` is ignored, and local values remain machine-local.
+- `sops-age`: selected secret/config files are committed encrypted with SOPS and age. Pass `--sops-age-recipient` to generate `.sops.yaml` and the `secrets/` workflow docs; without recipients, only advisory guidance is generated.
 
 For all options, never store real secret values in `.agents/*.yml`, `.repo-familiar/bootstrap.yml`, memory, or committed docs.
 

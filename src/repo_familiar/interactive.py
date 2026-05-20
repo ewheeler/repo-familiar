@@ -62,6 +62,7 @@ def prompt_generation_options(args) -> GenerationOptions:
         reference_url=args.reference_url,
         reference_ref=args.reference_ref,
         generated_at=args.generated_at,
+        sops_age_recipients=_tuple_from_args(args.sops_age_recipients, ()),
         force=args.force or _ask_confirm(questionary, "Overwrite existing generated files if needed?", default=False),
         dry_run=args.dry_run or _ask_confirm(questionary, "Dry run only?", default=True),
     )
@@ -104,6 +105,7 @@ def prompt_existing_options(args) -> tuple[ExistingBootstrapOptions, bool]:
         reference_url=args.reference_url,
         reference_ref=args.reference_ref,
         generated_at=args.generated_at,
+        sops_age_recipients=_tuple_from_args(args.sops_age_recipients, ()),
         asset_groups=asset_groups,
         force=force,
     )

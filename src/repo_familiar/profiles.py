@@ -273,6 +273,27 @@ SECRETS_PROFILES = {
             "Keep 1Password item names and vault naming conventions documented without exposing secret values",
         ],
     },
+    "sops-age": {
+        "tool": "sops with age",
+        "purpose": "encrypt selected repository config or secret files while keeping plaintext out of git",
+        "setup": [
+            "Install sops and age outside the repository",
+            "Create or obtain an age recipient outside the repository",
+            "Commit .sops.yaml only with public recipients and path rules",
+        ],
+        "verify": [
+            "sops --version",
+            "age --version",
+            "sops -d path/to/encrypted-file",
+        ],
+        "guidance": [
+            "Use SOPS for files that must be committed encrypted, not for broad plaintext .env storage",
+            "Prefer age recipients for simple local or team key management",
+            "Keep age private keys outside the repository",
+            "Never commit decrypted secret files or generated plaintext",
+            "Keep .sops.yaml rules narrow so only intended files are encrypted",
+        ],
+    },
 }
 
 DESIGN_PROFILES = {
@@ -282,6 +303,7 @@ DESIGN_PROFILES = {
         "setup": [
             "Install the optional Impeccable skill with `npx skills add pbakaus/impeccable` when the agent harness supports skills",
             "Install the optional CLI with npm/npx when deterministic checks are useful",
+            "If Impeccable is installed, periodically run `npx impeccable skills update` to refresh the local skill bundle",
         ],
         "verify": [
             "npx impeccable --help",

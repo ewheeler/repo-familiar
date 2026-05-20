@@ -119,6 +119,60 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(len(assets), 26)
             self.assertFalse(output_dir.exists())
 
+    def test_sops_age_without_recipient_is_guidance_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "demo-project"
+            generate_project(
+                GenerationOptions(
+                    name="Demo Project",
+                    description="A generated demo.",
+                    output_dir=output_dir,
+                    secrets_profiles=("sops-age",),
+                    generated_at="2026-05-10T00:00:00Z",
+                )
+            )
+
+            self.assertTrue((output_dir / ".agents/secrets.yml").exists())
+            self.assertIn("sops-age:", (output_dir / ".agents/secrets.yml").read_text())
+            self.assertFalse((output_dir / ".sops.yaml").exists())
+            self.assertFalse((output_dir / "secrets/README.md").exists())
+
+    def test_sops_age_with_recipient_generates_scaffold(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "demo-project"
+            generate_project(
+                GenerationOptions(
+                    name="Demo Project",
+                    description="A generated demo.",
+                    output_dir=output_dir,
+                    secrets_profiles=("sops-age",),
+                    sops_age_recipients=("age1example", "age1team"),
+                    generated_at="2026-05-10T00:00:00Z",
+                )
+            )
+
+            self.assertIn("age1example", (output_dir / ".sops.yaml").read_text())
+            self.assertTrue((output_dir / "secrets/.gitignore").exists())
+            self.assertIn("sops exec-env", (output_dir / "secrets/README.md").read_text())
+            self.assertTrue((output_dir / "docs/secrets.qmd").exists())
+
+    def test_existing_sops_config_is_conflict(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+            (repo / ".sops.yaml").write_text("creation_rules: []\n")
+
+            report = audit_existing_repository(
+                ExistingBootstrapOptions(
+                    path=repo,
+                    secrets_profiles=("sops-age",),
+                    sops_age_recipients=("age1example",),
+                    asset_groups=("secrets",),
+                )
+            )
+
+            self.assertIn(".sops.yaml", {asset.path for asset in report.conflicts})
+
     def test_cli_lists_templates_and_model_profiles(self) -> None:
         stdout = StringIO()
         with redirect_stdout(stdout):
@@ -165,6 +219,7 @@ class GeneratorTests(unittest.TestCase):
             ("list-repomap-profiles", "hamilton-dag"),
             ("list-sandbox-profiles", "sandbox-light"),
             ("list-secrets-profiles", "kvenv-azure-keyvault"),
+            ("list-secrets-profiles", "sops-age"),
             ("list-design-profiles", "design-impeccable"),
             ("list-design-profiles", "design-a11y"),
             ("list-worktree-profiles", "parallel-worktrees"),
@@ -461,6 +516,19 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(payload["recommended_stage"], "implementation-planning")
             self.assertEqual(payload["intended_work"], ["significant-refactor"])
             self.assertIn("improve-codebase-architecture", payload["recommended_profiles"]["skills"])
+
+    def test_advise_recommends_sops_for_dotenv_without_sops(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+            (repo / ".env.example").write_text("# EXAMPLE=value\n")
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                result = main(["advise", "--path", str(repo), "--format", "json"])
+
+            self.assertEqual(result, 0)
+            payload = json.loads(stdout.getvalue())
+            self.assertIn("sops-age", payload["recommended_profiles"]["secrets_profiles"])
 
     def test_resolve_conflicts_previews_safe_strategies(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

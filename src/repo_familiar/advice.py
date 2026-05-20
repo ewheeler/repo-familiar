@@ -21,6 +21,8 @@ class RepositorySignals:
     has_frontend: bool
     has_container_config: bool
     has_design_docs: bool
+    has_dotenv: bool
+    has_sops_config: bool
 
 
 @dataclass(frozen=True)
@@ -69,7 +71,7 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
     repomap_profiles = advice_dag.recommended_repomap_profiles(has_prompt_dag, signals)
     worktree_profiles = advice_dag.recommended_worktree_profiles(stage, signals)
     public_interest_profiles = _recommended_public_interest_profiles(is_policy_or_education)
-    secrets_profiles = advice_dag.recommended_secrets_profiles()
+    secrets_profiles = _extend(advice_dag.recommended_secrets_profiles(), _recommended_sops_profiles(signals))
     skills = _extend(advice_dag.recommended_skills(has_user_facing_web, has_prompt_dag, safety_profiles, privacy_profiles), _intent_skills(intended_work))
     asset_groups = _asset_groups_for_recommendations(
         advice_dag.recommended_asset_groups(stage, signals, has_user_facing_web),
@@ -162,6 +164,12 @@ def _recommended_public_interest_profiles(is_policy_or_education: bool) -> tuple
     return ()
 
 
+def _recommended_sops_profiles(signals: RepositorySignals) -> tuple[str, ...]:
+    if signals.has_dotenv and not signals.has_sops_config:
+        return ("sops-age",)
+    return ()
+
+
 def _extend(base: tuple[str, ...], additions: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(dict.fromkeys((*base, *additions)))
 
@@ -209,6 +217,8 @@ def detect_repository_signals(path: Path) -> RepositorySignals:
         has_frontend=(path / "package.json").exists() or (path / "src").joinpath("components").exists(),
         has_container_config=(path / "docker-compose.yml").exists() or (path / "compose.yml").exists() or (path / "Dockerfile").exists() or (path / "Coastfile").exists(),
         has_design_docs=(path / "DESIGN.md").exists() or (path / "STYLE.md").exists(),
+        has_dotenv=(path / ".env").exists() or (path / ".env.example").exists() or any(path.glob(".env.*")),
+        has_sops_config=(path / ".sops.yaml").exists() or (path / ".sops.yml").exists(),
     )
 
 

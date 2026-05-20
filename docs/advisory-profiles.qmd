@@ -61,10 +61,13 @@ Secrets:
 - `dotenv-local`: committed `.env.example`, ignored `.env`, and explicit dotenv loading conventions.
 - `kvenv-azure-keyvault`: `.env` values as `kv://` Azure Key Vault references and `kvenv -- <command>` execution.
 - `onepassword-op`: 1Password CLI `op run` or `op inject` for process-time secret injection.
+- `sops-age`: encrypted committed config or secret files using SOPS and age, with plaintext and age private keys kept outside the repository.
+
+The `sops-age` profile is guidance-only unless an age public recipient is explicitly passed with `--sops-age-recipient`. With recipients, `repo-familiar` can generate `.sops.yaml`, `secrets/.gitignore`, `secrets/README.md`, and `docs/secrets.qmd`.
 
 Design:
 
-- `design-impeccable`: shared design vocabulary and anti-pattern checks using Impeccable-style guidance. When the agent harness supports skills, install the optional skill with `npx skills add pbakaus/impeccable`; use `npx impeccable detect <path-or-url>` for deterministic design anti-pattern checks.
+- `design-impeccable`: shared design vocabulary and anti-pattern checks using Impeccable-style guidance. When the agent harness supports skills, install the optional skill with `npx skills add pbakaus/impeccable`; use `npx impeccable detect <path-or-url>` for deterministic design anti-pattern checks. If Impeccable is installed, periodically run `npx impeccable skills update` to refresh the local skill bundle.
 - `design-a11y`: accessibility-first design checks for user-facing web outputs.
 
 Worktree:
@@ -97,6 +100,7 @@ uv run python -m repo_familiar add-public-interest --path /repo --public-interes
 uv run python -m repo_familiar add-repomap --path /repo --repomap-profile hamilton-dag --apply
 uv run python -m repo_familiar add-sandbox --path /repo --sandbox-profile sandbox-light --apply
 uv run python -m repo_familiar add-secrets --path /repo --secrets-profile kvenv-azure-keyvault --apply
+uv run python -m repo_familiar add-secrets --path /repo --secrets-profile sops-age --sops-age-recipient age1... --apply
 uv run python -m repo_familiar add-design --path /repo --design-profile design-impeccable --apply
 uv run python -m repo_familiar add-worktree --path /repo --worktree-profile parallel-worktrees --apply
 ```

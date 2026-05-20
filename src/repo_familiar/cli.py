@@ -369,6 +369,13 @@ def _add_selection_arguments(parser: argparse.ArgumentParser) -> None:
         default=None,
         help="override generated_at timestamp; primarily useful for deterministic examples",
     )
+    parser.add_argument(
+        "--sops-age-recipient",
+        action="append",
+        dest="sops_age_recipients",
+        default=None,
+        help="age public recipient for optional SOPS scaffold; may be passed multiple times",
+    )
 
 
 def _add_asset_group_argument(parser: argparse.ArgumentParser) -> None:
@@ -518,6 +525,7 @@ def main(argv: list[str] | None = None) -> int:
             reference_url=args.reference_url,
             reference_ref=args.reference_ref,
             generated_at=args.generated_at,
+            sops_age_recipients=_tuple_or_default(args.sops_age_recipients, ()),
             force=args.force,
             dry_run=args.dry_run,
         )
@@ -633,6 +641,7 @@ def _current_reference_assets(path: Path) -> dict[str, object]:
         reference_url=metadata.reference_url,
         reference_ref=metadata.reference_ref,
         generated_at=metadata.generated_at,
+        sops_age_recipients=metadata.selected_options.get("sops_age_recipients", ()),
         bootstrap_mode=metadata.bootstrap_mode,
         dry_run=True,
     )
@@ -701,6 +710,7 @@ def _existing_options(args: argparse.Namespace) -> ExistingBootstrapOptions:
         reference_url=args.reference_url,
         reference_ref=args.reference_ref,
         generated_at=args.generated_at,
+        sops_age_recipients=_tuple_or_default(args.sops_age_recipients, ()),
         asset_groups=_tuple_or_default(getattr(args, "asset_groups", None), ("all",)),
         force=getattr(args, "force", False),
     )
@@ -1011,6 +1021,7 @@ def _planned_assets_by_path(options: ExistingBootstrapOptions) -> dict[str, obje
         reference_url=options.reference_url,
         reference_ref=options.reference_ref,
         generated_at=options.generated_at,
+        sops_age_recipients=options.sops_age_recipients,
         bootstrap_mode="existing_repository",
         dry_run=True,
     )

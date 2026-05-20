@@ -21,6 +21,7 @@ repo_familiar = [
   "templates/basic/*",
   "templates/basic/.agents/*",
   "templates/basic/docs/*",
+  "templates/basic/secrets/*",
   "templates/skills/*/*",
   "templates/skills/*/*/*",
 ]

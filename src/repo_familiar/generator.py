@@ -50,6 +50,7 @@ class GenerationOptions:
     reference_url: str = "local"
     reference_ref: str = "unknown"
     generated_at: str | None = None
+    sops_age_recipients: tuple[str, ...] = ()
     bootstrap_mode: str = "new_repository"
     force: bool = False
     dry_run: bool = False
@@ -80,6 +81,7 @@ class ExistingBootstrapOptions:
     reference_url: str = "local"
     reference_ref: str = "unknown"
     generated_at: str | None = None
+    sops_age_recipients: tuple[str, ...] = ()
     asset_groups: tuple[str, ...] = ("all",)
     force: bool = False
 
@@ -136,6 +138,7 @@ def plan_project(options: GenerationOptions) -> list[PlannedAsset]:
     template_root = _template_root(options.template)
     context = _template_context(options)
     planned_assets = plan_template_assets(template_root, options.template, context)
+    planned_assets = _filter_conditional_assets(planned_assets, options)
     planned_assets.extend(
         plan_skill_assets(Path(__file__).with_name("templates") / "skills", options.skills, context)
     )
@@ -205,7 +208,7 @@ def _has_non_default_existing_selections(options: ExistingBootstrapOptions) -> b
         for attr in (
             "agent_harnesses", "model_profiles", "tool_profiles", "memory_profiles",
             "prompt_profiles", "safety_profiles", "privacy_profiles", "repomap_profiles",
-            "sandbox_profiles", "secrets_profiles", "design_profiles", "worktree_profiles", "public_interest_profiles", "skills",
+            "sandbox_profiles", "secrets_profiles", "design_profiles", "worktree_profiles", "public_interest_profiles", "skills", "sops_age_recipients",
         )
     )
 
@@ -228,6 +231,7 @@ def _selected_options_summary(options: GenerationOptions) -> dict[str, tuple[str
         "worktree_profiles": options.worktree_profiles,
         "public_interest_profiles": options.public_interest_profiles,
         "skills": options.skills,
+        "sops_age_recipients": options.sops_age_recipients,
     }
 
 
@@ -387,6 +391,7 @@ def _validate_options(options: GenerationOptions) -> None:
             "design_profiles": options.design_profiles,
             "worktree_profiles": options.worktree_profiles,
             "public_interest_profiles": options.public_interest_profiles,
+            "sops_age_recipients": options.sops_age_recipients,
             "skills": options.skills,
         }
     )
@@ -445,6 +450,8 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
         "selected_worktree_profiles_list": _markdown_list(options.worktree_profiles),
         "public_interest_profiles_yaml": profile_registry.render_advisory_profiles(profile_registry.PUBLIC_INTEREST_PROFILES, options.public_interest_profiles),
         "selected_public_interest_profiles_list": _markdown_list(options.public_interest_profiles),
+        "sops_age_recipients_yaml": _indented_yaml_list(options.sops_age_recipients, indent="    "),
+        "sops_age_recipients_list": _markdown_list(options.sops_age_recipients),
         "selected_skills_list": _markdown_list(options.skills),
         "skill_sources_yaml": profile_registry.render_skill_sources(options.skills),
     }
@@ -475,6 +482,7 @@ def _render_bootstrap(options: GenerationOptions, assets: list[GeneratedAsset]) 
             "design_profiles": options.design_profiles,
             "worktree_profiles": options.worktree_profiles,
             "public_interest_profiles": options.public_interest_profiles,
+            "sops_age_recipients": options.sops_age_recipients,
             "skills": options.skills,
         },
         docs=options.docs,
@@ -524,6 +532,7 @@ def _generation_options_from_existing(options: ExistingBootstrapOptions) -> Gene
         worktree_profiles=options.worktree_profiles,
         public_interest_profiles=options.public_interest_profiles,
         skills=options.skills,
+        sops_age_recipients=options.sops_age_recipients,
         reference_type=options.reference_type,
         reference_url=options.reference_url,
         reference_ref=options.reference_ref,
@@ -535,3 +544,19 @@ def _generation_options_from_existing(options: ExistingBootstrapOptions) -> Gene
 
 def _content_sha256(content: str) -> str:
     return hashlib.sha256(content.encode()).hexdigest()
+
+
+def _filter_conditional_assets(planned_assets: list[PlannedAsset], options: GenerationOptions) -> list[PlannedAsset]:
+    if "sops-age" in options.secrets_profiles and options.sops_age_recipients:
+        return planned_assets
+    sops_paths = {".sops.yaml", "secrets/.gitignore", "secrets/README.md", "docs/secrets.qmd"}
+    return [asset for asset in planned_assets if asset.path not in sops_paths]
+
+
+def _indented_yaml_list(values: tuple[str, ...], *, indent: str) -> str:
+    return "\n".join(f"{indent}- {_yaml_scalar(value)}" for value in values)
+
+
+def _yaml_scalar(value) -> str:
+    import json
+    return json.dumps(str(value))

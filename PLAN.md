@@ -292,6 +292,7 @@ Status: done for first profile set.
 - Add `public_interest_profiles` and `.agents/public-interest.yml`.
 - Add `worktree_profiles` and `.agents/worktrees.yml`.
 - Add `secrets_profiles`, `.agents/secrets.yml`, and `.env.example`.
+- Add `sops-age` secrets profile and conditional SOPS scaffold generation when `--sops-age-recipient` is provided. Done.
 - Add list and targeted add commands for each profile family.
 - Add public-interest advisory profiles and targeted add command. Done.
 - Dogfood the current advisory profile families in root `.agents/`. Done.

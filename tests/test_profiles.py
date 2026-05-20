@@ -56,6 +56,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("setup:", tools)
         self.assertIn("verify:", tools)
         self.assertIn("memory-local:", memory)
+        self.assertIn("sops-age", profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, ("sops-age",)))
 
     def test_generated_profile_files_match_registry_renderers(self) -> None:
         options = _all_profile_options()

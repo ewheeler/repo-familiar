@@ -234,6 +234,12 @@ uv run python -m repo_familiar add-secrets \
   --secrets-profile kvenv-azure-keyvault \
   --apply
 
+uv run python -m repo_familiar add-secrets \
+  --path /path/to/repo \
+  --secrets-profile sops-age \
+  --sops-age-recipient age1... \
+  --apply
+
 uv run python -m repo_familiar add-design \
   --path /path/to/repo \
   --design-profile design-impeccable \

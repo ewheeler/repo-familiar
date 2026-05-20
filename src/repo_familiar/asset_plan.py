@@ -32,7 +32,11 @@ ASSET_KINDS = {
     "docs/index.qmd": "documentation",
     "docs/usage.qmd": "documentation",
     "docs/architecture.qmd": "documentation",
+    "docs/secrets.qmd": "documentation",
     "plan.md": "project_plan",
+    ".sops.yaml": "template_config",
+    "secrets/.gitignore": "template_config",
+    "secrets/README.md": "documentation",
     BOOTSTRAP_METADATA_PATH: "metadata",
 }
 
@@ -123,6 +127,8 @@ def asset_in_groups(path: str, asset_groups: tuple[str, ...]) -> bool:
     if "sandbox" in asset_groups and path == ".agents/sandbox.yml":
         return True
     if "secrets" in asset_groups and path in (".agents/secrets.yml", ".env.example"):
+        return True
+    if "secrets" in asset_groups and path in (".sops.yaml", "secrets/.gitignore", "secrets/README.md", "docs/secrets.qmd"):
         return True
     if "design" in asset_groups and path == ".agents/design.yml":
         return True

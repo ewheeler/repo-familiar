@@ -44,6 +44,18 @@ This project draws from agentic engineering writing, skill ecosystems, and repos
 - [unicef/design.md](https://github.com/unicef/design.md)
 - [impeccable.style](https://impeccable.style/)
 
+## Best Practice Suggestions
+
+Recommended high-value workflow for downstream repositories:
+
+- Start substantial work with `session-focus` to keep scope tight and avoid adjacent-task drift.
+- Use `grill-with-docs` before implementation when plans, terminology, domain assumptions, or documented decisions need stress-testing.
+- Use `tdd` for behavior changes whenever practical: write or update the failing test first, make it pass, then refactor.
+- Use `qa-test-design` before adding larger test suites so tests cover meaningful behavior, boundaries, regressions, and flaky-test risks.
+- Use Impeccable early on user-facing design work. Run `/impeccable teach` or install the skill with `npx skills add pbakaus/impeccable` when the agent harness supports skills; use `npx impeccable detect <path-or-url>` for deterministic design anti-pattern checks. If Impeccable is installed, periodically run `npx impeccable skills update` to refresh the local skill bundle.
+- Use `playwright-cli` or `rodney-browser` for rendered UI, navigation, layout, accessibility-tree, console-error, and screenshot checks. Prefer assertions about visible behavior and geometry over selector existence alone.
+- For public-interest, child-facing, education, or policy-sensitive work, add `prompt-output-safety`, `privacy-review`, `security-audit`, `a11y-web-scan`, and the relevant public-interest profile before production-maintenance work.
+
 ## New Project Bootstrap
 
 The intended workflow for starting a new repository is:
@@ -256,6 +268,7 @@ uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-hom
 uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
 uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
 uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault --apply
+uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile sops-age --sops-age-recipient age1... --apply
 uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-impeccable --apply
 uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-profile parallel-worktrees --apply
@@ -285,7 +298,10 @@ For local secrets, prefer one of these approaches:
 
 - `kvenv-azure-keyvault`: commit `.env` files with `kv://` references only, then run commands through `kvenv` so real values are fetched from Azure Key Vault.
 - `onepassword-op`: store values in 1Password and run commands with `op run` or `op inject`.
+- `sops-age`: commit selected secret/config files encrypted with SOPS and age; keep age private keys and decrypted plaintext outside the repository.
 - `dotenv-local`: keep `.env.example` committed and `.env` ignored; use this only for non-shared local development values or when paired with a secure local secret store.
+
+`sops-age` is guidance-only unless at least one `--sops-age-recipient` is provided. With recipients, `repo-familiar` can safely generate `.sops.yaml`, `secrets/.gitignore`, `secrets/README.md`, and `docs/secrets.qmd`; without recipients it avoids broken placeholder encryption config.
 
 For user-facing web outputs, include browser automation and accessibility scanning in the design loop. Use the `browser-automation` tool profile to allow rendered-page inspection, screenshots, console checks, and interaction smoke tests. Use `playwright-cli` for agent-friendly browser sessions, or `rodney-browser` when persistent Chrome state, shell-scripted assertions, or accessibility tree queries are useful.
 

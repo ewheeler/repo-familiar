@@ -10,6 +10,7 @@ profiles:
     setup:
       - "Install the optional Impeccable skill with `npx skills add pbakaus/impeccable` when the agent harness supports skills"
       - "Install the optional CLI with npm/npx when deterministic checks are useful"
+      - "If Impeccable is installed, periodically run `npx impeccable skills update` to refresh the local skill bundle"
     verify:
       - "npx impeccable --help"
       - "Confirm the Impeccable skill appears in the target agent harness when installed"

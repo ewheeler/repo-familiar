@@ -19,6 +19,7 @@ SELECTED_OPTION_KEYS = (
     "design_profiles",
     "worktree_profiles",
     "public_interest_profiles",
+    "sops_age_recipients",
     "skills",
 )
 
