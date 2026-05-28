@@ -110,6 +110,7 @@ These are the suggested tool/component categories to dogfood in this Reference S
 | Advice decision graph | Hamilton-compatible node module | `src/repo_familiar/advice_dag.py` and `hamilton-dag` repomap profile | Advice rules need graphing, reviewability, or future visual artifacts. |
 | Future template rendering | Banks later; keep `string.Template` for now | Deferred renderer decision | Prompt or project templates outgrow simple substitution. |
 | Current API docs | `get-api-docs` skill with `chub` when available | Vendored skill and selectable skill template | Work touches third-party APIs, SDKs, CLIs, package managers, or fast-moving docs. |
+| Local document parsing | `liteparse` | Selectable skill with source provenance and setup guidance | Repos need local parsing or conversion of PDFs, Office documents, spreadsheets, or images without cloud dependencies. |
 | External skill source | `mattpocock/skills` | Selectable vendored skill templates with source provenance | Engineering workflows need diagnose, TDD, triage, PRD, issue, architecture, or zoom-out support. |
 | Agent knowledge commons | `cq` | Tool profile plus selectable skill | Before implementation tasks or error fixes where stale/version-specific gotchas matter. |
 | Agent session discipline | `session-focus`, `qa-test-design`, `security-audit` | Selectable skills with source provenance | Multi-step agent work, test design, or security-sensitive code review benefits from stricter gates. |

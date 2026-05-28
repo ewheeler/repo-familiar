@@ -103,6 +103,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/andrewyng/context-hub/blob/main/cli/skills/get-api-docs/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("https://github.com/run-llama/llamaparse-agent-skills/blob/main/skills/liteparse/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("lit --version", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("chub --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("playwright-cli --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())

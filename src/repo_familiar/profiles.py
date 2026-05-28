@@ -392,6 +392,7 @@ SKILLS = {
     "grill-me": "Stress-test a plan or design through focused questioning",
     "grill-with-docs": "Stress-test plans against project language and documented decisions",
     "improve-codebase-architecture": "Find architecture refactoring opportunities informed by domain docs",
+    "liteparse": "Parse local unstructured documents with LiteParse",
     "migrate-to-shoehorn": "Migrate tests from type assertions to @total-typescript/shoehorn",
     "playwright-cli": "Use Playwright CLI for browser inspection, screenshots, console errors, and web interaction checks",
     "privacy-review": "Review data flows, prompts, logs, memory, and outputs for privacy risks",
@@ -460,6 +461,20 @@ SKILL_SOURCES = {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/SKILL.md",
         "notes": "Adapted from mattpocock/skills.",
+    },
+    "liteparse": {
+        "source_type": "external",
+        "source_url": "https://github.com/run-llama/llamaparse-agent-skills/blob/main/skills/liteparse/SKILL.md",
+        "notes": "Adapted from run-llama/llamaparse-agent-skills for local document parsing guidance.",
+        "setup": [
+            "Install the upstream skill with `npx skills add run-llama/llamaparse-agent-skills --skill liteparse` when the agent harness supports skills",
+            "Install the LiteParse CLI with `npm i -g @llamaindex/liteparse` when local parsing is needed",
+            "Install LibreOffice for Office documents and ImageMagick for image parsing when those formats are needed",
+        ],
+        "verify": [
+            "lit --version",
+            "Confirm `.agents/skills/liteparse/SKILL.md` exists after generation or bootstrap",
+        ],
     },
     "migrate-to-shoehorn": {
         "source_type": "external",

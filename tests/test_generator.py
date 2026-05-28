@@ -202,6 +202,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertIn("cq", stdout.getvalue())
         self.assertIn("grill-with-docs", stdout.getvalue())
         self.assertIn("get-api-docs", stdout.getvalue())
+        self.assertIn("liteparse", stdout.getvalue())
         self.assertIn("playwright-cli", stdout.getvalue())
         self.assertIn("rodney-browser", stdout.getvalue())
         self.assertIn("upstream-improvement", stdout.getvalue())
