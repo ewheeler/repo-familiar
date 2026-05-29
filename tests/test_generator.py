@@ -40,6 +40,7 @@ class GeneratorTests(unittest.TestCase):
 
             self.assertTrue((output_dir / "AGENTS.md").exists())
             self.assertTrue((output_dir / "README.md").exists())
+            self.assertTrue((output_dir / "opencode.json").exists())
             self.assertTrue((output_dir / ".gitignore").exists())
             self.assertTrue((output_dir / ".agents/design.yml").exists())
             self.assertTrue((output_dir / ".agents/memory.yml").exists())
@@ -69,6 +70,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('path: "AGENTS.md"', bootstrap)
             self.assertIn('kind: "agent_instructions"', bootstrap)
             self.assertIn('path: "README.md"', bootstrap)
+            self.assertIn('path: "opencode.json"', bootstrap)
             self.assertIn('path: ".gitignore"', bootstrap)
             self.assertIn('path: ".agents/models.yml"', bootstrap)
             self.assertIn('path: ".agents/tools.yml"', bootstrap)
@@ -88,7 +90,7 @@ class GeneratorTests(unittest.TestCase):
             models = (output_dir / ".agents/models.yml").read_text()
             self.assertIn("default-coding:", models)
             self.assertIn("budget-review:", models)
-            self.assertEqual(len(assets), 26)
+            self.assertEqual(len(assets), 27)
 
     def test_refuses_non_empty_output_without_force(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -116,8 +118,41 @@ class GeneratorTests(unittest.TestCase):
                 )
             )
 
-            self.assertEqual(len(assets), 26)
+            self.assertEqual(len(assets), 27)
             self.assertFalse(output_dir.exists())
+
+    def test_skips_opencode_config_when_harness_not_selected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "demo-project"
+            generate_project(
+                GenerationOptions(
+                    name="Demo Project",
+                    description="A generated demo.",
+                    output_dir=output_dir,
+                    agent_harnesses=("hermes",),
+                    generated_at="2026-05-10T00:00:00Z",
+                )
+            )
+
+            self.assertFalse((output_dir / "opencode.json").exists())
+
+    def test_opencode_mcp_profiles_render_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "demo-project"
+            generate_project(
+                GenerationOptions(
+                    name="Demo Project",
+                    description="A generated demo.",
+                    output_dir=output_dir,
+                    tool_profiles=("cq", "opencode-playwright-mcp", "opencode-context7-mcp"),
+                    generated_at="2026-05-10T00:00:00Z",
+                )
+            )
+            config = json.loads((output_dir / "opencode.json").read_text())
+
+            self.assertEqual(config["skills"]["paths"], [".agents/skills"])
+            self.assertEqual(config["mcp"]["playwright"]["command"], ["npx", "-y", "@playwright/mcp"])
+            self.assertEqual(config["mcp"]["context7"]["headers"]["CONTEXT7_API_KEY"], "${CONTEXT7_API_KEY}")
 
     def test_sops_age_without_recipient_is_guidance_only(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

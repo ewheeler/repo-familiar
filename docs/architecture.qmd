@@ -20,6 +20,7 @@ Repository advice is split between signal detection in `generator.py` and Hamilt
 The generated asset set currently includes:
 
 - `AGENTS.md`
+- `opencode.json` when `opencode` is selected as an agent harness
 - `.agents/models.yml`
 - `.agents/tools.yml`
 - `.agents/memory.yml`
@@ -163,6 +164,8 @@ Profile names are stable handles. Provider metadata should stay pragmatic until 
 ## Tool Profiles And Skills
 
 Generated repositories should store non-secret tool setup guidance in `.agents/tools.yml`. Selected tool profile names are recorded in `.repo-familiar/bootstrap.yml` under `selected_options.tool_profiles`.
+
+Harness-specific config should stay minimal and conditional. For OpenCode, `opencode.json` is generated only when the `opencode` harness is selected, with `.agents/skills` registered as a skill path by default. Project-level MCP entries are opt-in through tool profiles and must not embed literal secrets or absolute machine-local paths.
 
 Selected skills are vendored under `.agents/skills/` and recorded as `skill` assets in bootstrap metadata.
 

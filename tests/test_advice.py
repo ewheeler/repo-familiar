@@ -66,6 +66,18 @@ class AdviceTests(unittest.TestCase):
         self.assertIn("public-interest", report.recommended_asset_groups)
         self.assertIn("repomap", report.recommended_asset_groups)
 
+    def test_research_advice_includes_model_and_tool_asset_groups(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            repo.mkdir(exist_ok=True)
+
+            report = advise_existing_repository(repo)
+
+        self.assertIn("default-coding", report.recommended_model_profiles)
+        self.assertIn("cq", report.recommended_tool_profiles)
+        self.assertIn("models", report.recommended_asset_groups)
+        self.assertIn("tools", report.recommended_asset_groups)
+
     def test_recommended_commands_use_repo_familiar_module(self) -> None:
         commands = recommended_commands(
             Path("/tmp/example"),

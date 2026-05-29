@@ -13,6 +13,7 @@ BOOTSTRAP_METADATA_PATH = ".repo-familiar/bootstrap.yml"
 ASSET_KINDS = {
     ".gitignore": "template_config",
     ".env.example": "template_config",
+    "opencode.json": "template_config",
     "AGENTS.md": "agent_instructions",
     "README.md": "documentation",
     ".agents/design.yml": "template_config",
@@ -142,7 +143,7 @@ def asset_in_groups(path: str, asset_groups: tuple[str, ...]) -> bool:
         return True
     if "plan" in asset_groups and path == "plan.md":
         return True
-    if "config" in asset_groups and path == ".gitignore":
+    if "config" in asset_groups and path in (".gitignore", "opencode.json"):
         return True
     return False
 

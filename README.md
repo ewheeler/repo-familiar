@@ -136,6 +136,8 @@ This first skeleton uses `questionary` for optional interaction and keeps templa
 
 Generated repositories should receive vendored copies of the selected assets by default. Each generated repository should also include `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version used to create it. Live synchronization can come later as an explicit upgrade command, but initial bootstraps should be stable and self-contained.
 
+When `opencode` is selected as an agent harness, the template also writes `opencode.json` so OpenCode discovers vendored skills under `.agents/skills`. Optional OpenCode MCP entries can be included by selecting tool profiles such as `opencode-playwright-mcp`, `opencode-cq-mcp`, or `opencode-context7-mcp`. These MCP profiles use non-secret defaults only; API keys and machine-specific executable paths should stay in environment variables or user-level config.
+
 The first bootstrap metadata schema should stay small:
 
 ```yaml
@@ -168,6 +170,9 @@ generated_assets:
   - path: README.md
     kind: documentation
     source: templates/basic/README.md.tmpl
+  - path: opencode.json
+    kind: template_config
+    source: templates/basic/opencode.json.tmpl
   - path: AGENTS.md
     kind: agent_instructions
     source: templates/basic/AGENTS.md.tmpl
@@ -198,6 +203,10 @@ The initial `generated_assets[].kind` vocabulary is intentionally small: `agent_
 Model/provider profiles should be generated into `.agents/models.yml` for agent-facing runtime defaults. `.repo-familiar/bootstrap.yml` should record only the selected profile names under `selected_options.model_profiles`. Do not store provider secrets in either file.
 
 Tool profiles should be generated into `.agents/tools.yml` as non-secret repository guidance. `.repo-familiar/bootstrap.yml` records selected tool profile names under `selected_options.tool_profiles`.
+
+`opencode.json` is harness-specific. It is generated only when the `opencode` harness is selected, and by default it only registers `.agents/skills` as a skill path. Optional OpenCode MCP tool profiles can add project-level MCP entries, but must avoid literal secrets and absolute machine-local paths.
+
+Do not copy home-level OpenCode or Codex MCP configuration into downstream repositories verbatim. Keep literal API keys, local runtime paths, and workstation-specific plugin state out of project config; use non-secret commands and environment-variable references instead.
 
 Tool, advisory, and skill-source records may include `setup` and `verify` guidance. These commands are opt-in instructions only; `repo-familiar` does not install tools or mutate the workstation automatically.
 

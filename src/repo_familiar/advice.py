@@ -73,8 +73,13 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
     public_interest_profiles = _recommended_public_interest_profiles(is_policy_or_education)
     secrets_profiles = _extend(advice_dag.recommended_secrets_profiles(), _recommended_sops_profiles(signals))
     skills = _extend(advice_dag.recommended_skills(has_user_facing_web, has_prompt_dag, safety_profiles, privacy_profiles), _intent_skills(intended_work))
+    model_profiles = advice_dag.recommended_model_profiles()
+    memory_profiles = advice_dag.recommended_memory_profiles()
     asset_groups = _asset_groups_for_recommendations(
         advice_dag.recommended_asset_groups(stage, signals, has_user_facing_web),
+        model_profiles,
+        tool_profiles,
+        memory_profiles,
         prompt_profiles,
         safety_profiles,
         privacy_profiles,
@@ -92,9 +97,9 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
         signals=signals,
         recommended_stage=stage,
         recommended_asset_groups=asset_groups,
-        recommended_model_profiles=advice_dag.recommended_model_profiles(),
+        recommended_model_profiles=model_profiles,
         recommended_tool_profiles=tool_profiles,
-        recommended_memory_profiles=advice_dag.recommended_memory_profiles(),
+        recommended_memory_profiles=memory_profiles,
         recommended_prompt_profiles=prompt_profiles,
         recommended_safety_profiles=safety_profiles,
         recommended_privacy_profiles=privacy_profiles,
@@ -176,6 +181,9 @@ def _extend(base: tuple[str, ...], additions: tuple[str, ...]) -> tuple[str, ...
 
 def _asset_groups_for_recommendations(
     base_groups: tuple[str, ...],
+    model_profiles: tuple[str, ...],
+    tool_profiles: tuple[str, ...],
+    memory_profiles: tuple[str, ...],
     prompt_profiles: tuple[str, ...],
     safety_profiles: tuple[str, ...],
     privacy_profiles: tuple[str, ...],
@@ -188,6 +196,9 @@ def _asset_groups_for_recommendations(
 ) -> tuple[str, ...]:
     groups = list(base_groups)
     for has_profiles, group in (
+        (model_profiles, "models"),
+        (tool_profiles, "tools"),
+        (memory_profiles, "memory"),
         (prompt_profiles, "prompts"),
         (safety_profiles, "safety"),
         (privacy_profiles, "privacy"),

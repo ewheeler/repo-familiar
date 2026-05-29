@@ -11,6 +11,7 @@ The first template is `basic`.
 It is intentionally small and focused on the core contract:
 
 - Agent instructions in `AGENTS.md`.
+- OpenCode skill discovery in `opencode.json` when `opencode` is selected as an agent harness.
 - Runtime model defaults in `.agents/models.yml`.
 - Tool setup guidance in `.agents/tools.yml`.
 - Advisory profile guidance in `.agents/memory.yml`, `.agents/prompts.yml`, `.agents/safety.yml`, `.agents/privacy.yml`, `.agents/public-interest.yml`, `.agents/repomap.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, and `.agents/worktrees.yml`.
@@ -40,6 +41,7 @@ The `basic` template currently uses:
 - `selected_model_profiles_list`
 - `tool_profiles_yaml`
 - `selected_tool_profiles_list`
+- `opencode_json`
 - advisory profile YAML/list variables for memory, prompts, safety, privacy, public-interest, repomap, sandbox, secrets, design, and worktrees
 - `selected_skills_list`
 - `skill_sources_yaml`

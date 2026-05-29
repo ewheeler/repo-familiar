@@ -56,3 +56,39 @@ profiles:
       - "pnpm --version"
       - "uv --version"
       - "quarto --version"
+  opencode-playwright-mcp:
+    purpose: "configure project-local OpenCode access to the Playwright MCP server"
+    config: "Adds a non-secret local MCP server entry to opencode.json using npx -y @playwright/mcp"
+    notes:
+      - "This profile does not install browsers or Node dependencies by itself"
+      - "Use with browser-automation, playwright-cli, or a11y-web-scan when browser MCP tooling is useful"
+    setup:
+      - "Select this profile only when OpenCode should launch Playwright MCP for this project"
+      - "Ensure Node and npx are visible to OpenCode's shell before relying on this MCP server"
+    verify:
+      - "npx -y @playwright/mcp --help"
+      - "Restart OpenCode after opencode.json changes"
+  opencode-cq-mcp:
+    purpose: "configure project-local OpenCode access to the cq MCP server"
+    config: "Adds a non-secret local MCP server entry to opencode.json using cq mcp on PATH"
+    notes:
+      - "Do not copy machine-specific absolute cq runtime paths into generated project config"
+      - "Use global OpenCode config for machine-local cq paths when cq is not on PATH"
+    setup:
+      - "Install and configure cq outside the repository before selecting this profile"
+      - "Ensure the cq executable is on PATH for OpenCode's shell"
+    verify:
+      - "cq --help"
+      - "Restart OpenCode after opencode.json changes"
+  opencode-context7-mcp:
+    purpose: "configure project-local OpenCode access to Context7 MCP with an environment-provided API key"
+    config: "Adds a remote MCP server entry to opencode.json using https://mcp.context7.com/mcp and ${CONTEXT7_API_KEY}"
+    notes:
+      - "Project config should reference ${CONTEXT7_API_KEY}, not a literal token"
+      - "Use only when current package/library documentation lookup through Context7 is needed"
+    setup:
+      - "Set CONTEXT7_API_KEY outside the repository before using this MCP server"
+      - "Never commit literal Context7 API keys in opencode.json or .agents files"
+    verify:
+      - "Confirm CONTEXT7_API_KEY is set in the OpenCode shell environment"
+      - "Restart OpenCode after opencode.json changes"

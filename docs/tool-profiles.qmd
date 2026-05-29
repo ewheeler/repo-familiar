@@ -58,6 +58,16 @@ notes:
   - Set OpenCode global config shell to /bin/zsh in ~/.config/opencode/opencode.json when needed
   - Verify inside the agent with node --version, npm --version, npx --version, pnpm --version, uv --version, and quarto --version
   - If pnpm is still unavailable after PATH is fixed, run corepack enable outside the repository
+
+OpenCode MCP profiles:
+
+- `opencode-playwright-mcp`: adds a project-local `opencode.json` MCP entry for `npx -y @playwright/mcp`.
+- `opencode-cq-mcp`: adds a project-local `opencode.json` MCP entry for `cq mcp` on `PATH`.
+- `opencode-context7-mcp`: adds a project-local remote Context7 MCP entry using `${CONTEXT7_API_KEY}`, never a literal key.
+
+MCP profile entries are optional and should avoid secrets and machine-specific absolute paths. Keep literal tokens in environment variables or user-level config.
+
+Do not copy home-level OpenCode or Codex MCP configs into downstream repositories verbatim. They often contain literal API keys, local executable paths, or workstation-specific plugin state. Promote only non-secret, reproducible project-level entries, and use environment-variable references for credentials.
 ```
 
 Adopt it in an existing repository:

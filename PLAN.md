@@ -13,6 +13,7 @@
 - Python package management and documented CLI invocation are uv-first: run `uv sync` and `uv run python -m repo_familiar ...`.
 - The generator supports list commands for templates, profiles, and skills; `generate --dry-run`; `generate --interactive`; non-empty output directory protection; `advise`; `audit`; `check`; `bootstrap-existing --interactive`; and targeted existing-repo add commands.
 - The `basic` template generates `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/*.yml` advisory/runtime files, selected skills, Quarto docs, `plan.md`, and `.repo-familiar/bootstrap.yml`.
+- When `opencode` is selected as an agent harness, the `basic` template generates `opencode.json` with `.agents/skills` registered as a skill path.
 - Existing repository bootstrap can audit, dry-run, and apply missing selected assets without overwriting conflicts by default.
 - Existing repository metadata records `bootstrap_mode: existing_repository` and only assets written by that operation.
 - Targeted add commands reuse the bootstrap engine with narrow asset groups and are table-driven in the CLI.
@@ -77,6 +78,7 @@
 - Model profiles: `.agents/models.yml` contains non-secret runtime defaults; `.repo-familiar/bootstrap.yml` records selected profile names.
 - Tool profiles: `.agents/tools.yml` contains non-secret tool guidance; `.repo-familiar/bootstrap.yml` records selected tool profile names.
 - OpenCode/Homebrew setup remains Tool Profile guidance for agent shells only; it must not become workstation mutation or an installer.
+- OpenCode harness config: generate `opencode.json` only when `opencode` is selected. Keep the default config minimal and use opt-in tool profiles for project-level MCP entries.
 - Skills: selected skills are vendored under `.agents/skills/` and recorded as `skill` assets.
 - Skill provenance: `.agents/skill-sources.yml` records selected skill source type, source URL when known, and notes about local adaptation or missing upstreams.
 - Reference Source dogfooding: root `.agents/` should contain the same reusable profile families and selectable skills that this repository offers to Downstream Repositories. If a skill is useful enough to dogfood here, it should be available to Downstream Repositories.
@@ -116,6 +118,7 @@ These are the suggested tool/component categories to dogfood in this Reference S
 | Agent session discipline | `session-focus`, `qa-test-design`, `security-audit` | Selectable skills with source provenance | Multi-step agent work, test design, or security-sensitive code review benefits from stricter gates. |
 | Browser automation | `browser-automation`, `playwright-cli`, `rodney-browser` | Tool profile plus selectable skills | Repos have frontend routes, Quarto/published docs, user-facing web outputs, browser smoke checks, screenshots, console-error checks, or accessibility tree checks. |
 | OpenCode shell setup | `opencode-homebrew-path` | Tool profile | macOS Homebrew users need `node`, `npm`, `npx`, `pnpm`, `uv`, or `quarto` visible in OpenCode agent shells. |
+| OpenCode project config | `opencode.json`, `opencode-playwright-mcp`, `opencode-cq-mcp`, `opencode-context7-mcp` | Harness-specific config plus opt-in tool profiles | Repos use OpenCode and need vendored skill discovery or non-secret project-level MCP entries. |
 | Memory | `memory-local` | `.agents/memory.yml` advisory profile | Any repo with recurring decisions, conventions, stage changes, or non-obvious debugging lessons. |
 | Model defaults | `default-coding`, `budget-review` | `.agents/models.yml` model profiles | Repos need explicit model/provider defaults without storing credentials. |
 | Prompt migration and evals | `prompt-migration-gpt55`, `prompt-evals-dag`, `prompt-migration`, `prompt-eval-design` | Prompt profiles and skills | Prompt DAGs, model migrations, or prompt-heavy pipelines exist. |

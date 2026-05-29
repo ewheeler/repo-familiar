@@ -74,6 +74,7 @@ uv run python -m repo_familiar generate \
   --agent-harness opencode \
   --model-profile default-coding \
   --tool-profile cq \
+  --tool-profile opencode-playwright-mcp \
   --memory-profile memory-local \
   --secrets-profile dotenv-local \
   --skill cq \
@@ -107,6 +108,8 @@ uv run python -m repo_familiar generate --interactive
 ```
 
 The interactive path imports `questionary` lazily. `uv sync` installs the package and its interactive dependency.
+
+When `opencode` is selected as an agent harness, generation writes `opencode.json` with `.agents/skills` registered as a skill path. Optional OpenCode MCP tool profiles add non-secret MCP entries to that file.
 
 Audit an existing repository:
 
@@ -295,6 +298,7 @@ The next upgrade evolution should be an explicit selected-asset refresh, not aut
 The `basic` template currently writes:
 
 - `.gitignore`
+- `opencode.json` when `opencode` is selected as an agent harness
 - `README.md`
 - `AGENTS.md`
 - `.agents/models.yml`

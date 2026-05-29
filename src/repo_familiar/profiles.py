@@ -100,6 +100,54 @@ TOOL_PROFILES = {
             "OpenCode tool calls may run in non-interactive shells that do not read ~/.zshrc",
             "If pnpm is still unavailable after PATH is fixed, run corepack enable outside the repository",
         ],
+    },
+    "opencode-playwright-mcp": {
+        "purpose": "configure project-local OpenCode access to the Playwright MCP server",
+        "config": "Adds a non-secret local MCP server entry to opencode.json using npx -y @playwright/mcp",
+        "setup": [
+            "Select this profile only when OpenCode should launch Playwright MCP for this project",
+            "Ensure Node and npx are visible to OpenCode's shell before relying on this MCP server",
+        ],
+        "verify": [
+            "npx -y @playwright/mcp --help",
+            "Restart OpenCode after opencode.json changes",
+        ],
+        "notes": [
+            "This profile does not install browsers or Node dependencies by itself",
+            "Use with browser-automation, playwright-cli, or a11y-web-scan when browser MCP tooling is useful",
+        ],
+    },
+    "opencode-cq-mcp": {
+        "purpose": "configure project-local OpenCode access to the cq MCP server",
+        "config": "Adds a non-secret local MCP server entry to opencode.json using cq mcp on PATH",
+        "setup": [
+            "Install and configure cq outside the repository before selecting this profile",
+            "Ensure the cq executable is on PATH for OpenCode's shell",
+        ],
+        "verify": [
+            "cq --help",
+            "Restart OpenCode after opencode.json changes",
+        ],
+        "notes": [
+            "Do not copy machine-specific absolute cq runtime paths into generated project config",
+            "Use global OpenCode config for machine-local cq paths when cq is not on PATH",
+        ],
+    },
+    "opencode-context7-mcp": {
+        "purpose": "configure project-local OpenCode access to Context7 MCP with an environment-provided API key",
+        "config": "Adds a remote MCP server entry to opencode.json using https://mcp.context7.com/mcp and ${CONTEXT7_API_KEY}",
+        "setup": [
+            "Set CONTEXT7_API_KEY outside the repository before using this MCP server",
+            "Never commit literal Context7 API keys in opencode.json or .agents files",
+        ],
+        "verify": [
+            "Confirm CONTEXT7_API_KEY is set in the OpenCode shell environment",
+            "Restart OpenCode after opencode.json changes",
+        ],
+        "notes": [
+            "Project config should reference ${CONTEXT7_API_KEY}, not a literal token",
+            "Use only when current package/library documentation lookup through Context7 is needed",
+        ],
     }
 }
 
@@ -640,6 +688,36 @@ def render_tool_profiles(profile_names: tuple[str, ...]) -> str:
         _append_optional_list(lines, profile, "setup", indent="    ")
         _append_optional_list(lines, profile, "verify", indent="    ")
     return "\n".join(lines)
+
+
+def render_opencode_config(tool_profile_names: tuple[str, ...]) -> str:
+    config = {
+        "$schema": "https://opencode.ai/config.json",
+        "skills": {"paths": [".agents/skills"]},
+    }
+    mcp: dict[str, dict] = {}
+    if "opencode-playwright-mcp" in tool_profile_names:
+        mcp["playwright"] = {
+            "type": "local",
+            "command": ["npx", "-y", "@playwright/mcp"],
+            "enabled": True,
+        }
+    if "opencode-cq-mcp" in tool_profile_names:
+        mcp["cq"] = {
+            "type": "local",
+            "command": ["cq", "mcp"],
+            "enabled": True,
+        }
+    if "opencode-context7-mcp" in tool_profile_names:
+        mcp["context7"] = {
+            "type": "remote",
+            "url": "https://mcp.context7.com/mcp",
+            "enabled": True,
+            "headers": {"CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"},
+        }
+    if mcp:
+        config["mcp"] = mcp
+    return json.dumps(config, indent=2) + "\n"
 
 
 def render_advisory_profiles(registry: dict, profile_names: tuple[str, ...]) -> str:

@@ -454,6 +454,7 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
         "sops_age_recipients_list": _markdown_list(options.sops_age_recipients),
         "selected_skills_list": _markdown_list(options.skills),
         "skill_sources_yaml": profile_registry.render_skill_sources(options.skills),
+        "opencode_json": profile_registry.render_opencode_config(options.tool_profiles).rstrip(),
     }
 
 
@@ -547,10 +548,17 @@ def _content_sha256(content: str) -> str:
 
 
 def _filter_conditional_assets(planned_assets: list[PlannedAsset], options: GenerationOptions) -> list[PlannedAsset]:
+    planned_assets = _filter_opencode_assets(planned_assets, options)
     if "sops-age" in options.secrets_profiles and options.sops_age_recipients:
         return planned_assets
     sops_paths = {".sops.yaml", "secrets/.gitignore", "secrets/README.md", "docs/secrets.qmd"}
     return [asset for asset in planned_assets if asset.path not in sops_paths]
+
+
+def _filter_opencode_assets(planned_assets: list[PlannedAsset], options: GenerationOptions) -> list[PlannedAsset]:
+    if "opencode" in options.agent_harnesses:
+        return planned_assets
+    return [asset for asset in planned_assets if asset.path != "opencode.json"]
 
 
 def _indented_yaml_list(values: tuple[str, ...], *, indent: str) -> str:
