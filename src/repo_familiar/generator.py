@@ -240,37 +240,140 @@ def bootstrap_existing_repository(options: ExistingBootstrapOptions) -> Bootstra
     generation_options = _generation_options_from_existing(options)
     planned_assets = filter_planned_assets(plan_project(generation_options), options.asset_groups)
     planned_by_path = {asset.path: asset for asset in planned_assets}
-    writable_assets = list(report.missing)
+    writable_planned_assets = [planned_by_path[asset.path] for asset in report.missing]
     skipped_conflicts = list(report.conflicts)
     if options.force:
-        writable_assets.extend(report.conflicts)
+        writable_planned_assets.extend(planned_by_path[asset.path] for asset in report.conflicts)
         skipped_conflicts = []
+    else:
+        mergeable_assets: list[PlannedAsset] = []
+        remaining_conflicts: list[GeneratedAsset] = []
+        for conflict in report.conflicts:
+            planned_asset = planned_by_path[conflict.path]
+            merged_asset = _merged_append_friendly_asset(options.path, planned_asset)
+            if merged_asset:
+                mergeable_assets.append(merged_asset)
+            else:
+                remaining_conflicts.append(conflict)
+        writable_planned_assets.extend(mergeable_assets)
+        skipped_conflicts = remaining_conflicts
 
     if BOOTSTRAP_METADATA_PATH in planned_by_path:
-        written_asset_paths = {asset.path for asset in writable_assets}
-        bootstrap_asset = planned_by_path[BOOTSTRAP_METADATA_PATH].as_generated_asset()
-        if bootstrap_asset.path in written_asset_paths:
-            actual_assets = [
-                planned_by_path[asset.path].as_generated_asset()
-                for asset in writable_assets
-            ]
-            planned_by_path[bootstrap_asset.path] = PlannedAsset(
-                path=bootstrap_asset.path,
-                kind=bootstrap_asset.kind,
-                source=bootstrap_asset.source,
-                content=_render_bootstrap(generation_options, actual_assets),
+        writable_planned_assets = [asset for asset in writable_planned_assets if asset.path != BOOTSTRAP_METADATA_PATH]
+        bootstrap_asset = planned_by_path[BOOTSTRAP_METADATA_PATH]
+        bootstrap_path = options.path / BOOTSTRAP_METADATA_PATH
+        actual_assets = [asset.as_generated_asset() for asset in writable_planned_assets]
+        if bootstrap_path.exists():
+            metadata = _merge_bootstrap_metadata(load_bootstrap_metadata(bootstrap_path), generation_options, actual_assets)
+            rendered = render_bootstrap_metadata(metadata)
+            if bootstrap_path.read_text() != rendered:
+                writable_planned_assets.append(
+                    PlannedAsset(
+                        path=bootstrap_asset.path,
+                        kind=bootstrap_asset.kind,
+                        source=bootstrap_asset.source,
+                        content=rendered,
+                    )
+                )
+        elif any(asset.path == BOOTSTRAP_METADATA_PATH for asset in report.missing):
+            actual_assets = [*actual_assets, bootstrap_asset.as_generated_asset()]
+            writable_planned_assets.append(
+                PlannedAsset(
+                    path=bootstrap_asset.path,
+                    kind=bootstrap_asset.kind,
+                    source=bootstrap_asset.source,
+                    content=_render_bootstrap(generation_options, actual_assets),
+                )
             )
 
     written: list[GeneratedAsset] = []
-    for generated_asset in writable_assets:
-        planned_asset = planned_by_path[generated_asset.path]
-        _write_text(options.path / planned_asset.path, planned_asset.content, force=options.force)
-        written.append(generated_asset)
+    for planned_asset in writable_planned_assets:
+        can_overwrite = options.force or planned_asset.path in (".agents/skill-sources.yml", BOOTSTRAP_METADATA_PATH)
+        _write_text(options.path / planned_asset.path, planned_asset.content, force=can_overwrite)
+        written.append(planned_asset.as_generated_asset())
 
     return BootstrapExistingResult(
         report=report,
         written=tuple(written),
         skipped_conflicts=tuple(skipped_conflicts),
+    )
+
+
+def _merged_append_friendly_asset(path: Path, planned_asset: PlannedAsset) -> PlannedAsset | None:
+    target = path / planned_asset.path
+    if planned_asset.path != ".agents/skill-sources.yml" or not target.exists() or not target.is_file():
+        return None
+    merged = _merge_yaml_top_level_mapping(target.read_text(), planned_asset.content, "skills")
+    if merged == target.read_text():
+        return None
+    return PlannedAsset(
+        path=planned_asset.path,
+        kind=planned_asset.kind,
+        source=planned_asset.source,
+        content=merged,
+    )
+
+
+def _merge_yaml_top_level_mapping(existing: str, generated: str, section: str) -> str:
+    existing_entries = _yaml_top_level_entries(existing, section)
+    generated_entries = _yaml_top_level_entries(generated, section)
+    merged_entries = {**generated_entries, **existing_entries}
+    for key, value in generated_entries.items():
+        merged_entries[key] = value
+    lines = [f"{section}:"]
+    for key in sorted(merged_entries):
+        lines.extend(merged_entries[key])
+    return "\n".join(lines) + "\n"
+
+
+def _yaml_top_level_entries(content: str, section: str) -> dict[str, list[str]]:
+    entries: dict[str, list[str]] = {}
+    lines = content.splitlines()
+    in_section = False
+    current_key: str | None = None
+    for line in lines:
+        if line == f"{section}:":
+            in_section = True
+            current_key = None
+            continue
+        if in_section and line and not line.startswith(" "):
+            break
+        if not in_section:
+            continue
+        if line.startswith("  ") and not line.startswith("    ") and line.rstrip().endswith(":"):
+            current_key = line.strip()[:-1]
+            entries[current_key] = [line]
+        elif current_key:
+            entries[current_key].append(line)
+    return entries
+
+
+def _merge_bootstrap_metadata(
+    existing: BootstrapMetadata,
+    options: GenerationOptions,
+    new_assets: list[GeneratedAsset],
+) -> BootstrapMetadata:
+    selected_options = dict(existing.selected_options)
+    incoming_options = _selected_options_summary(options)
+    for key, value in incoming_options.items():
+        if isinstance(value, tuple):
+            selected_options[key] = tuple(dict.fromkeys((*selected_options.get(key, ()), *value)))
+    assets_by_path = {asset.path: asset for asset in existing.generated_assets}
+    for asset in new_assets:
+        assets_by_path[asset.path] = asset
+    return BootstrapMetadata(
+        schema_version=existing.schema_version,
+        bootstrap_mode=existing.bootstrap_mode,
+        reference_type=existing.reference_type,
+        reference_url=existing.reference_url,
+        reference_ref=existing.reference_ref,
+        generated_at=existing.generated_at,
+        generator_name=existing.generator_name,
+        generator_version=existing.generator_version,
+        selected_template=existing.selected_template,
+        selected_options=selected_options,
+        docs=existing.docs,
+        generated_assets=tuple(assets_by_path[path] for path in sorted(assets_by_path)),
     )
 
 

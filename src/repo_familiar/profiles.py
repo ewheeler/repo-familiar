@@ -80,6 +80,25 @@ TOOL_PROFILES = {
             "Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary",
         ],
     },
+    "headroom-context-compression": {
+        "purpose": "reduce agent context/token usage with local-first reversible compression, proxy, wrapper, and MCP workflows",
+        "config": "Use Headroom as an explicit opt-in context compression layer for large repos, long agent sessions, verbose logs, RAG chunks, or multi-agent memory workflows",
+        "setup": [
+            "Install Headroom outside repo-familiar, for example `pip install \"headroom-ai[all]\"` or `npm install headroom-ai`",
+            "For MCP workflows, install the relevant Headroom extra and run the project-appropriate MCP setup command from Headroom docs",
+            "Use `headroom wrap <agent>` only when the team explicitly wants a wrapped agent process",
+        ],
+        "verify": [
+            "headroom --help",
+            "headroom stats",
+            "headroom mcp --help",
+        ],
+        "notes": [
+            "Headroom should stay opt-in because it changes the agent runtime/context path",
+            "Keep originals retrievable and avoid using compression as a substitute for project documentation",
+            "Prefer read-only/proxy/MCP trials before making Headroom part of a production-maintenance workflow",
+        ],
+    },
     "opencode-homebrew-path": {
         "purpose": "document how macOS Homebrew users can expose CLIs such as node, npm, npx, pnpm, uv, and quarto to OpenCode agent shells",
         "config": "Agent-shell guidance only: if OpenCode uses /bin/zsh, put /opt/homebrew/bin and /usr/local/bin on PATH via ~/.zshenv so non-interactive tool calls can find Homebrew CLIs",

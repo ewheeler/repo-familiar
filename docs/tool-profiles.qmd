@@ -68,6 +68,22 @@ OpenCode MCP profiles:
 MCP profile entries are optional and should avoid secrets and machine-specific absolute paths. Keep literal tokens in environment variables or user-level config.
 
 Do not copy home-level OpenCode or Codex MCP configs into downstream repositories verbatim. They often contain literal API keys, local executable paths, or workstation-specific plugin state. Promote only non-secret, reproducible project-level entries, and use environment-variable references for credentials.
+
+`headroom-context-compression`:
+
+```yaml
+purpose: reduce agent context/token usage with local-first reversible compression, proxy, wrapper, and MCP workflows
+config: Use Headroom as an explicit opt-in context compression layer for large repos, long agent sessions, verbose logs, RAG chunks, or multi-agent memory workflows
+setup:
+  - Install Headroom outside repo-familiar, for example `pip install "headroom-ai[all]"` or `npm install headroom-ai`
+  - For MCP workflows, install the relevant Headroom extra and run the project-appropriate MCP setup command from Headroom docs
+verify:
+  - headroom --help
+  - headroom stats
+  - headroom mcp --help
+```
+
+Use this profile only when a project explicitly wants a context compression/proxy/MCP layer. Keep originals retrievable and do not use compression as a substitute for repository documentation.
 ```
 
 Adopt it in an existing repository:

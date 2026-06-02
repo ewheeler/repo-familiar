@@ -317,6 +317,8 @@ For user-facing web outputs, include browser automation and accessibility scanni
 
 Use the `a11y-scanner` tool profile and `a11y-web-scan` skill to run Pa11y, axe-core, Lighthouse, Playwright, or Rodney accessibility checks against rendered pages before design polish or release.
 
+For very large repositories, verbose logs, long-running agent sessions, or multi-agent context sharing, consider the `headroom-context-compression` tool profile. Headroom should stay opt-in because it changes the agent runtime/context path; trial it explicitly with `headroom --help`, `headroom stats`, or Headroom MCP/proxy commands before making it part of a maintenance workflow.
+
 ADT Studio's accessibility tooling is a good reporting model: summarize selected pages, rule deltas, top violations, and the browser recheck split between confirmed issues, resolved incomplete items, and residual manual-review items.
 
 For prompt-heavy repositories, especially Hamilton or prompt DAGs authored against an earlier model, use `prompt-migration-gpt55` and `prompt-evals-dag` before rewriting prompts. Capture fixtures at meaningful DAG node boundaries, then migrate prompts with minimal diffs and measurable behavior deltas. Use `hamilton-dag` as the preferred repo-map profile where Hamilton is already part of the project.

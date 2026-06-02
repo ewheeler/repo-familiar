@@ -228,6 +228,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertIn("cq", stdout.getvalue())
         self.assertIn("a11y-scanner", stdout.getvalue())
         self.assertIn("browser-automation", stdout.getvalue())
+        self.assertIn("headroom-context-compression", stdout.getvalue())
         self.assertIn("opencode-homebrew-path", stdout.getvalue())
 
         stdout = StringIO()
@@ -433,6 +434,51 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('path: ".agents/skills/grill-with-docs/SKILL.md"', bootstrap)
             self.assertIn('path: ".agents/skill-sources.yml"', bootstrap)
             self.assertNotIn('path: "AGENTS.md"', bootstrap)
+
+    def test_add_skill_updates_existing_skill_sources_and_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+
+            with redirect_stdout(StringIO()):
+                first = main(
+                    [
+                        "add-skill",
+                        "--path",
+                        str(repo),
+                        "--skill",
+                        "grill-with-docs",
+                        "--generated-at",
+                        "2026-05-10T00:00:00Z",
+                        "--apply",
+                    ]
+                )
+            self.assertEqual(first, 0)
+
+            with redirect_stdout(StringIO()):
+                second = main(
+                    [
+                        "add-skill",
+                        "--path",
+                        str(repo),
+                        "--skill",
+                        "caveman",
+                        "--generated-at",
+                        "2026-05-11T00:00:00Z",
+                        "--apply",
+                    ]
+                )
+
+            self.assertEqual(second, 0)
+            self.assertTrue((repo / ".agents/skills/caveman/SKILL.md").exists())
+            skill_sources = (repo / ".agents/skill-sources.yml").read_text()
+            self.assertIn("grill-with-docs:", skill_sources)
+            self.assertIn("caveman:", skill_sources)
+            bootstrap = (repo / ".repo-familiar/bootstrap.yml").read_text()
+            self.assertIn('- "grill-with-docs"', bootstrap)
+            self.assertIn('- "caveman"', bootstrap)
+            self.assertIn('path: ".agents/skills/caveman/SKILL.md"', bootstrap)
+            self.assertIn('path: ".agents/skill-sources.yml"', bootstrap)
 
     def test_add_tool_only_writes_tool_profile_and_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
