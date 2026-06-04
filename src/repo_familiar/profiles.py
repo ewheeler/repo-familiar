@@ -65,7 +65,7 @@ TOOL_PROFILES = {
         "purpose": "let agents inspect rendered pages, interact with web apps, capture screenshots, check console errors, and run browser smoke checks",
         "config": "Use the project-appropriate browser driver: Playwright CLI for agent-friendly snapshots and screenshots, or Rodney for persistent Chrome sessions and shell-scriptable checks",
         "setup": [
-            "Install Playwright CLI with npm install -g @playwright/cli@latest or use npx playwright-cli when available project-locally",
+            "Install Playwright CLI with npm install -g @playwright/cli@latest, or use npx --no-install playwright-cli when the CLI is already available project-locally",
             "Install or build Rodney from https://github.com/simonw/rodney when persistent Chrome sessions or accessibility tree queries are needed",
         ],
         "verify": [
@@ -84,7 +84,8 @@ TOOL_PROFILES = {
         "purpose": "reduce agent context/token usage with local-first reversible compression, proxy, wrapper, and MCP workflows",
         "config": "Use Headroom as an explicit opt-in context compression layer for large repos, long agent sessions, verbose logs, RAG chunks, or multi-agent memory workflows",
         "setup": [
-            "Install Headroom outside repo-familiar, for example `pip install \"headroom-ai[all]\"` or `npm install headroom-ai`",
+            "Install the Python Headroom CLI outside repo-familiar, for example `pip install \"headroom-ai[all]\"`",
+            "Use the npm `headroom-ai` package only after verifying the current package exposes the needed CLI or library entry point",
             "For MCP workflows, install the relevant Headroom extra and run the project-appropriate MCP setup command from Headroom docs",
             "Use `headroom wrap <agent>` only when the team explicitly wants a wrapped agent process",
         ],
@@ -786,7 +787,7 @@ def _skill_setup(name: str, source: dict) -> list[str]:
         ]
     if "microsoft/playwright-cli" in source_url:
         return [
-            "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx playwright-cli`",
+            "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx --no-install playwright-cli` when available project-locally",
         ]
     if "context-hub" in source_url:
         return [
@@ -808,7 +809,7 @@ def _skill_verify(name: str, source: dict) -> list[str]:
         return source["verify"]
     source_url = source.get("source_url", "")
     if "microsoft/playwright-cli" in source_url:
-        return ["playwright-cli --help or npx playwright-cli --help"]
+        return ["playwright-cli --help or npx --no-install playwright-cli --help"]
     if "context-hub" in source_url:
         return ["chub --help"]
     if "mozilla-ai/cq" in source_url:

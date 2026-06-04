@@ -139,7 +139,7 @@ generated_assets:
   - path: ".agents/skills/grill-with-docs/SKILL.md"
     kind: "skill"
     source: "templates/skills/grill-with-docs/SKILL.md.tmpl"
-    content_sha256: "60e3744732738ae63ac6b00332a03e18518377f6ac04b10c4ab02277eeb72a55"
+    content_sha256: "3e35025119ba03efe7983dfdec3c8b96918142e3978512f3c2bf66d428310c7e"
   - path: ".repo-familiar/bootstrap.yml"
     kind: "metadata"
     source: "generator:bootstrap"

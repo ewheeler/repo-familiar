@@ -102,9 +102,9 @@ skills:
     source_url: "https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md"
     notes: "Adapted from Microsoft playwright-cli skill for repo-familiar browser automation guidance."
     setup:
-      - "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx playwright-cli`"
+      - "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx --no-install playwright-cli` when available project-locally"
     verify:
-      - "playwright-cli --help or npx playwright-cli --help"
+      - "playwright-cli --help or npx --no-install playwright-cli --help"
   privacy-review:
     source_type: "local"
     source_url: "local:repo-familiar"

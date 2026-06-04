@@ -30,14 +30,15 @@ from .generator import (
     list_worktree_profiles,
     plan_project,
 )
-from .asset_plan import BOOTSTRAP_METADATA_PATH
+from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset
 from .interactive import (
     InteractiveCancelled,
     InteractiveUnavailable,
     prompt_existing_options,
     prompt_generation_options,
 )
-from .metadata import load_bootstrap_metadata
+from .metadata import GeneratedAsset, load_bootstrap_metadata
+from .skill_sources import check_skill_sources
 from .upstream import diff_upstream_candidate
 from .upgrade import preview_upgrade
 
@@ -138,6 +139,11 @@ def build_parser() -> argparse.ArgumentParser:
     upgrade = subparsers.add_parser("upgrade", help="preview a read-only generated asset upgrade report")
     upgrade.add_argument("--path", required=True, type=Path, help="generated or bootstrapped repository path")
     upgrade.add_argument("--format", choices=("text", "json"), default="text")
+
+    skill_sources = subparsers.add_parser("check-skill-sources", help="compare vendored skills with recorded upstream sources")
+    skill_sources.add_argument("--source-file", type=Path, default=Path(".agents/skill-sources.yml"), help="skill source provenance file")
+    skill_sources.add_argument("--skills-root", type=Path, default=Path(".agents/skills"), help="vendored skills directory")
+    skill_sources.add_argument("--format", choices=("text", "json"), default="text")
 
     generate = subparsers.add_parser("generate", help="generate a downstream repository")
     generate.add_argument("--name", help="project display name")
@@ -472,6 +478,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "upgrade":
         return _upgrade(args)
 
+    if args.command == "check-skill-sources":
+        return _check_skill_sources(args)
+
     if args.command == "advise":
         return _advise(args)
 
@@ -615,7 +624,17 @@ def _upgrade(args: argparse.Namespace) -> int:
     return 0
 
 
-def _current_reference_assets(path: Path) -> dict[str, object]:
+def _check_skill_sources(args: argparse.Namespace) -> int:
+    try:
+        report = check_skill_sources(args.source_file, args.skills_root)
+    except (FileNotFoundError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    _print_skill_source_report_or_json(report, args.format)
+    return 1 if report.has_actionable_drift else 0
+
+
+def _current_reference_assets(path: Path) -> dict[str, GeneratedAsset]:
     metadata = load_bootstrap_metadata(path / BOOTSTRAP_METADATA_PATH)
     options = GenerationOptions(
         name=path.name,
@@ -927,6 +946,52 @@ def _upgrade_to_dict(report) -> dict:
     }
 
 
+def _print_skill_source_report_or_json(report, output_format: str) -> None:
+    if output_format == "json":
+        print(json.dumps(_skill_source_report_to_dict(report), indent=2))
+        return
+    print(f"Skill source check: {report.source_file}")
+    summary = _skill_source_summary(report)
+    print(
+        "Summary: "
+        f"{summary.get('matches-upstream', 0)} matches-upstream, "
+        f"{summary.get('upstream-newer', 0)} upstream-newer, "
+        f"{summary.get('content-differs', 0)} content-differs, "
+        f"{summary.get('local-source', 0)} local-source, "
+        f"{summary.get('unsupported-url', 0)} unsupported-url, "
+        f"{summary.get('fetch-error', 0)} fetch-error, "
+        f"{summary.get('local-missing', 0)} local-missing"
+    )
+    for check in report.checks:
+        if check.status in {"upstream-newer", "fetch-error", "local-missing"} or check.missing_support_files:
+            print(f"- {check.name}: {check.status} ({check.recommendation})")
+            if check.upstream_updated_at:
+                print(f"  upstream_updated_at: {check.upstream_updated_at}")
+            if check.local_updated_at:
+                print(f"  local_updated_at: {check.local_updated_at}")
+            for missing_file in check.missing_support_files:
+                print(f"  missing support file: {missing_file}")
+            if check.error:
+                print(f"  error: {check.error}")
+
+
+def _skill_source_report_to_dict(report) -> dict:
+    return {
+        "source_file": str(report.source_file),
+        "skills_root": str(report.skills_root),
+        "summary": _skill_source_summary(report),
+        "has_actionable_drift": report.has_actionable_drift,
+        "checks": [check.__dict__ for check in report.checks],
+    }
+
+
+def _skill_source_summary(report) -> dict[str, int]:
+    summary: dict[str, int] = {}
+    for check in report.checks:
+        summary[check.status] = summary.get(check.status, 0) + 1
+    return summary
+
+
 def _print_advice_or_json(report, output_format: str) -> None:
     if output_format == "json":
         print(json.dumps(_advice_to_dict(report), indent=2))
@@ -996,7 +1061,7 @@ def _advice_to_dict(report) -> dict:
     }
 
 
-def _planned_assets_by_path(options: ExistingBootstrapOptions) -> dict[str, object]:
+def _planned_assets_by_path(options: ExistingBootstrapOptions) -> dict[str, PlannedAsset]:
     generation_options = GenerationOptions(
         name=options.name or options.path.name,
         description=options.description,
@@ -1028,7 +1093,7 @@ def _planned_assets_by_path(options: ExistingBootstrapOptions) -> dict[str, obje
     return {asset.path: asset for asset in plan_project(generation_options)}
 
 
-def _conflict_suggestions(path: Path, conflicts, planned_by_path: dict[str, object]) -> list[dict]:
+def _conflict_suggestions(path: Path, conflicts, planned_by_path: dict[str, PlannedAsset]) -> list[dict]:
     suggestions = []
     for conflict in conflicts:
         planned = planned_by_path.get(conflict.path)

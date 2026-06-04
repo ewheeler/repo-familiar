@@ -36,6 +36,7 @@ The generated asset set currently includes:
 - `.agents/design.yml`
 - `.agents/worktrees.yml`
 - selected skill directories under `.agents/skills/`
+- selected skill support files under `.agents/skills/` when upstream skill directories include references or companion docs
 - `docs/_quarto.yml`
 - `docs/index.qmd`
 - `docs/usage.qmd`
@@ -168,6 +169,8 @@ Generated repositories should store non-secret tool setup guidance in `.agents/t
 Harness-specific config should stay minimal and conditional. For OpenCode, `opencode.json` is generated only when the `opencode` harness is selected, with `.agents/skills` registered as a skill path by default. Project-level MCP entries are opt-in through tool profiles and must not embed literal secrets or absolute machine-local paths.
 
 Selected skills are vendored under `.agents/skills/` and recorded as `skill` assets in bootstrap metadata.
+
+`check-skill-sources` is a read-only maintenance command for the Reference Source. It reads `.agents/skill-sources.yml`, compares GitHub-backed skill sources with local vendored files, and reports upstream-newer skills or missing support files before a manual refresh.
 
 Memory, prompt, safety, privacy, repo-map, sandbox, secrets, design, and worktree profiles are advisory profile families. They are written to `.agents/*.yml` files and recorded by name in bootstrap metadata.
 

@@ -106,3 +106,13 @@ uv run python -m repo_familiar upgrade --path /path/to/repo
 ```
 
 The current command does not write files. It reports user-review items, blockers, and unavailable update candidates.
+
+## 9. Check Vendored Skill Sources
+
+When maintaining this Reference Source or a repository that vendors skills with `.agents/skill-sources.yml`, use:
+
+```bash
+uv run python -m repo_familiar check-skill-sources
+```
+
+The command is read-only. It compares recorded GitHub skill sources against local vendored `SKILL.md` files and reports missing upstream support files that should be reviewed before a manual refresh.

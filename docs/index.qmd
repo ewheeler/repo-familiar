@@ -3,7 +3,7 @@ title: "repo-familiar"
 subtitle: "Agentic engineering dotfiles for repeatable project setup"
 ---
 
-`repo-familiar` collects reusable instructions, skills, templates, and documentation practices for AI-assisted software engineering.
+`repo-familiar` collects reusable instructions, skills, templates, advisory profiles, and documentation practices for AI-assisted software engineering.
 
 The primary product is a project generator for downstream repositories. This repository is the canonical reference source; dotfiles are the metaphor for portable, personal defaults, not the boundary of the implementation.
 
@@ -17,4 +17,6 @@ The primary product is a project generator for downstream repositories. This rep
 
 ## Current Status
 
-This is an initial documentation scaffold. The next milestone is to define the first project template and the interactive setup prompts that select agent harnesses, model providers, and documentation depth.
+The first Python generator is implemented with `uv`-first CLI usage, optional `questionary` interaction, the `basic` template, generated Bootstrap Metadata, existing-repository bootstrap, targeted add commands, drift checks, read-only upgrade previews, and skill source provenance checks.
+
+Generated and bootstrapped repositories receive vendored assets by default. Refresh and upgrade behavior remains explicit and preview-first rather than live synchronization.

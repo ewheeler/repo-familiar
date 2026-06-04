@@ -46,6 +46,8 @@ notes:
   - Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary
 ```
 
+Install Playwright CLI with `npm install -g @playwright/cli@latest`, or use `npx --no-install playwright-cli` only when the command is already available project-locally. Avoid the deprecated bare `playwright-cli` npm package as an install target.
+
 `opencode-homebrew-path`:
 
 ```yaml
@@ -58,6 +60,7 @@ notes:
   - Set OpenCode global config shell to /bin/zsh in ~/.config/opencode/opencode.json when needed
   - Verify inside the agent with node --version, npm --version, npx --version, pnpm --version, uv --version, and quarto --version
   - If pnpm is still unavailable after PATH is fixed, run corepack enable outside the repository
+```
 
 OpenCode MCP profiles:
 
@@ -75,7 +78,8 @@ Do not copy home-level OpenCode or Codex MCP configs into downstream repositorie
 purpose: reduce agent context/token usage with local-first reversible compression, proxy, wrapper, and MCP workflows
 config: Use Headroom as an explicit opt-in context compression layer for large repos, long agent sessions, verbose logs, RAG chunks, or multi-agent memory workflows
 setup:
-  - Install Headroom outside repo-familiar, for example `pip install "headroom-ai[all]"` or `npm install headroom-ai`
+  - Install the Python Headroom CLI outside repo-familiar, for example `pip install "headroom-ai[all]"`
+  - Use the npm `headroom-ai` package only after verifying the current package exposes the needed CLI or library entry point
   - For MCP workflows, install the relevant Headroom extra and run the project-appropriate MCP setup command from Headroom docs
 verify:
   - headroom --help
@@ -84,7 +88,6 @@ verify:
 ```
 
 Use this profile only when a project explicitly wants a context compression/proxy/MCP layer. Keep originals retrievable and do not use compression as a substitute for repository documentation.
-```
 
 Adopt it in an existing repository:
 

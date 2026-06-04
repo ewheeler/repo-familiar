@@ -34,7 +34,9 @@
 - Public-interest profiles exist for child-rights, humanitarian, civic, education, and public-sector digital guidance.
 - Repo map profiles exist with `hamilton-dag` as the preferred graph approach.
 - Advisory profile files are generated under `.agents/` and selected profile names are recorded in bootstrap metadata.
-- Skill source provenance is generated in `.agents/skill-sources.yml` for selected skills, so future drift checks can compare vendored/imported skills against upstream sources where known.
+- Skill source provenance is generated in `.agents/skill-sources.yml` for selected skills, so drift checks can compare vendored/imported skills against upstream sources where known.
+- `check-skill-sources` compares `.agents/skill-sources.yml` entries against current GitHub upstreams, flags upstream-newer skills and missing support files, and stays read-only.
+- A June 2026 upstream scan refreshed high-priority vendored skills (`cq`, `grill-with-docs`, `improve-codebase-architecture`, `to-prd`, `prototype`, and `playwright-cli`) and added missing support files for `improve-codebase-architecture` and `playwright-cli`.
 - Downstream refresh remains explicit: future tooling should preview and optionally refresh selected generated assets, not live-sync repositories back to this Reference Source.
 - Root `.agents/` dogfoods the Reference Source asset set: profile family files, selectable skills, and non-secret tool/advisory guidance live in this repository as working defaults as well as generated templates.
 - Every root dogfooded skill is registered as a selectable downstream skill and has a matching template under `src/repo_familiar/templates/skills/`.
@@ -268,6 +270,23 @@ Acceptance criteria:
 - No safe auto-apply path is exposed until Bootstrap Metadata records enough template context for exact rendered comparisons.
 - Next evolution: add an explicit `refresh-selected-assets` or expanded `upgrade --preview/--apply` workflow that compares selected generated assets against current Reference Source output, separates safe unchanged assets from local edits, and never overwrites local changes silently.
 - Refresh strategies should be asset-aware: skills update only when unchanged from recorded checksums, `.agents/*.yml` can merge profile keys when safe, `.agents/skill-sources.yml` can refresh provenance when unmodified, `AGENTS.md` should use heading-based merge preview, `.gitignore` should use line-union merge, and `README.md`/`plan.md` should remain manual-review by default.
+
+### 6a. Track External Skill Source Drift
+
+Status: first read-only checker implemented.
+
+- Add a command that reads `.agents/skill-sources.yml`, fetches current GitHub blob sources, compares vendored `SKILL.md` hashes, and reports missing upstream support files. Done as `check-skill-sources`.
+- Keep the command read-only; it should never rewrite vendored skills automatically.
+- Treat exact upstream matches as clean, upstream commits newer than the local vendored commit as actionable drift, and older/different content as local adaptation requiring manual review.
+- Include JSON output for scripted checks. Done.
+- Use the checker before manual vendored skill refreshes and before future write-capable upgrade work.
+
+Acceptance criteria:
+
+- `uv run python -m repo_familiar check-skill-sources` reports a compact status summary.
+- `uv run python -m repo_familiar check-skill-sources --format json` is parseable.
+- Missing upstream support files are surfaced separately from `SKILL.md` content drift.
+- The checker exits non-zero only for actionable drift such as upstream-newer skills, missing local vendored files, fetch errors, or missing support files.
 
 ### 8. Add Drift Detection
 

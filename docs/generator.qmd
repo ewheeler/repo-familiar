@@ -42,6 +42,18 @@ uv run python -m repo_familiar check --path /path/to/repo
 uv run python -m repo_familiar check --path /path/to/repo --format json
 ```
 
+Check vendored skill sources against their recorded upstream URLs:
+
+```bash
+uv run python -m repo_familiar check-skill-sources
+uv run python -m repo_familiar check-skill-sources --format json
+uv run python -m repo_familiar check-skill-sources \
+  --source-file .agents/skill-sources.yml \
+  --skills-root .agents/skills
+```
+
+The skill source check is read-only. It compares GitHub `SKILL.md` sources, reports upstream-newer vendored skills, and flags missing support files such as upstream reference documents.
+
 Classify generated asset changes for possible upstream contribution:
 
 ```bash

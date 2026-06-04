@@ -54,6 +54,7 @@ uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-prof
 uv run python -m repo_familiar check --path /path/to/repo
 uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
 uv run python -m repo_familiar upgrade --path /path/to/repo
+uv run python -m repo_familiar check-skill-sources
 ```
 
 `bootstrap-existing`, `add-model`, `add-docs`, `add-skill`, `add-tool`, and advisory profile add commands are dry-run by default. Pass repeated profile flags to choose specific assets. Pass `--apply` to write missing assets. Pass `--force` only when replacing conflicting assets is intentional.
@@ -121,6 +122,8 @@ uv run python -m repo_familiar upgrade --path /path/to/repo
 The current `upgrade` command is read-only. It reports assets that need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade until richer template context is recorded.
 
 Future refresh behavior should remain explicit rather than live sync. The intended next evolution is a preview-first `upgrade` or `refresh-selected-assets` workflow that compares selected generated assets, skill templates, profile output, and `.agents/skill-sources.yml` provenance against the current Reference Source. Apply mode should be opt-in, scoped by asset group, and conservative: update unchanged generated files, line-union `.gitignore`, preview heading-based `AGENTS.md` merges, and keep `README.md`/`plan.md` manual-review by default.
+
+For Reference Source maintenance, use `check-skill-sources` before refreshing vendored skills. It compares recorded GitHub skill source URLs with local vendored skills and reports missing support files without writing changes.
 
 Potential future fields:
 

@@ -34,7 +34,7 @@ profiles:
       - "Keep browser session directories such as .rodney/ out of version control"
       - "Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary"
     setup:
-      - "Install Playwright CLI with npm install -g @playwright/cli@latest or use npx playwright-cli when available project-locally"
+      - "Install Playwright CLI with npm install -g @playwright/cli@latest, or use npx --no-install playwright-cli when the CLI is already available project-locally"
       - "Install or build Rodney from https://github.com/simonw/rodney when persistent Chrome sessions or accessibility tree queries are needed"
     verify:
       - "playwright-cli --help or npx playwright-cli --help"
@@ -47,7 +47,8 @@ profiles:
       - "Keep originals retrievable and avoid using compression as a substitute for project documentation"
       - "Prefer read-only/proxy/MCP trials before making Headroom part of a production-maintenance workflow"
     setup:
-      - "Install Headroom outside repo-familiar, for example `pip install \"headroom-ai[all]\"` or `npm install headroom-ai`"
+      - "Install the Python Headroom CLI outside repo-familiar, for example `pip install \"headroom-ai[all]\"`"
+      - "Use the npm `headroom-ai` package only after verifying the current package exposes the needed CLI or library entry point"
       - "For MCP workflows, install the relevant Headroom extra and run the project-appropriate MCP setup command from Headroom docs"
       - "Use `headroom wrap <agent>` only when the team explicitly wants a wrapped agent process"
     verify:
