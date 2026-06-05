@@ -100,6 +100,60 @@ TOOL_PROFILES = {
             "Prefer read-only/proxy/MCP trials before making Headroom part of a production-maintenance workflow",
         ],
     },
+    "headroom-mcp": {
+        "purpose": "expose Headroom compression, retrieval, and stats as local MCP tools",
+        "config": "Use `headroom mcp serve` as an opt-in local MCP server; originals stay in Headroom's local CCR store for retrieval",
+        "setup": [
+            "Install Headroom MCP support outside repo-familiar with `pip install \"headroom-ai[mcp]\"` or `pip install \"headroom-ai[all]\"`",
+            "For Claude Code, `headroom mcp install` can write user-level MCP config; generated repositories should prefer project-level config only when a harness profile explicitly selects it",
+            "Use `headroom proxy` separately when automatic compression of all provider traffic is desired",
+        ],
+        "verify": [
+            "headroom mcp status",
+            "headroom mcp serve --help",
+        ],
+        "notes": [
+            "MCP mode is on-demand: agents call headroom_compress, headroom_retrieve, and headroom_stats when useful",
+            "Local content in the MCP store expires; do not depend on it as durable project memory",
+            "Disable telemetry with HEADROOM_TELEMETRY=off when project policy requires it",
+        ],
+    },
+    "headroom-proxy": {
+        "purpose": "run Headroom as a local OpenAI/Anthropic-compatible compression proxy",
+        "config": "Use `headroom proxy --port 8787` only when the team explicitly wants provider traffic routed through a local compression proxy",
+        "setup": [
+            "Install Headroom proxy support outside repo-familiar with `pip install \"headroom-ai[proxy]\"` or `pip install \"headroom-ai[all]\"`",
+            "Start the proxy explicitly with `headroom proxy --port 8787` before pointing clients at it",
+            "Point OpenAI-compatible clients at `OPENAI_BASE_URL=http://127.0.0.1:8787/v1` or Anthropic clients at `ANTHROPIC_BASE_URL=http://127.0.0.1:8787` only after reviewing project policy",
+        ],
+        "verify": [
+            "headroom proxy --help",
+            "curl http://127.0.0.1:8787/stats when the proxy is running",
+        ],
+        "notes": [
+            "Proxy mode changes the provider request path and should not be enabled silently",
+            "Keep API keys in user environment variables; do not commit proxy secrets or provider tokens",
+            "Disable telemetry with HEADROOM_TELEMETRY=off when project policy requires it",
+        ],
+    },
+    "opencode-headroom-mcp": {
+        "purpose": "configure project-local OpenCode access to Headroom MCP tools",
+        "config": "Adds a non-secret local MCP server entry to opencode.json using headroom mcp serve on PATH",
+        "setup": [
+            "Select this profile only when OpenCode should launch local Headroom MCP tools for this project",
+            "Install Headroom MCP support outside repo-familiar with `pip install \"headroom-ai[mcp]\"` or `pip install \"headroom-ai[all]\"`",
+            "Ensure the headroom executable is visible to OpenCode's shell before relying on the MCP server",
+        ],
+        "verify": [
+            "headroom mcp serve --help",
+            "Restart OpenCode after opencode.json changes",
+        ],
+        "notes": [
+            "Use with headroom-mcp when agents need on-demand compression and retrieval tools",
+            "Use headroom-proxy separately when provider traffic should be compressed automatically",
+            "Project config should not include user-level Headroom store paths, API keys, or provider tokens",
+        ],
+    },
     "opencode-homebrew-path": {
         "purpose": "document how macOS Homebrew users can expose CLIs such as node, npm, npx, pnpm, uv, and quarto to OpenCode agent shells",
         "config": "Agent-shell guidance only: if OpenCode uses /bin/zsh, put /opt/homebrew/bin and /usr/local/bin on PATH via ~/.zshenv so non-interactive tool calls can find Homebrew CLIs",
@@ -726,6 +780,12 @@ def render_opencode_config(tool_profile_names: tuple[str, ...]) -> str:
         mcp["cq"] = {
             "type": "local",
             "command": ["cq", "mcp"],
+            "enabled": True,
+        }
+    if "opencode-headroom-mcp" in tool_profile_names:
+        mcp["headroom"] = {
+            "type": "local",
+            "command": ["headroom", "mcp", "serve"],
             "enabled": True,
         }
     if "opencode-context7-mcp" in tool_profile_names:

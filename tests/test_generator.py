@@ -144,7 +144,7 @@ class GeneratorTests(unittest.TestCase):
                     name="Demo Project",
                     description="A generated demo.",
                     output_dir=output_dir,
-                    tool_profiles=("cq", "opencode-playwright-mcp", "opencode-context7-mcp"),
+                    tool_profiles=("cq", "opencode-playwright-mcp", "opencode-context7-mcp", "opencode-headroom-mcp"),
                     generated_at="2026-05-10T00:00:00Z",
                 )
             )
@@ -153,6 +153,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(config["skills"]["paths"], [".agents/skills"])
             self.assertEqual(config["mcp"]["playwright"]["command"], ["npx", "-y", "@playwright/mcp"])
             self.assertEqual(config["mcp"]["context7"]["headers"]["CONTEXT7_API_KEY"], "${CONTEXT7_API_KEY}")
+            self.assertEqual(config["mcp"]["headroom"]["command"], ["headroom", "mcp", "serve"])
 
     def test_sops_age_without_recipient_is_guidance_only(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -229,6 +230,9 @@ class GeneratorTests(unittest.TestCase):
         self.assertIn("a11y-scanner", stdout.getvalue())
         self.assertIn("browser-automation", stdout.getvalue())
         self.assertIn("headroom-context-compression", stdout.getvalue())
+        self.assertIn("headroom-mcp", stdout.getvalue())
+        self.assertIn("headroom-proxy", stdout.getvalue())
+        self.assertIn("opencode-headroom-mcp", stdout.getvalue())
         self.assertIn("opencode-homebrew-path", stdout.getvalue())
 
         stdout = StringIO()

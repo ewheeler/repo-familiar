@@ -55,6 +55,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("screenshots", tools)
         self.assertIn("setup:", tools)
         self.assertIn("verify:", tools)
+        self.assertIn("headroom-mcp:", profiles.render_tool_profiles(("headroom-mcp",)))
+        self.assertIn("headroom proxy --port 8787", profiles.render_tool_profiles(("headroom-proxy",)))
         self.assertIn("memory-local:", memory)
         self.assertIn("sops-age", profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, ("sops-age",)))
 
