@@ -6,8 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "repo-familiar"
 version = "0.1.0"
 description = "Project generator for agentic engineering defaults."
-requires-python = ">=3.11"
-dependencies = ["questionary>=2.0"]
+requires-python = ">=3.11, <3.14"
+dependencies = [
+    "headroom-ai[all]>=0.23.0",
+    "questionary>=2.0",
+]
 
 [project.scripts]
 repo-familiar = "repo_familiar.cli:main"
