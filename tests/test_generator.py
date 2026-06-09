@@ -324,6 +324,55 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertIn("add-tool requires at least one --tool or --tool-profile", stderr.getvalue())
 
+    def test_cli_catalog_and_describe_profile_families(self) -> None:
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            result = main(["catalog", "model"])
+        self.assertEqual(result, 0)
+        self.assertIn("default-coding: general coding and repository maintenance", stdout.getvalue())
+        self.assertIn("budget-review: cheaper review and planning passes", stdout.getvalue())
+
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            result = main(["catalog", "tool", "--format", "json"])
+        self.assertEqual(result, 0)
+        catalog_payload = json.loads(stdout.getvalue())
+        self.assertEqual(catalog_payload["family"], "tool")
+        self.assertIn(
+            {"name": "cq", "summary": "query shared agent knowledge before implementation and before fixing errors"},
+            catalog_payload["profiles"],
+        )
+
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            result = main(["describe", "model", "default-coding"])
+        self.assertEqual(result, 0)
+        self.assertIn("provider: openai", stdout.getvalue())
+        self.assertIn("model: gpt-5.5", stdout.getvalue())
+        self.assertIn("use: general coding and repository maintenance", stdout.getvalue())
+
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            result = main(["describe", "secrets", "sops-age", "--format", "json"])
+        self.assertEqual(result, 0)
+        describe_payload = json.loads(stdout.getvalue())
+        self.assertEqual(describe_payload["family"], "secrets")
+        self.assertEqual(describe_payload["name"], "sops-age")
+        self.assertEqual(
+            describe_payload["profile"]["purpose"],
+            "encrypt selected repository config or secret files while keeping plaintext out of git",
+        )
+        self.assertIn("setup", describe_payload["profile"])
+
+    def test_cli_describe_reports_unknown_profile_name(self) -> None:
+        stderr = StringIO()
+
+        with redirect_stderr(stderr):
+            result = main(["describe", "model", "missing-profile"])
+
+        self.assertEqual(result, 1)
+        self.assertIn("Unknown model profile: missing-profile", stderr.getvalue())
+
     def test_generate_requires_name_and_output_without_interactive(self) -> None:
         stderr = StringIO()
         with redirect_stderr(stderr):
@@ -537,6 +586,87 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('tool_profiles:', bootstrap)
             self.assertIn('path: ".agents/tools.yml"', bootstrap)
             self.assertNotIn('path: "AGENTS.md"', bootstrap)
+
+    def test_add_tool_dry_run_reports_targeted_scope_and_follow_up(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                result = main(
+                    [
+                        "add-tool",
+                        "--path",
+                        str(repo),
+                        "--tool",
+                        "cq",
+                        "--generated-at",
+                        "2026-05-10T00:00:00Z",
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            output = stdout.getvalue()
+            self.assertIn("Targeted add preview:", output)
+            self.assertIn("Generated assets in scope:", output)
+            self.assertIn("Follow-up verification:", output)
+            self.assertIn(f"repo-familiar check --path {repo}", output)
+
+    def test_add_opencode_mcp_tool_dry_run_warns_about_out_of_scope_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                result = main(
+                    [
+                        "add-tool",
+                        "--path",
+                        str(repo),
+                        "--tool",
+                        "opencode-playwright-mcp",
+                        "--generated-at",
+                        "2026-05-10T00:00:00Z",
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            output = stdout.getvalue()
+            self.assertIn("Warnings:", output)
+            self.assertIn("`opencode-playwright-mcp` also affects `opencode.json`", output)
+            self.assertIn("does not currently record the `opencode` harness", output)
+            self.assertIn("--agent-harness opencode", output)
+            self.assertFalse((repo / "opencode.json").exists())
+
+    def test_add_opencode_mcp_tool_apply_reports_warning_and_follow_up(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "existing-project"
+            repo.mkdir()
+
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                result = main(
+                    [
+                        "add-tool",
+                        "--path",
+                        str(repo),
+                        "--tool",
+                        "opencode-playwright-mcp",
+                        "--generated-at",
+                        "2026-05-10T00:00:00Z",
+                        "--apply",
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            output = stdout.getvalue()
+            self.assertIn("Warnings:", output)
+            self.assertIn(f"repo-familiar check --path {repo}", output)
+            self.assertTrue((repo / ".agents/tools.yml").exists())
+            self.assertTrue((repo / ".repo-familiar/bootstrap.yml").exists())
+            self.assertFalse((repo / "opencode.json").exists())
 
     def test_add_opencode_homebrew_tool_profile(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

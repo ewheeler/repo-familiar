@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 from dataclasses import dataclass
 import json
 from pathlib import Path
 import sys
 
+from . import profiles
 from .generator import (
     ExistingBootstrapOptions,
     GenerationOptions,
@@ -31,7 +33,7 @@ from .generator import (
     list_worktree_profiles,
     plan_project,
 )
-from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset
+from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset, asset_in_groups
 from .interactive import (
     InteractiveCancelled,
     InteractiveUnavailable,
@@ -52,6 +54,28 @@ class TargetedAddCommand:
     asset_groups: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class TargetedAddGuidance:
+    generated_assets: tuple[GeneratedAsset, ...]
+    warnings: tuple[str, ...]
+    follow_up: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ProfileFamilyCommand:
+    selection_attr: str
+    list_command: str
+    list_help: str
+    list_profiles: Callable[[], list[str]]
+    add_command: str
+    add_help: str
+    required_message: str
+    apply_help: str
+    force_help: str
+    asset_group: str
+    add_selection_alias: str | None = None
+
+
 SELECTION_ATTRS = (
     "agent_harnesses",
     "model_profiles",
@@ -70,22 +94,174 @@ SELECTION_ATTRS = (
 )
 
 
-TARGETED_ADD_COMMANDS = {
-    "add-skill": TargetedAddCommand("skills", "add-skill requires at least one --skill", ("skills",), ("skills", "metadata")),
-    "add-tool": TargetedAddCommand("tool_profiles", "add-tool requires at least one --tool or --tool-profile", ("tool_profiles",), ("tools", "metadata")),
-    "add-model": TargetedAddCommand("model_profiles", "add-model requires at least one --model-profile", ("model_profiles",), ("models", "metadata")),
-    "add-docs": TargetedAddCommand(None, None, (), ("docs", "metadata")),
-    "add-memory": TargetedAddCommand("memory_profiles", "add-memory requires at least one --memory-profile", ("memory_profiles",), ("memory", "metadata")),
-    "add-prompts": TargetedAddCommand("prompt_profiles", "add-prompts requires at least one --prompt-profile", ("prompt_profiles",), ("prompts", "metadata")),
-    "add-safety": TargetedAddCommand("safety_profiles", "add-safety requires at least one --safety-profile", ("safety_profiles",), ("safety", "metadata")),
-    "add-privacy": TargetedAddCommand("privacy_profiles", "add-privacy requires at least one --privacy-profile", ("privacy_profiles",), ("privacy", "metadata")),
-    "add-repomap": TargetedAddCommand("repomap_profiles", "add-repomap requires at least one --repomap-profile", ("repomap_profiles",), ("repomap", "metadata")),
-    "add-sandbox": TargetedAddCommand("sandbox_profiles", "add-sandbox requires at least one --sandbox-profile", ("sandbox_profiles",), ("sandbox", "metadata")),
-    "add-secrets": TargetedAddCommand("secrets_profiles", "add-secrets requires at least one --secrets-profile", ("secrets_profiles",), ("secrets", "metadata")),
-    "add-design": TargetedAddCommand("design_profiles", "add-design requires at least one --design-profile", ("design_profiles",), ("design", "metadata")),
-    "add-worktree": TargetedAddCommand("worktree_profiles", "add-worktree requires at least one --worktree-profile", ("worktree_profiles",), ("worktrees", "metadata")),
-    "add-public-interest": TargetedAddCommand("public_interest_profiles", "add-public-interest requires at least one --public-interest-profile", ("public_interest_profiles",), ("public-interest", "metadata")),
-}
+PROFILE_FAMILY_COMMANDS = (
+    ProfileFamilyCommand(
+        selection_attr="model_profiles",
+        list_command="list-model-profiles",
+        list_help="list available model profiles",
+        list_profiles=list_model_profiles,
+        add_command="add-model",
+        add_help="add selected model profiles to an existing repository",
+        required_message="add-model requires at least one --model-profile",
+        apply_help="write missing model profile assets",
+        force_help="overwrite conflicting model assets",
+        asset_group="models",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="tool_profiles",
+        list_command="list-tool-profiles",
+        list_help="list available tool profiles",
+        list_profiles=list_tool_profiles,
+        add_command="add-tool",
+        add_help="add selected tool profiles to an existing repository",
+        required_message="add-tool requires at least one --tool or --tool-profile",
+        apply_help="write missing tool assets",
+        force_help="overwrite conflicting tool assets",
+        asset_group="tools",
+        add_selection_alias="--tool",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="memory_profiles",
+        list_command="list-memory-profiles",
+        list_help="list available memory profiles",
+        list_profiles=list_memory_profiles,
+        add_command="add-memory",
+        add_help="add selected memory profiles to an existing repository",
+        required_message="add-memory requires at least one --memory-profile",
+        apply_help="write missing memory profile assets",
+        force_help="overwrite conflicting memory assets",
+        asset_group="memory",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="prompt_profiles",
+        list_command="list-prompt-profiles",
+        list_help="list available prompt profiles",
+        list_profiles=list_prompt_profiles,
+        add_command="add-prompts",
+        add_help="add selected prompt profiles to an existing repository",
+        required_message="add-prompts requires at least one --prompt-profile",
+        apply_help="write missing prompt profile assets",
+        force_help="overwrite conflicting prompt assets",
+        asset_group="prompts",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="safety_profiles",
+        list_command="list-safety-profiles",
+        list_help="list available safety profiles",
+        list_profiles=list_safety_profiles,
+        add_command="add-safety",
+        add_help="add selected prompt/output safety profiles to an existing repository",
+        required_message="add-safety requires at least one --safety-profile",
+        apply_help="write missing safety profile assets",
+        force_help="overwrite conflicting safety assets",
+        asset_group="safety",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="privacy_profiles",
+        list_command="list-privacy-profiles",
+        list_help="list available privacy profiles",
+        list_profiles=list_privacy_profiles,
+        add_command="add-privacy",
+        add_help="add selected privacy profiles to an existing repository",
+        required_message="add-privacy requires at least one --privacy-profile",
+        apply_help="write missing privacy profile assets",
+        force_help="overwrite conflicting privacy assets",
+        asset_group="privacy",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="repomap_profiles",
+        list_command="list-repomap-profiles",
+        list_help="list available repo map profiles",
+        list_profiles=list_repomap_profiles,
+        add_command="add-repomap",
+        add_help="add selected repo map profiles to an existing repository",
+        required_message="add-repomap requires at least one --repomap-profile",
+        apply_help="write missing repo map profile assets",
+        force_help="overwrite conflicting repo map assets",
+        asset_group="repomap",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="sandbox_profiles",
+        list_command="list-sandbox-profiles",
+        list_help="list available sandbox profiles",
+        list_profiles=list_sandbox_profiles,
+        add_command="add-sandbox",
+        add_help="add selected sandbox profiles to an existing repository",
+        required_message="add-sandbox requires at least one --sandbox-profile",
+        apply_help="write missing sandbox profile assets",
+        force_help="overwrite conflicting sandbox assets",
+        asset_group="sandbox",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="secrets_profiles",
+        list_command="list-secrets-profiles",
+        list_help="list available secrets profiles",
+        list_profiles=list_secrets_profiles,
+        add_command="add-secrets",
+        add_help="add selected secrets profiles to an existing repository",
+        required_message="add-secrets requires at least one --secrets-profile",
+        apply_help="write missing secrets profile assets",
+        force_help="overwrite conflicting secrets assets",
+        asset_group="secrets",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="design_profiles",
+        list_command="list-design-profiles",
+        list_help="list available design profiles",
+        list_profiles=list_design_profiles,
+        add_command="add-design",
+        add_help="add selected design profiles to an existing repository",
+        required_message="add-design requires at least one --design-profile",
+        apply_help="write missing design profile assets",
+        force_help="overwrite conflicting design assets",
+        asset_group="design",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="worktree_profiles",
+        list_command="list-worktree-profiles",
+        list_help="list available worktree profiles",
+        list_profiles=list_worktree_profiles,
+        add_command="add-worktree",
+        add_help="add selected worktree profiles to an existing repository",
+        required_message="add-worktree requires at least one --worktree-profile",
+        apply_help="write missing worktree profile assets",
+        force_help="overwrite conflicting worktree assets",
+        asset_group="worktrees",
+    ),
+    ProfileFamilyCommand(
+        selection_attr="public_interest_profiles",
+        list_command="list-public-interest-profiles",
+        list_help="list available public interest profiles",
+        list_profiles=list_public_interest_profiles,
+        add_command="add-public-interest",
+        add_help="add selected public interest profiles to an existing repository",
+        required_message="add-public-interest requires at least one --public-interest-profile",
+        apply_help="write missing public interest profile assets",
+        force_help="overwrite conflicting public interest assets",
+        asset_group="public-interest",
+    ),
+)
+
+PROFILE_FAMILY_COMMANDS_BY_LIST = {spec.list_command: spec for spec in PROFILE_FAMILY_COMMANDS}
+PROFILE_CATALOG_FAMILIES = tuple(profiles.PROFILE_CATALOGS)
+
+
+def _build_targeted_add_commands() -> dict[str, TargetedAddCommand]:
+    commands = {
+        "add-skill": TargetedAddCommand("skills", "add-skill requires at least one --skill", ("skills",), ("skills", "metadata")),
+        "add-docs": TargetedAddCommand(None, None, (), ("docs", "metadata")),
+    }
+    for spec in PROFILE_FAMILY_COMMANDS:
+        commands[spec.add_command] = TargetedAddCommand(
+            spec.selection_attr,
+            spec.required_message,
+            (spec.selection_attr,),
+            (spec.asset_group, "metadata"),
+        )
+    return commands
+
+
+TARGETED_ADD_COMMANDS = _build_targeted_add_commands()
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -97,19 +273,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("list-templates", help="list available project templates")
     subparsers.add_parser("list-agent-harnesses", help="list available agent harnesses")
-    subparsers.add_parser("list-model-profiles", help="list available model profiles")
-    subparsers.add_parser("list-tool-profiles", help="list available tool profiles")
-    subparsers.add_parser("list-memory-profiles", help="list available memory profiles")
-    subparsers.add_parser("list-prompt-profiles", help="list available prompt profiles")
-    subparsers.add_parser("list-safety-profiles", help="list available safety profiles")
-    subparsers.add_parser("list-privacy-profiles", help="list available privacy profiles")
-    subparsers.add_parser("list-repomap-profiles", help="list available repo map profiles")
-    subparsers.add_parser("list-sandbox-profiles", help="list available sandbox profiles")
-    subparsers.add_parser("list-secrets-profiles", help="list available secrets profiles")
-    subparsers.add_parser("list-design-profiles", help="list available design profiles")
-    subparsers.add_parser("list-worktree-profiles", help="list available worktree profiles")
-    subparsers.add_parser("list-public-interest-profiles", help="list available public interest profiles")
+    for spec in PROFILE_FAMILY_COMMANDS:
+        subparsers.add_parser(spec.list_command, help=spec.list_help)
     subparsers.add_parser("list-skills", help="list available skills")
+
+    catalog = subparsers.add_parser("catalog", help="catalog available profile families with one-line summaries")
+    catalog.add_argument("family", choices=PROFILE_CATALOG_FAMILIES, help="profile family to inspect")
+    catalog.add_argument("--format", choices=("text", "json"), default="text")
+
+    describe = subparsers.add_parser("describe", help="describe one profile from an in-code registry")
+    describe.add_argument("family", choices=PROFILE_CATALOG_FAMILIES, help="profile family to inspect")
+    describe.add_argument("name", help="profile name")
+    describe.add_argument("--format", choices=("text", "json"), default="text")
 
     advise = subparsers.add_parser("advise", help="recommend bootstrap stage, profiles, and memory use for a repository")
     advise.add_argument("--path", required=True, type=Path, help="existing repository path")
@@ -183,23 +358,6 @@ def build_parser() -> argparse.ArgumentParser:
     add_skill.add_argument("--force", action="store_true", help="overwrite conflicting skill assets")
     add_skill.add_argument("--format", choices=("text", "json"), default="text")
 
-    add_tool = subparsers.add_parser("add-tool", help="add selected tool profiles to an existing repository")
-    add_tool.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_tool.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_tool)
-    add_tool.add_argument("--tool", action="append", dest="tool_profiles", default=None)
-    add_tool.add_argument("--apply", action="store_true", help="write missing tool assets")
-    add_tool.add_argument("--force", action="store_true", help="overwrite conflicting tool assets")
-    add_tool.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_model = subparsers.add_parser("add-model", help="add selected model profiles to an existing repository")
-    add_model.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_model.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_model)
-    add_model.add_argument("--apply", action="store_true", help="write missing model profile assets")
-    add_model.add_argument("--force", action="store_true", help="overwrite conflicting model assets")
-    add_model.add_argument("--format", choices=("text", "json"), default="text")
-
     add_docs = subparsers.add_parser("add-docs", help="add documentation scaffold to an existing repository")
     add_docs.add_argument("--path", required=True, type=Path, help="existing repository path")
     add_docs.add_argument("--name", default=None, help="project display name; defaults to directory name")
@@ -208,85 +366,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_docs.add_argument("--force", action="store_true", help="overwrite conflicting documentation assets")
     add_docs.add_argument("--format", choices=("text", "json"), default="text")
 
-    add_memory = subparsers.add_parser("add-memory", help="add selected memory profiles to an existing repository")
-    add_memory.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_memory.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_memory)
-    add_memory.add_argument("--apply", action="store_true", help="write missing memory profile assets")
-    add_memory.add_argument("--force", action="store_true", help="overwrite conflicting memory assets")
-    add_memory.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_prompts = subparsers.add_parser("add-prompts", help="add selected prompt profiles to an existing repository")
-    add_prompts.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_prompts.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_prompts)
-    add_prompts.add_argument("--apply", action="store_true", help="write missing prompt profile assets")
-    add_prompts.add_argument("--force", action="store_true", help="overwrite conflicting prompt assets")
-    add_prompts.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_safety = subparsers.add_parser("add-safety", help="add selected prompt/output safety profiles to an existing repository")
-    add_safety.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_safety.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_safety)
-    add_safety.add_argument("--apply", action="store_true", help="write missing safety profile assets")
-    add_safety.add_argument("--force", action="store_true", help="overwrite conflicting safety assets")
-    add_safety.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_privacy = subparsers.add_parser("add-privacy", help="add selected privacy profiles to an existing repository")
-    add_privacy.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_privacy.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_privacy)
-    add_privacy.add_argument("--apply", action="store_true", help="write missing privacy profile assets")
-    add_privacy.add_argument("--force", action="store_true", help="overwrite conflicting privacy assets")
-    add_privacy.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_repomap = subparsers.add_parser("add-repomap", help="add selected repo map profiles to an existing repository")
-    add_repomap.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_repomap.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_repomap)
-    add_repomap.add_argument("--apply", action="store_true", help="write missing repo map profile assets")
-    add_repomap.add_argument("--force", action="store_true", help="overwrite conflicting repo map assets")
-    add_repomap.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_sandbox = subparsers.add_parser("add-sandbox", help="add selected sandbox profiles to an existing repository")
-    add_sandbox.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_sandbox.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_sandbox)
-    add_sandbox.add_argument("--apply", action="store_true", help="write missing sandbox profile assets")
-    add_sandbox.add_argument("--force", action="store_true", help="overwrite conflicting sandbox assets")
-    add_sandbox.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_secrets = subparsers.add_parser("add-secrets", help="add selected secrets profiles to an existing repository")
-    add_secrets.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_secrets.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_secrets)
-    add_secrets.add_argument("--apply", action="store_true", help="write missing secrets profile assets")
-    add_secrets.add_argument("--force", action="store_true", help="overwrite conflicting secrets assets")
-    add_secrets.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_design = subparsers.add_parser("add-design", help="add selected design profiles to an existing repository")
-    add_design.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_design.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_design)
-    add_design.add_argument("--apply", action="store_true", help="write missing design profile assets")
-    add_design.add_argument("--force", action="store_true", help="overwrite conflicting design assets")
-    add_design.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_worktree = subparsers.add_parser("add-worktree", help="add selected worktree profiles to an existing repository")
-    add_worktree.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_worktree.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_worktree)
-    add_worktree.add_argument("--apply", action="store_true", help="write missing worktree profile assets")
-    add_worktree.add_argument("--force", action="store_true", help="overwrite conflicting worktree assets")
-    add_worktree.add_argument("--format", choices=("text", "json"), default="text")
-
-    add_public_interest = subparsers.add_parser("add-public-interest", help="add selected public interest profiles to an existing repository")
-    add_public_interest.add_argument("--path", required=True, type=Path, help="existing repository path")
-    add_public_interest.add_argument("--name", default=None, help="project display name; defaults to directory name")
-    _add_selection_arguments(add_public_interest)
-    add_public_interest.add_argument("--apply", action="store_true", help="write missing public interest profile assets")
-    add_public_interest.add_argument("--force", action="store_true", help="overwrite conflicting public interest assets")
-    add_public_interest.add_argument("--format", choices=("text", "json"), default="text")
+    for spec in PROFILE_FAMILY_COMMANDS:
+        _add_profile_family_parser(subparsers, spec)
 
     return parser
 
@@ -386,6 +467,21 @@ def _add_selection_arguments(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_profile_family_parser(
+    subparsers: argparse._SubParsersAction[argparse.ArgumentParser],
+    spec: ProfileFamilyCommand,
+) -> None:
+    parser = subparsers.add_parser(spec.add_command, help=spec.add_help)
+    parser.add_argument("--path", required=True, type=Path, help="existing repository path")
+    parser.add_argument("--name", default=None, help="project display name; defaults to directory name")
+    _add_selection_arguments(parser)
+    if spec.add_selection_alias:
+        parser.add_argument(spec.add_selection_alias, action="append", dest=spec.selection_attr, default=None)
+    parser.add_argument("--apply", action="store_true", help=spec.apply_help)
+    parser.add_argument("--force", action="store_true", help=spec.force_help)
+    parser.add_argument("--format", choices=("text", "json"), default="text")
+
+
 def _add_asset_group_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--asset-group",
@@ -411,63 +507,8 @@ def main(argv: list[str] | None = None) -> int:
             print(harness)
         return 0
 
-    if args.command == "list-model-profiles":
-        for profile in list_model_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-tool-profiles":
-        for profile in list_tool_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-memory-profiles":
-        for profile in list_memory_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-prompt-profiles":
-        for profile in list_prompt_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-safety-profiles":
-        for profile in list_safety_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-privacy-profiles":
-        for profile in list_privacy_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-repomap-profiles":
-        for profile in list_repomap_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-sandbox-profiles":
-        for profile in list_sandbox_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-secrets-profiles":
-        for profile in list_secrets_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-design-profiles":
-        for profile in list_design_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-worktree-profiles":
-        for profile in list_worktree_profiles():
-            print(profile)
-        return 0
-
-    if args.command == "list-public-interest-profiles":
-        for profile in list_public_interest_profiles():
+    if args.command in PROFILE_FAMILY_COMMANDS_BY_LIST:
+        for profile in PROFILE_FAMILY_COMMANDS_BY_LIST[args.command].list_profiles():
             print(profile)
         return 0
 
@@ -475,6 +516,12 @@ def main(argv: list[str] | None = None) -> int:
         for skill in list_skills():
             print(skill)
         return 0
+
+    if args.command == "catalog":
+        return _catalog(args)
+
+    if args.command == "describe":
+        return _describe(args)
 
     if args.command == "check":
         return _check(args)
@@ -569,6 +616,31 @@ def _audit(args: argparse.Namespace) -> int:
         print(f"error: {error}", file=sys.stderr)
         return 1
     _print_report_or_json(report, args.format)
+    return 0
+
+
+def _catalog(args: argparse.Namespace) -> int:
+    profiles_for_family = profiles.catalog_profile_family(args.family)
+    if args.format == "json":
+        print(json.dumps({"family": args.family, "profiles": profiles_for_family}, indent=2))
+        return 0
+    print(f"{args.family} profiles:")
+    for profile in profiles_for_family:
+        print(f"- {profile['name']}: {profile['summary']}")
+    return 0
+
+
+def _describe(args: argparse.Namespace) -> int:
+    try:
+        profile = profiles.describe_profile_family(args.family, args.name)
+    except ValueError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    if args.format == "json":
+        print(json.dumps({"family": args.family, "name": args.name, "profile": profile}, indent=2))
+        return 0
+    print(f"{args.family} profile: {args.name}")
+    _print_nested_mapping(profile)
     return 0
 
 
@@ -674,7 +746,7 @@ def _current_reference_assets(path: Path) -> dict[str, GeneratedAsset]:
     return {asset.path: asset.as_generated_asset() for asset in plan_project(options)}
 
 
-def _bootstrap_existing(args: argparse.Namespace) -> int:
+def _bootstrap_existing(args: argparse.Namespace, guidance: TargetedAddGuidance | None = None) -> int:
     if getattr(args, "interactive", False):
         try:
             options, apply = prompt_existing_options(args)
@@ -690,7 +762,7 @@ def _bootstrap_existing(args: argparse.Namespace) -> int:
     try:
         if not apply:
             report = audit_existing_repository(options)
-            _print_report_or_json(report, args.format, dry_run=True)
+            _print_report_or_json(report, args.format, dry_run=True, guidance=guidance)
             return 0
         result = bootstrap_existing_repository(options)
     except (FileExistsError, NotADirectoryError, ValueError) as error:
@@ -698,7 +770,7 @@ def _bootstrap_existing(args: argparse.Namespace) -> int:
         return 1
 
     if args.format == "json":
-        print(json.dumps(_result_to_dict(result), indent=2))
+        print(json.dumps(_result_to_dict(result, guidance=guidance), indent=2))
     else:
         print(f"Bootstrapped existing repository at {options.path}")
         print(f"Wrote {len(result.written)} assets")
@@ -708,6 +780,7 @@ def _bootstrap_existing(args: argparse.Namespace) -> int:
             print(f"Skipped {len(result.skipped_conflicts)} conflicting assets")
             for asset in result.skipped_conflicts:
                 print(f"- {asset.path} ({asset.kind})")
+        _print_targeted_add_guidance(guidance)
     return 0
 
 
@@ -769,16 +842,19 @@ def _print_assets(label: str, assets) -> None:
         print(f"- {asset.path} ({asset.kind})")
 
 
-def _print_report_or_json(report, output_format: str, *, dry_run: bool = False) -> None:
+def _print_report_or_json(report, output_format: str, *, dry_run: bool = False, guidance: TargetedAddGuidance | None = None) -> None:
     if output_format == "json":
         payload = _report_to_dict(report)
         if dry_run:
             payload["dry_run"] = True
+        if guidance:
+            payload["targeted_add"] = _guidance_to_dict(guidance)
         print(json.dumps(payload, indent=2))
         return
     _print_audit_report(report)
     if dry_run:
         print("Dry run only. Pass --apply to write missing assets.")
+    _print_targeted_add_guidance(guidance, dry_run=dry_run)
 
 
 def _report_to_dict(report) -> dict:
@@ -801,8 +877,8 @@ def _report_to_dict(report) -> dict:
     }
 
 
-def _result_to_dict(result) -> dict:
-    return {
+def _result_to_dict(result, guidance: TargetedAddGuidance | None = None) -> dict:
+    payload = {
         "report": _report_to_dict(result.report),
         "summary": {
             "written": len(result.written),
@@ -811,6 +887,9 @@ def _result_to_dict(result) -> dict:
         "written": [_asset_to_dict(asset) for asset in result.written],
         "skipped_conflicts": [_asset_to_dict(asset) for asset in result.skipped_conflicts],
     }
+    if guidance:
+        payload["targeted_add"] = _guidance_to_dict(guidance)
+    return payload
 
 
 def _asset_to_dict(asset) -> dict[str, str]:
@@ -1040,6 +1119,20 @@ def _print_named_values(label: str, values: tuple[str, ...]) -> None:
     print(f"- {label}: {rendered}")
 
 
+def _print_nested_mapping(mapping: dict, *, indent: str = "") -> None:
+    for key, value in mapping.items():
+        if isinstance(value, dict):
+            print(f"{indent}{key}:")
+            _print_nested_mapping(value, indent=f"{indent}  ")
+            continue
+        if isinstance(value, list):
+            print(f"{indent}{key}:")
+            for item in value:
+                print(f"{indent}  - {item}")
+            continue
+        print(f"{indent}{key}: {value}")
+
+
 def _advice_to_dict(report) -> dict:
     return {
         "path": str(report.path),
@@ -1145,7 +1238,8 @@ def _targeted_add(args: argparse.Namespace, descriptor: TargetedAddCommand) -> i
         return 1
     _keep_only_selection_attrs(args, descriptor.keep_attrs)
     args.asset_groups = descriptor.asset_groups
-    return _bootstrap_existing(args)
+    guidance = _build_targeted_add_guidance(_existing_options(args), args.command)
+    return _bootstrap_existing(args, guidance=guidance)
 
 
 def _keep_only_selection_attrs(args: argparse.Namespace, keep_attrs: tuple[str, ...]) -> None:
@@ -1155,3 +1249,138 @@ def _keep_only_selection_attrs(args: argparse.Namespace, keep_attrs: tuple[str, 
     }
     for attr in SELECTION_ATTRS:
         setattr(args, attr, selected[attr] if attr in keep_attrs else [])
+
+
+def _print_targeted_add_guidance(guidance: TargetedAddGuidance | None, *, dry_run: bool = False) -> None:
+    if not guidance:
+        return
+    if dry_run:
+        print("Targeted add preview:")
+        print("Generated assets in scope:")
+        for asset in guidance.generated_assets:
+            print(f"- {asset.path} ({asset.kind})")
+    if guidance.warnings:
+        print("Warnings:")
+        for warning in guidance.warnings:
+            print(f"- {warning}")
+    if guidance.follow_up:
+        print("Follow-up verification:")
+        for step in guidance.follow_up:
+            print(f"- {step}")
+
+
+def _guidance_to_dict(guidance: TargetedAddGuidance) -> dict:
+    return {
+        "generated_assets": [_asset_to_dict(asset) for asset in guidance.generated_assets],
+        "warnings": list(guidance.warnings),
+        "follow_up": list(guidance.follow_up),
+    }
+
+
+def _build_targeted_add_guidance(options: ExistingBootstrapOptions, command_name: str) -> TargetedAddGuidance:
+    planned_assets = tuple(
+        asset.as_generated_asset()
+        for path, asset in sorted(_planned_assets_by_path(options).items())
+        if asset_in_groups(path, options.asset_groups)
+    )
+    warnings = _targeted_add_warnings(options, command_name)
+    follow_up = [f"After applying, run `repo-familiar check --path {options.path}`."]
+    dependency_preview = _targeted_add_dependency_preview(options)
+    if dependency_preview:
+        follow_up.append(f"Preview related generated config with `{dependency_preview}` before expecting harness-specific behavior.")
+    return TargetedAddGuidance(
+        generated_assets=planned_assets,
+        warnings=tuple(warnings),
+        follow_up=tuple(follow_up),
+    )
+
+
+def _targeted_add_warnings(options: ExistingBootstrapOptions, command_name: str) -> list[str]:
+    if command_name != "add-tool":
+        return []
+    recorded_harnesses = _recorded_agent_harnesses(options.path)
+    warnings: list[str] = []
+    for name in options.tool_profiles:
+        profile = profiles.TOOL_PROFILES[name]
+        generated_assets = tuple(profile.get("generated_assets", ()))
+        omitted_assets = tuple(path for path in generated_assets if not asset_in_groups(path, options.asset_groups))
+        if omitted_assets:
+            warnings.append(
+                f"`{name}` also affects {_render_backticked_paths(omitted_assets)}, but `{command_name}` only updates {_render_backticked_values(options.asset_groups)}; no change to {_render_backticked_paths(omitted_assets)} will happen in this run."
+            )
+        required_harnesses = tuple(profile.get("requires_agent_harnesses", ()))
+        missing_harnesses = tuple(harness for harness in required_harnesses if harness not in recorded_harnesses)
+        if missing_harnesses:
+            warnings.append(
+                f"This repository does not currently record the {_render_backticked_values(missing_harnesses)} harness in bootstrap metadata, so `{name}` remains guidance-only until that harness is selected."
+            )
+    return warnings
+
+
+def _targeted_add_dependency_preview(options: ExistingBootstrapOptions) -> str | None:
+    if not options.tool_profiles:
+        return None
+    dependent_profiles: list[str] = []
+    required_harnesses: list[str] = []
+    dependent_asset_groups: list[str] = []
+    for name in options.tool_profiles:
+        profile = profiles.TOOL_PROFILES[name]
+        generated_assets = tuple(profile.get("generated_assets", ()))
+        omitted_assets = [path for path in generated_assets if not asset_in_groups(path, options.asset_groups)]
+        if not omitted_assets:
+            continue
+        dependent_profiles.append(name)
+        required_harnesses.extend(profile.get("requires_agent_harnesses", ()))
+        for path in omitted_assets:
+            dependent_asset_groups.extend(_asset_groups_for_path(path))
+    if not dependent_profiles:
+        return None
+    parts = ["repo-familiar", "audit", "--path", str(options.path)]
+    for harness in dict.fromkeys(required_harnesses):
+        parts.extend(["--agent-harness", harness])
+    for profile_name in dict.fromkeys(dependent_profiles):
+        parts.extend(["--tool-profile", profile_name])
+    for asset_group in dict.fromkeys([*dependent_asset_groups, "metadata"]):
+        parts.extend(["--asset-group", asset_group])
+    return " ".join(parts)
+
+
+def _asset_groups_for_path(path: str) -> tuple[str, ...]:
+    groups = (
+        "agent",
+        "config",
+        "design",
+        "docs",
+        "memory",
+        "metadata",
+        "models",
+        "plan",
+        "privacy",
+        "public-interest",
+        "prompts",
+        "repomap",
+        "safety",
+        "sandbox",
+        "secrets",
+        "skills",
+        "tools",
+        "worktrees",
+    )
+    return tuple(group for group in groups if asset_in_groups(path, (group,)))
+
+
+def _recorded_agent_harnesses(path: Path) -> tuple[str, ...]:
+    bootstrap_path = path / BOOTSTRAP_METADATA_PATH
+    if not bootstrap_path.exists():
+        return ()
+    return load_bootstrap_metadata(bootstrap_path).selected_options.get("agent_harnesses", ())
+
+
+def _render_backticked_paths(paths: tuple[str, ...]) -> str:
+    return _render_backticked_values(paths)
+
+
+def _render_backticked_values(values: tuple[str, ...]) -> str:
+    if len(values) == 1:
+        return f"`{values[0]}`"
+    return ", ".join(f"`{value}`" for value in values)

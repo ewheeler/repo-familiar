@@ -4,6 +4,8 @@ title: "Pre-Bootstrap Checklist"
 
 Before bootstrapping real existing repositories, use this sequence.
 
+Keep [Bootstrap Lifecycle](./bootstrap-lifecycle.qmd) nearby for the ownership contract and profile-family command matrix.
+
 ## 1. Advise
 
 ```bash
@@ -22,7 +24,17 @@ Inspect conflicts before writing anything. If the repository already has importa
 
 ## 3. Start With Memory And Core Skills
 
-For most existing repositories, first add memory guidance, knowledge lookup, scope-drift control, plan review, and API docs lookup:
+For most existing repositories, preview memory guidance, knowledge lookup, scope-drift control, plan review, and API docs lookup first:
+
+```bash
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs
+```
+
+Apply the same selections after reviewing the preview:
 
 ```bash
 uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
@@ -34,13 +46,25 @@ uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-do
 
 ## 4. Add Docs Or Models Next
 
-Add docs if the project lacks durable project memory:
+Preview docs if the project lacks durable project memory:
+
+```bash
+uv run python -m repo_familiar add-docs --path /path/to/repo
+```
+
+Apply docs after the preview looks right:
 
 ```bash
 uv run python -m repo_familiar add-docs --path /path/to/repo --apply
 ```
 
-Add model profiles if agents need explicit model/provider defaults:
+Preview model profiles if agents need explicit model/provider defaults:
+
+```bash
+uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding
+```
+
+Apply model profiles after review:
 
 ```bash
 uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding --apply

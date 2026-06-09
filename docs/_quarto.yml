@@ -4,6 +4,7 @@ project:
   render:
     - index.qmd
     - usage.qmd
+    - bootstrap-lifecycle.qmd
     - generator.qmd
     - templates.qmd
     - model-profiles.qmd
@@ -26,6 +27,7 @@ project:
     - adr/0007-model-profiles-location.md
     - adr/0008-named-model-profile-schema.md
     - adr/0009-existing-repository-bootstrap.md
+    - adr/0010-metadata-v2-preview-first-refresh.md
 
 website:
   title: "repo-familiar"
@@ -53,6 +55,7 @@ website:
     contents:
       - index.qmd
       - usage.qmd
+      - bootstrap-lifecycle.qmd
       - section: Generator
         contents:
           - generator.qmd
@@ -77,6 +80,7 @@ website:
           - adr/0007-model-profiles-location.md
           - adr/0008-named-model-profile-schema.md
           - adr/0009-existing-repository-bootstrap.md
+          - adr/0010-metadata-v2-preview-first-refresh.md
       - research.qmd
       - user-stories.qmd
   page-footer:

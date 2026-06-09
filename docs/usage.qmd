@@ -12,6 +12,8 @@ title: "Usage"
 
 Generated assets should be copied into the downstream repository by default. The generator should also write `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version so future upgrade tooling can reason about what was created.
 
+For command sequencing, ownership boundaries, and targeted add safety, see [Bootstrap Lifecycle](./bootstrap-lifecycle.qmd).
+
 ## Current Generator CLI
 
 Run the minimal generator from this checkout:
@@ -82,12 +84,13 @@ selected_options:
   prompt_profiles: []
   safety_profiles: []
   privacy_profiles: []
-  public_interest_profiles: []
   repomap_profiles: []
   sandbox_profiles: []
   secrets_profiles: []
   design_profiles: []
   worktree_profiles: []
+  public_interest_profiles: []
+  sops_age_recipients: []
   skills: []
   docs: quarto
 generated_assets:
@@ -153,7 +156,17 @@ uv run python -m repo_familiar advise --path /path/to/repo
 uv run python -m repo_familiar audit --path /path/to/repo
 ```
 
-Use targeted add commands when you only want one class of defaults:
+Preview targeted add commands first when you only want one class of defaults:
+
+```bash
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs
+```
+
+Apply the same selections only after the preview matches the intended additive change:
 
 ```bash
 uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
@@ -161,6 +174,15 @@ uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
+```
+
+Use the read-only profile registry ergonomics when you need the built-in summaries or full field details for a profile family:
+
+```bash
+uv run python -m repo_familiar catalog model
+uv run python -m repo_familiar catalog secrets --format json
+uv run python -m repo_familiar describe tool cq
+uv run python -m repo_familiar describe public-interest child-rights-digital --format json
 ```
 
 ## Project Plan Inputs

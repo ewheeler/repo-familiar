@@ -186,6 +186,8 @@ TOOL_PROFILES = {
     "opencode-headroom-mcp": {
         "purpose": "configure project-local OpenCode access to Headroom MCP tools",
         "config": "Adds a non-secret local MCP server entry to opencode.json using headroom mcp serve on PATH",
+        "generated_assets": ["opencode.json"],
+        "requires_agent_harnesses": ["opencode"],
         "setup": [
             "Select this profile only when OpenCode should launch local Headroom MCP tools for this project",
             "Install Headroom MCP support outside repo-familiar with `pip install \"headroom-ai[mcp]\"` or `pip install \"headroom-ai[all]\"`",
@@ -225,6 +227,8 @@ TOOL_PROFILES = {
     "opencode-playwright-mcp": {
         "purpose": "configure project-local OpenCode access to the Playwright MCP server",
         "config": "Adds a non-secret local MCP server entry to opencode.json using npx -y @playwright/mcp",
+        "generated_assets": ["opencode.json"],
+        "requires_agent_harnesses": ["opencode"],
         "setup": [
             "Select this profile only when OpenCode should launch Playwright MCP for this project",
             "Ensure Node and npx are visible to OpenCode's shell before relying on this MCP server",
@@ -241,6 +245,8 @@ TOOL_PROFILES = {
     "opencode-cq-mcp": {
         "purpose": "configure project-local OpenCode access to the cq MCP server",
         "config": "Adds a non-secret local MCP server entry to opencode.json using cq mcp on PATH",
+        "generated_assets": ["opencode.json"],
+        "requires_agent_harnesses": ["opencode"],
         "setup": [
             "Install and configure cq outside the repository before selecting this profile",
             "Ensure the cq executable is on PATH for OpenCode's shell",
@@ -257,6 +263,8 @@ TOOL_PROFILES = {
     "opencode-context7-mcp": {
         "purpose": "configure project-local OpenCode access to Context7 MCP with an environment-provided API key",
         "config": "Adds a remote MCP server entry to opencode.json using https://mcp.context7.com/mcp and ${CONTEXT7_API_KEY}",
+        "generated_assets": ["opencode.json"],
+        "requires_agent_harnesses": ["opencode"],
         "setup": [
             "Set CONTEXT7_API_KEY outside the repository before using this MCP server",
             "Never commit literal Context7 API keys in opencode.json or .agents files",
@@ -770,9 +778,77 @@ SKILL_SOURCES = {
     },
 }
 
+PROFILE_CATALOGS = {
+    "model": {
+        "label": "model profile",
+        "registry": MODEL_PROFILES,
+    },
+    "tool": {
+        "label": "tool profile",
+        "registry": TOOL_PROFILES,
+    },
+    "memory": {
+        "label": "memory profile",
+        "registry": MEMORY_PROFILES,
+    },
+    "prompt": {
+        "label": "prompt profile",
+        "registry": PROMPT_PROFILES,
+    },
+    "safety": {
+        "label": "safety profile",
+        "registry": SAFETY_PROFILES,
+    },
+    "privacy": {
+        "label": "privacy profile",
+        "registry": PRIVACY_PROFILES,
+    },
+    "public-interest": {
+        "label": "public interest profile",
+        "registry": PUBLIC_INTEREST_PROFILES,
+    },
+    "repomap": {
+        "label": "repo map profile",
+        "registry": REPOMAP_PROFILES,
+    },
+    "sandbox": {
+        "label": "sandbox profile",
+        "registry": SANDBOX_PROFILES,
+    },
+    "secrets": {
+        "label": "secrets profile",
+        "registry": SECRETS_PROFILES,
+    },
+    "design": {
+        "label": "design profile",
+        "registry": DESIGN_PROFILES,
+    },
+    "worktree": {
+        "label": "worktree profile",
+        "registry": WORKTREE_PROFILES,
+    },
+}
+
 
 def list_names(registry: dict) -> list[str]:
     return sorted(registry)
+
+
+def catalog_profile_family(family: str) -> list[dict[str, str]]:
+    spec = _profile_catalog(family)
+    registry = spec["registry"]
+    return [
+        {"name": name, "summary": _profile_summary(registry[name])}
+        for name in list_names(registry)
+    ]
+
+
+def describe_profile_family(family: str, name: str) -> dict:
+    spec = _profile_catalog(family)
+    registry = spec["registry"]
+    if name not in registry:
+        raise ValueError(f"Unknown {spec['label']}: {name}")
+    return registry[name]
 
 
 def validate_profile_selections(selections: dict[str, tuple[str, ...]]) -> None:
@@ -964,3 +1040,14 @@ def _append_optional_list(lines: list[str], profile: dict, key: str, *, indent: 
 
 def _yaml_scalar(value) -> str:
     return json.dumps(str(value))
+
+
+def _profile_catalog(family: str) -> dict:
+    if family not in PROFILE_CATALOGS:
+        known = ", ".join(PROFILE_CATALOGS)
+        raise ValueError(f"Unknown profile family: {family}. Known families: {known}")
+    return PROFILE_CATALOGS[family]
+
+
+def _profile_summary(profile: dict) -> str:
+    return str(profile.get("purpose") or profile.get("use") or "")

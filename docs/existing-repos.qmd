@@ -4,6 +4,8 @@ title: "Existing Repositories"
 
 `repo-familiar` supports bootstrapping existing repositories as a deliberate second mode, separate from generating a brand-new downstream repository.
 
+Use [Bootstrap Lifecycle](./bootstrap-lifecycle.qmd) as the single command-safety reference before applying existing-repository changes.
+
 ## Intended Flow
 
 1. Advise on the existing repository to choose a stage, profiles, tools, and memory practice.
@@ -32,32 +34,40 @@ uv run python -m repo_familiar audit --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
 uv run python -m repo_familiar resolve-conflicts --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
-uv run python -m repo_familiar bootstrap-existing --path /path/to/repo --apply
 uv run python -m repo_familiar bootstrap-existing --interactive
-uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding --apply
-uv run python -m repo_familiar add-docs --path /path/to/repo --apply
-uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
-uv run python -m repo_familiar add-tool --path /path/to/repo --tool cq --apply
-uv run python -m repo_familiar add-tool --path /path/to/repo --tool browser-automation --apply
-uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-homebrew-path --apply
-uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
-uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile prompt-migration-gpt55 --apply
-uv run python -m repo_familiar add-repomap --path /path/to/repo --repomap-profile hamilton-dag --apply
-uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety --apply
-uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review --apply
-uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital --apply
-uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
-uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault --apply
-uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile sops-age --sops-age-recipient age1... --apply
-uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-impeccable --apply
-uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-profile parallel-worktrees --apply
+uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding
+uv run python -m repo_familiar add-docs --path /path/to/repo
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool cq
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool browser-automation
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-homebrew-path
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local
+uv run python -m repo_familiar add-prompts --path /path/to/repo --prompt-profile prompt-migration-gpt55
+uv run python -m repo_familiar add-repomap --path /path/to/repo --repomap-profile hamilton-dag
+uv run python -m repo_familiar add-safety --path /path/to/repo --safety-profile prompt-output-safety
+uv run python -m repo_familiar add-privacy --path /path/to/repo --privacy-profile data-privacy-review
+uv run python -m repo_familiar add-public-interest --path /path/to/repo --public-interest-profile child-rights-digital
+uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light
+uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault
+uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile sops-age --sops-age-recipient age1...
+uv run python -m repo_familiar add-design --path /path/to/repo --design-profile design-impeccable
+uv run python -m repo_familiar add-worktree --path /path/to/repo --worktree-profile parallel-worktrees
 uv run python -m repo_familiar check --path /path/to/repo
 uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
 uv run python -m repo_familiar upgrade --path /path/to/repo
 uv run python -m repo_familiar check-skill-sources
 ```
 
-`bootstrap-existing`, `add-model`, `add-docs`, `add-skill`, `add-tool`, and advisory profile add commands are dry-run by default. Pass repeated profile flags to choose specific assets. Pass `--apply` to write missing assets. Pass `--force` only when replacing conflicting assets is intentional.
+`bootstrap-existing`, `add-model`, `add-docs`, `add-skill`, `add-tool`, and advisory profile add commands are dry-run by default. Pass repeated profile flags to choose specific assets. Re-run the same command with `--apply` only after the preview matches the intended additive change. Pass `--force` only when replacing conflicting assets is intentional.
+
+Representative apply step after preview:
+
+```bash
+uv run python -m repo_familiar bootstrap-existing --path /path/to/repo --apply
+uv run python -m repo_familiar add-model --path /path/to/repo --model-profile default-coding --apply
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool cq --apply
+uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile sops-age --sops-age-recipient age1... --apply
+```
 
 `bootstrap-existing --interactive` uses `questionary` to prompt for repository path, asset groups, selected profiles, and whether to apply changes. It still defaults to dry-run behavior unless write confirmation is selected.
 
@@ -121,7 +131,7 @@ uv run python -m repo_familiar upgrade --path /path/to/repo
 
 The current `upgrade` command is read-only. It reports assets that need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade until richer template context is recorded.
 
-Future refresh behavior should remain explicit rather than live sync. The intended next evolution is a preview-first `upgrade` or `refresh-selected-assets` workflow that compares selected generated assets, skill templates, profile output, and `.agents/skill-sources.yml` provenance against the current Reference Source. Apply mode should be opt-in, scoped by asset group, and conservative: update unchanged generated files, line-union `.gitignore`, preview heading-based `AGENTS.md` merges, and keep `README.md`/`plan.md` manual-review by default.
+Future refresh behavior should remain explicit rather than live sync. The intended next evolution is a preview-first `upgrade` or `refresh-selected-assets` workflow that compares selected generated assets, skill templates, profile output, and `.agents/skill-sources.yml` provenance against the current Reference Source. Apply mode should be opt-in, scoped by asset group, and conservative: update unchanged generated files, line-union `.gitignore`, preview heading-based `AGENTS.md` merges, and keep `README.md`/`plan.md` manual-review by default. For the Metadata v2 concepts and safety boundaries behind that future workflow, see [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md).
 
 For Reference Source maintenance, use `check-skill-sources` before refreshing vendored skills. It compares recorded GitHub skill source URLs with local vendored skills and reports missing support files without writing changes.
 
@@ -133,7 +143,7 @@ adopted_assets: []
 conflicts: []
 ```
 
-These fields should not be added to schema v1 until implementation needs them.
+These fields should not be added to schema v1 until implementation needs them. The ADR above expands this into a broader Metadata v2 design that also covers render inputs, bootstrap history, comparison basis, and asset-specific refresh strategies.
 
 ## Current Status
 
