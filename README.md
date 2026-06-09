@@ -37,6 +37,7 @@ This project draws from agentic engineering writing, skill ecosystems, and repos
 - [How I use Claude Code](https://boristane.com/blog/how-i-use-claude-code/)
 - [AI agent coding](https://minimaxir.com/2026/02/ai-agent-coding/)
 - [How I write software with LLMs](https://www.stavros.io/posts/how-i-write-software-with-llms/)
+- [Harness engineering](https://openai.com/index/harness-engineering/)
 - [Agent-Agnostic Repository Guide](https://gist.github.com/davidgibsonp/337be9b80b3f03eccd188235c287bb05)
 - [How to write good AGENTS.md files](https://www.augmentcode.com/blog/how-to-write-good-agents-dot-md-files)
 - [mattpocock/skills](https://github.com/mattpocock/skills)
