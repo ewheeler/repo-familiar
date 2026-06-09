@@ -136,6 +136,12 @@ verify:
 
 Proxy mode changes the provider request path and should not be enabled silently. Keep API keys in user environment variables and disable telemetry with `HEADROOM_TELEMETRY=off` when project policy requires it.
 
+For a local OpenAI-compatible MLX endpoint, run Headroom against the local model server explicitly:
+
+```bash
+uv run headroom proxy --openai-api-url http://127.0.0.1:8989/v1
+```
+
 `opencode-headroom-mcp`:
 
 ```yaml
