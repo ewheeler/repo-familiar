@@ -427,6 +427,10 @@ def list_templates() -> list[str]:
     )
 
 
+def list_agent_harnesses() -> list[str]:
+    return profile_registry.list_names(profile_registry.AGENT_HARNESSES)
+
+
 def list_model_profiles() -> list[str]:
     return profile_registry.list_names(profile_registry.MODEL_PROFILES)
 

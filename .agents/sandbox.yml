@@ -10,6 +10,20 @@ profiles:
       - "Install or configure the chosen sandbox tool outside repo-familiar before running untrusted commands"
     verify:
       - "Run the sandbox tool's help/status command before using it for package installs or generated code"
+  sandbox-micropython-wasm:
+    tool: "micropython-wasm plus Wasmtime"
+    purpose: "evaluate small Python-like snippets with no network and no host filesystem access by default"
+    guidance:
+      - "Use fresh `run()` executions for one-shot untrusted snippets so globals and imports do not persist"
+      - "Use `MicroPythonSession` only when true resident state is needed and the snippet trust boundary is clear"
+      - "Use `MicroPythonReplaySession` only when replayed side effects are acceptable and documented"
+      - "Preopen only explicit read-only fixture directories; never preopen a project root, home directory, `/`, or shared temp directory"
+      - "Set memory, fuel, wall-clock, and host output limits; use separate worker processes or containers for higher-risk workloads"
+      - "Remember MicroPython is not CPython and lacks some modules such as hashlib.sha256 and zlib in the current bundled artifact"
+    setup:
+      - "Install `micropython-wasm` in the project or user environment before relying on this profile"
+    verify:
+      - "micropython-wasm -c \"print(1 + 1)\""
   sandbox-agent-runtime:
     tool: "OpenShell"
     purpose: "policy-governed runtime for longer autonomous agent sessions"

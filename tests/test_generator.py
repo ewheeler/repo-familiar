@@ -136,6 +136,23 @@ class GeneratorTests(unittest.TestCase):
 
             self.assertFalse((output_dir / "opencode.json").exists())
 
+    def test_paseo_harness_records_selection_without_repo_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "demo-project"
+            generate_project(
+                GenerationOptions(
+                    name="Demo Project",
+                    description="A generated demo.",
+                    output_dir=output_dir,
+                    agent_harnesses=("paseo",),
+                    generated_at="2026-05-10T00:00:00Z",
+                )
+            )
+
+            self.assertFalse((output_dir / "opencode.json").exists())
+            self.assertIn('- `paseo`', (output_dir / "AGENTS.md").read_text())
+            self.assertIn('- "paseo"', (output_dir / ".repo-familiar/bootstrap.yml").read_text())
+
     def test_opencode_mcp_profiles_render_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "demo-project"
@@ -209,12 +226,19 @@ class GeneratorTests(unittest.TestCase):
 
             self.assertIn(".sops.yaml", {asset.path for asset in report.conflicts})
 
-    def test_cli_lists_templates_and_model_profiles(self) -> None:
+    def test_cli_lists_templates_harnesses_and_model_profiles(self) -> None:
         stdout = StringIO()
         with redirect_stdout(stdout):
             result = main(["list-templates"])
         self.assertEqual(result, 0)
         self.assertIn("basic", stdout.getvalue())
+
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            result = main(["list-agent-harnesses"])
+        self.assertEqual(result, 0)
+        self.assertIn("opencode", stdout.getvalue())
+        self.assertIn("paseo", stdout.getvalue())
 
         stdout = StringIO()
         with redirect_stdout(stdout):

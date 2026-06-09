@@ -5,6 +5,7 @@ profiles:
     use: "general coding and repository maintenance"
     harnesses:
       - "opencode"
+      - "paseo"
     notes:
       latency: "medium"
       cost: "high"
@@ -17,6 +18,7 @@ profiles:
     use: "cheaper review and planning passes"
     harnesses:
       - "opencode"
+      - "paseo"
     notes:
       latency: "medium"
       cost: "medium"

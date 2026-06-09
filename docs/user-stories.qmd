@@ -49,7 +49,7 @@ As a developer, I want to select which agent harnesses a project supports so tha
 
 Acceptance criteria:
 
-- The setup flow records selected harness names such as OpenCode, Conductor, Hermes, and Pi; harness-specific adapter files remain future work.
+- The setup flow records selected harness names such as OpenCode, Paseo, Conductor, Hermes, and Pi; harness-specific adapter files are generated only where a repository-local config file is appropriate.
 - Harness-specific files are generated only when needed.
 - Shared behavior remains centralized in agent-agnostic files where possible.
 

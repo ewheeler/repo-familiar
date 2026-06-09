@@ -14,6 +14,7 @@
 - The generator supports list commands for templates, profiles, and skills; `generate --dry-run`; `generate --interactive`; non-empty output directory protection; `advise`; `audit`; `check`; `bootstrap-existing --interactive`; and targeted existing-repo add commands.
 - The `basic` template generates `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/*.yml` advisory/runtime files, selected skills, Quarto docs, `plan.md`, and `.repo-familiar/bootstrap.yml`.
 - When `opencode` is selected as an agent harness, the `basic` template generates `opencode.json` with `.agents/skills` registered as a skill path.
+- `paseo` is available as an agent harness selection; it records compatibility without writing machine-level Paseo daemon config.
 - Existing repository bootstrap can audit, dry-run, and apply missing selected assets without overwriting conflicts by default.
 - Existing repository metadata records `bootstrap_mode: existing_repository` and only assets written by that operation.
 - Targeted add commands reuse the bootstrap engine with narrow asset groups and are table-driven in the CLI.
@@ -25,6 +26,7 @@
 - Secrets profiles exist for dotenv, kvenv/Azure Key Vault, and 1Password-style local secret injection guidance.
 - Accessibility scanning support exists through `a11y-scanner`, `design-a11y`, and `a11y-web-scan`.
 - Browser automation support exists through the `browser-automation` tool profile plus `playwright-cli` and `rodney-browser` skills.
+- MicroPython/WASI sandbox support exists through the `micropython-wasm` tool profile and `sandbox-micropython-wasm` sandbox profile.
 - Agent knowledge commons support exists through the `cq` tool profile plus the selectable `cq` skill.
 - API documentation lookup support exists through the vendored `get-api-docs` skill.
 - Agent discipline and review support includes selectable `session-focus`, `qa-test-design`, and `security-audit` skills adapted from `omega-memory/omega-skills`.
@@ -81,6 +83,7 @@
 - Tool profiles: `.agents/tools.yml` contains non-secret tool guidance; `.repo-familiar/bootstrap.yml` records selected tool profile names.
 - OpenCode/Homebrew setup remains Tool Profile guidance for agent shells only; it must not become workstation mutation or an installer.
 - OpenCode harness config: generate `opencode.json` only when `opencode` is selected. Keep the default config minimal and use opt-in tool profiles for project-level MCP entries.
+- Paseo harness boundary: record `paseo` in generated instructions and Bootstrap Metadata, but keep `~/.paseo` provider preferences, schedules, daemon settings, and worktree roots user-owned and outside generated assets.
 - Skills: selected skills are vendored under `.agents/skills/` and recorded as `skill` assets.
 - Skill provenance: `.agents/skill-sources.yml` records selected skill source type, source URL when known, and notes about local adaptation or missing upstreams.
 - Reference Source dogfooding: root `.agents/` should contain the same reusable profile families and selectable skills that this repository offers to Downstream Repositories. If a skill is useful enough to dogfood here, it should be available to Downstream Repositories.
@@ -92,6 +95,7 @@
 - Granular adoption: expose asset groups directly for audit and bootstrap workflows.
 - Drift detection: record content checksums for generated non-metadata assets and expose a read-only `check` command.
 - Advisory profile boundary: generate non-secret guidance files and selected profile names, not installers or machine-specific configuration.
+- Sandboxed snippet execution boundary: `micropython-wasm` guidance is for lightweight MicroPython/WASI execution with explicit limits, not a full CPython replacement or complete production security boundary by itself.
 - Secret profile boundary: generate `.agents/secrets.yml` and `.env.example`, but never generate or store secret values.
 - Accessibility boundary: generate scanning guidance and skills, but treat automated scans as a baseline rather than full compliance proof.
 - Accessibility reporting: prefer compact ADT-style summaries with rule deltas, top issues, and manual-review queues over raw scanner dumps.
@@ -212,7 +216,7 @@ Status: done for the current selectable defaults and root `.agents/` dogfood pas
 - Add starter `AGENTS.md` content for downstream repositories. Done for `basic`.
 - Root `.agents/` now includes the selectable profile families and skills exposed by the Reference Source, including all dogfooded Matt Pocock skills, cq, session-focus, qa-test-design, security-audit, browser automation, accessibility, prompt migration/evals, safety, privacy, and upstream-improvement support.
 - Selected skill source provenance is generated and dogfooded through `.agents/skill-sources.yml`.
-- Add optional harness adapters for OpenCode, Conductor, Hermes, and Pi if their required conventions become clear.
+- Add optional harness adapters for OpenCode, Paseo, Conductor, Hermes, and Pi if their required conventions become clear. Paseo currently needs no repository-local adapter beyond recorded harness compatibility.
 - Add model profiles for coding, planning, review, low-cost passes, and high-context tasks.
 
 Acceptance criteria:

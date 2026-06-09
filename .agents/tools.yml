@@ -39,6 +39,21 @@ profiles:
     verify:
       - "playwright-cli --help or npx playwright-cli --help"
       - "rodney --help"
+  micropython-wasm:
+    purpose: "run small Python snippets in a fresh MicroPython WASI WebAssembly sandbox"
+    config: "Use simonw/micropython-wasm through Python or its CLI when lightweight no-network Python execution is safer than running host Python directly"
+    notes:
+      - "The bundled artifact is MicroPython, not CPython; standard-library and behavior differences matter"
+      - "No host filesystem or network access is exposed by default; preopen only narrow read-only input directories"
+      - "Use memory, fuel, wall-clock, and output limits for untrusted snippets, and add OS/container isolation for high-risk multi-tenant workloads"
+      - "Treat the upstream package as experimental and pin/test it before relying on it for hostile code execution"
+    setup:
+      - "Install with `pip install micropython-wasm` or add `micropython-wasm` to the project environment"
+      - "Use `uvx micropython-wasm --help` for one-off CLI checks without adding it as a dependency"
+      - "For application integration, import `run`, `MicroPythonSession`, or `MicroPythonReplaySession` from `micropython_wasm`"
+    verify:
+      - "micropython-wasm -c \"print(1 + 1)\""
+      - "python -c \"from micropython_wasm import run; print(run('print(2 + 2)').stdout)\""
   headroom-context-compression:
     purpose: "reduce agent context/token usage with local-first reversible compression, proxy, wrapper, and MCP workflows"
     config: "Use Headroom as an explicit opt-in context compression layer for large repos, long agent sessions, verbose logs, RAG chunks, or multi-agent memory workflows"

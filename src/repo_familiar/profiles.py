@@ -3,12 +3,40 @@ from __future__ import annotations
 import json
 
 
+AGENT_HARNESSES = {
+    "opencode": {
+        "purpose": "interactive coding harness with project-local skills and optional MCP config",
+        "generated_assets": ["opencode.json"],
+        "notes": [
+            "repo-familiar writes opencode.json only when this harness is selected",
+            "OpenCode MCP entries are controlled by opencode-* tool profiles",
+        ],
+    },
+    "paseo": {
+        "purpose": "daemon-supervised agent orchestration, schedules, terminals, and managed worktrees",
+        "generated_assets": [],
+        "notes": [
+            "Paseo is machine-level orchestration; repo-familiar records the harness selection but does not write daemon config",
+            "Use .agents/worktrees.yml and Bootstrap Metadata for repository guidance; keep ~/.paseo config user-owned",
+            "Paseo-created agents still benefit from AGENTS.md and vendored .agents/skills in the working directory",
+        ],
+    },
+    "hermes": {
+        "purpose": "agent harness selection recorded for projects that support Hermes externally",
+        "generated_assets": [],
+        "notes": [
+            "No Hermes-specific repository config is generated yet",
+        ],
+    },
+}
+
+
 MODEL_PROFILES = {
     "default-coding": {
         "provider": "openai",
         "model": "gpt-5.5",
         "use": "general coding and repository maintenance",
-        "harnesses": ["opencode"],
+        "harnesses": ["opencode", "paseo"],
         "notes": {
             "latency": "medium",
             "cost": "high",
@@ -19,7 +47,7 @@ MODEL_PROFILES = {
         "provider": "anthropic",
         "model": "claude-sonnet-4-5",
         "use": "cheaper review and planning passes",
-        "harnesses": ["opencode"],
+        "harnesses": ["opencode", "paseo"],
         "notes": {
             "latency": "medium",
             "cost": "medium",
@@ -78,6 +106,25 @@ TOOL_PROFILES = {
             "Use Rodney when persistent Chrome state, shell scripting, JavaScript assertions, accessibility tree queries, or directory-scoped sessions are useful",
             "Keep browser session directories such as .rodney/ out of version control",
             "Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary",
+        ],
+    },
+    "micropython-wasm": {
+        "purpose": "run small Python snippets in a fresh MicroPython WASI WebAssembly sandbox",
+        "config": "Use simonw/micropython-wasm through Python or its CLI when lightweight no-network Python execution is safer than running host Python directly",
+        "setup": [
+            "Install with `pip install micropython-wasm` or add `micropython-wasm` to the project environment",
+            "Use `uvx micropython-wasm --help` for one-off CLI checks without adding it as a dependency",
+            "For application integration, import `run`, `MicroPythonSession`, or `MicroPythonReplaySession` from `micropython_wasm`",
+        ],
+        "verify": [
+            "micropython-wasm -c \"print(1 + 1)\"",
+            "python -c \"from micropython_wasm import run; print(run('print(2 + 2)').stdout)\"",
+        ],
+        "notes": [
+            "The bundled artifact is MicroPython, not CPython; standard-library and behavior differences matter",
+            "No host filesystem or network access is exposed by default; preopen only narrow read-only input directories",
+            "Use memory, fuel, wall-clock, and output limits for untrusted snippets, and add OS/container isolation for high-risk multi-tenant workloads",
+            "Treat the upstream package as experimental and pin/test it before relying on it for hostile code execution",
         ],
     },
     "headroom-context-compression": {
@@ -325,6 +372,24 @@ SANDBOX_PROFILES = {
             "Default to no network for generated or unknown code",
             "Allow writes only to explicit build, temp, or output directories",
             "Use snapshots or restore behavior for risky package or codegen commands",
+        ],
+    },
+    "sandbox-micropython-wasm": {
+        "tool": "micropython-wasm plus Wasmtime",
+        "purpose": "evaluate small Python-like snippets with no network and no host filesystem access by default",
+        "setup": [
+            "Install `micropython-wasm` in the project or user environment before relying on this profile",
+        ],
+        "verify": [
+            "micropython-wasm -c \"print(1 + 1)\"",
+        ],
+        "guidance": [
+            "Use fresh `run()` executions for one-shot untrusted snippets so globals and imports do not persist",
+            "Use `MicroPythonSession` only when true resident state is needed and the snippet trust boundary is clear",
+            "Use `MicroPythonReplaySession` only when replayed side effects are acceptable and documented",
+            "Preopen only explicit read-only fixture directories; never preopen a project root, home directory, `/`, or shared temp directory",
+            "Set memory, fuel, wall-clock, and host output limits; use separate worker processes or containers for higher-risk workloads",
+            "Remember MicroPython is not CPython and lacks some modules such as hashlib.sha256 and zlib in the current bundled artifact",
         ],
     },
     "sandbox-agent-runtime": {

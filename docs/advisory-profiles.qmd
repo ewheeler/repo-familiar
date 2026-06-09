@@ -54,6 +54,7 @@ Repo Map:
 Sandbox:
 
 - `sandbox-light`: lightweight command sandboxing using tools such as `zerobox`.
+- `sandbox-micropython-wasm`: run small Python-like snippets through MicroPython WASI/Wasmtime with no network and no host filesystem access by default.
 - `sandbox-agent-runtime`: policy-governed autonomous agent runtime using tools such as OpenShell.
 
 Secrets:
@@ -99,6 +100,7 @@ uv run python -m repo_familiar add-privacy --path /repo --privacy-profile data-p
 uv run python -m repo_familiar add-public-interest --path /repo --public-interest-profile child-rights-digital --apply
 uv run python -m repo_familiar add-repomap --path /repo --repomap-profile hamilton-dag --apply
 uv run python -m repo_familiar add-sandbox --path /repo --sandbox-profile sandbox-light --apply
+uv run python -m repo_familiar add-sandbox --path /repo --sandbox-profile sandbox-micropython-wasm --apply
 uv run python -m repo_familiar add-secrets --path /repo --secrets-profile kvenv-azure-keyvault --apply
 uv run python -m repo_familiar add-secrets --path /repo --secrets-profile sops-age --sops-age-recipient age1... --apply
 uv run python -m repo_familiar add-design --path /repo --design-profile design-impeccable --apply

@@ -48,6 +48,21 @@ notes:
 
 Install Playwright CLI with `npm install -g @playwright/cli@latest`, or use `npx --no-install playwright-cli` only when the command is already available project-locally. Avoid the deprecated bare `playwright-cli` npm package as an install target.
 
+`micropython-wasm`:
+
+```yaml
+purpose: run small Python snippets in a fresh MicroPython WASI WebAssembly sandbox
+config: Use simonw/micropython-wasm through Python or its CLI when lightweight no-network Python execution is safer than running host Python directly
+setup:
+  - Install with `pip install micropython-wasm` or add `micropython-wasm` to the project environment
+  - Use `uvx micropython-wasm --help` for one-off CLI checks without adding it as a dependency
+  - For application integration, import `run`, `MicroPythonSession`, or `MicroPythonReplaySession` from `micropython_wasm`
+verify:
+  - micropython-wasm -c "print(1 + 1)"
+```
+
+This profile is useful for lightweight execution of untrusted or generated Python-like snippets. It is MicroPython, not CPython: standard-library coverage and behavior differ. Do not preopen project roots or home directories; expose only narrow read-only input directories and use memory, fuel, wall-clock, and output limits.
+
 `opencode-homebrew-path`:
 
 ```yaml

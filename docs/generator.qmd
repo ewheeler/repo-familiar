@@ -12,6 +12,12 @@ List available templates:
 uv run python -m repo_familiar list-templates
 ```
 
+List available agent harnesses:
+
+```bash
+uv run python -m repo_familiar list-agent-harnesses
+```
+
 List available model profiles:
 
 ```bash
@@ -84,6 +90,7 @@ uv run python -m repo_familiar generate \
   --description "A generated demo." \
   --output /tmp/demo-project \
   --agent-harness opencode \
+  --agent-harness paseo \
   --model-profile default-coding \
   --tool-profile cq \
   --tool-profile opencode-playwright-mcp \
@@ -122,6 +129,8 @@ uv run python -m repo_familiar generate --interactive
 The interactive path imports `questionary` lazily. `uv sync` installs the package and its interactive dependency.
 
 When `opencode` is selected as an agent harness, generation writes `opencode.json` with `.agents/skills` registered as a skill path. Optional OpenCode MCP tool profiles add non-secret MCP entries to that file.
+
+When `paseo` is selected as an agent harness, generation records the selection in `AGENTS.md` and `.repo-familiar/bootstrap.yml` but does not write Paseo daemon config. Paseo is machine-level orchestration over agents, terminals, schedules, and worktrees; user-owned `~/.paseo` settings stay outside generated repository assets.
 
 Audit an existing repository:
 

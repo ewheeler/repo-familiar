@@ -37,6 +37,7 @@ If `quarto` is installed outside your shell `PATH` on macOS, try `/usr/local/bin
 ## Agent Harnesses
 
 - `opencode`
+- `paseo`
 - `hermes`
 
 ## Model Profiles

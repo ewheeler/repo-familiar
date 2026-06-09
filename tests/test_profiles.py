@@ -26,8 +26,11 @@ PROFILE_ASSET_PATHS = (
 
 class ProfileRegistryTests(unittest.TestCase):
     def test_lists_profile_names(self) -> None:
+        self.assertIn("paseo", profiles.list_names(profiles.AGENT_HARNESSES))
         self.assertIn("default-coding", profiles.list_names(profiles.MODEL_PROFILES))
         self.assertIn("browser-automation", profiles.list_names(profiles.TOOL_PROFILES))
+        self.assertIn("micropython-wasm", profiles.list_names(profiles.TOOL_PROFILES))
+        self.assertIn("sandbox-micropython-wasm", profiles.list_names(profiles.SANDBOX_PROFILES))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
         self.assertIn("session-focus", profiles.list_names(profiles.SKILLS))
 
@@ -51,13 +54,17 @@ class ProfileRegistryTests(unittest.TestCase):
 
         self.assertIn("default-coding:", models)
         self.assertIn("provider:", models)
+        self.assertIn("paseo", models)
         self.assertIn("browser-automation:", tools)
         self.assertIn("screenshots", tools)
         self.assertIn("setup:", tools)
         self.assertIn("verify:", tools)
         self.assertIn("headroom-mcp:", profiles.render_tool_profiles(("headroom-mcp",)))
         self.assertIn("headroom proxy --port 8787", profiles.render_tool_profiles(("headroom-proxy",)))
+        self.assertIn("micropython-wasm:", profiles.render_tool_profiles(("micropython-wasm",)))
+        self.assertIn("MicroPythonSession", profiles.render_tool_profiles(("micropython-wasm",)))
         self.assertIn("memory-local:", memory)
+        self.assertIn("sandbox-micropython-wasm", profiles.render_advisory_profiles(profiles.SANDBOX_PROFILES, ("sandbox-micropython-wasm",)))
         self.assertIn("sops-age", profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, ("sops-age",)))
 
     def test_generated_profile_files_match_registry_renderers(self) -> None:

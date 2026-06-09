@@ -12,6 +12,7 @@ It is intentionally small and focused on the core contract:
 
 - Agent instructions in `AGENTS.md`.
 - OpenCode skill discovery in `opencode.json` when `opencode` is selected as an agent harness.
+- Harness selections such as `paseo` recorded in generated instructions and Bootstrap Metadata when no repository-local config is required.
 - Runtime model defaults in `.agents/models.yml`.
 - Tool setup guidance in `.agents/tools.yml`.
 - Advisory profile guidance in `.agents/memory.yml`, `.agents/prompts.yml`, `.agents/safety.yml`, `.agents/privacy.yml`, `.agents/public-interest.yml`, `.agents/repomap.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, and `.agents/worktrees.yml`.
@@ -50,7 +51,7 @@ The `basic` template currently uses:
 ## Future Template Work
 
 - Split common assets from optional Quarto, model, advisory profile, skill, and harness assets.
-- Add harness-specific adapters only when selected.
+- Add harness-specific adapters only when selected; keep daemon/user-level harness settings such as Paseo's `~/.paseo` config outside generated assets.
 - Expand automated upstream drift checks beyond GitHub `SKILL.md` sources if more upstream source types are adopted.
 - Add upgrade-aware merge behavior for generated assets.
 - Design explicit selected-asset refresh behavior that can preview profile, skill, provenance, and generated-doc updates without live-syncing downstream repositories.

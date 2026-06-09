@@ -16,6 +16,7 @@ model: gpt-5.5
 use: general coding and repository maintenance
 harnesses:
   - opencode
+  - paseo
 notes:
   latency: medium
   cost: high
@@ -32,6 +33,7 @@ model: claude-sonnet-4-5
 use: cheaper review and planning passes
 harnesses:
   - opencode
+  - paseo
 notes:
   latency: medium
   cost: medium

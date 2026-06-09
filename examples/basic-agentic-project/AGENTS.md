@@ -35,6 +35,7 @@ This repository was generated with `repo-familiar`.
 ## Agent Harnesses
 
 - `opencode`
+- `paseo`
 - `hermes`
 
 ## Model Profiles

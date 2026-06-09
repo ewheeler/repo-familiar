@@ -14,6 +14,7 @@ from .generator import (
     bootstrap_existing_repository,
     check_generated_repository,
     generate_project,
+    list_agent_harnesses,
     list_design_profiles,
     list_memory_profiles,
     list_model_profiles,
@@ -95,6 +96,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("list-templates", help="list available project templates")
+    subparsers.add_parser("list-agent-harnesses", help="list available agent harnesses")
     subparsers.add_parser("list-model-profiles", help="list available model profiles")
     subparsers.add_parser("list-tool-profiles", help="list available tool profiles")
     subparsers.add_parser("list-memory-profiles", help="list available memory profiles")
@@ -402,6 +404,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "list-templates":
         for template in list_templates():
             print(template)
+        return 0
+
+    if args.command == "list-agent-harnesses":
+        for harness in list_agent_harnesses():
+            print(harness)
         return 0
 
     if args.command == "list-model-profiles":
