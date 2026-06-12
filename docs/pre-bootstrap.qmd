@@ -140,3 +140,16 @@ uv run python -m repo_familiar check-skill-sources
 ```
 
 The command is read-only. It compares recorded GitHub skill sources against local vendored `SKILL.md` files and reports missing upstream support files that should be reviewed before a manual refresh.
+
+## 10. Plan Vendored Skill Security Scans
+
+When adding or refreshing vendored skills, source drift is only one review surface. The planned security review path is a read-only `check-skill-security` command that runs NVIDIA SkillSpector over whole vendored skill directories.
+
+Default behavior should be static and credential-free:
+
+```bash
+uvx --python 3.12 --from git+https://github.com/NVIDIA/SkillSpector@<sha> \
+  skillspector scan .agents/skills/<skill-name> --no-llm --format json
+```
+
+Use a pinned commit for repeatability, keep LLM analysis opt-in, and fail automated checks only on HIGH/CRITICAL findings until the false-positive rate is known. If `add-skill` later grows `--scan-security`, it should warn or skip gracefully when SkillSpector is unavailable rather than blocking ordinary additive bootstrap work.

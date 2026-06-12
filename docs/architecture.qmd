@@ -175,6 +175,8 @@ Selected skills are vendored under `.agents/skills/` and recorded as `skill` ass
 
 `check-skill-sources` is a read-only maintenance command for the Reference Source. It reads `.agents/skill-sources.yml`, compares GitHub-backed skill sources with local vendored files, and reports upstream-newer skills or missing support files before a manual refresh.
 
+Planned SkillSpector integration should be another read-only maintenance gate for vendored skills. It should scan whole skill directories, default to static `--no-llm` checks, provide JSON for CI, and stay separate from ordinary generated-repository runtime dependencies. The command boundary should make the distinction explicit: source drift proves provenance freshness, while security scanning reviews potentially unsafe instructions, scripts, and support files before installation or refresh.
+
 Memory, prompt, safety, privacy, repo-map, sandbox, secrets, design, and worktree profiles are advisory profile families. They are written to `.agents/*.yml` files and recorded by name in bootstrap metadata.
 
 ## Python Defaults

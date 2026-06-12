@@ -292,6 +292,25 @@ Acceptance criteria:
 - Missing upstream support files are surfaced separately from `SKILL.md` content drift.
 - The checker exits non-zero only for actionable drift such as upstream-newer skills, missing local vendored files, fetch errors, or missing support files.
 
+### 6b. Add Vendored Skill Security Scanning
+
+Status: planned.
+
+- Incorporate NVIDIA SkillSpector as a gated security review for vendored skills, not as a hidden runtime dependency for generated repositories.
+- Start with a read-only `check-skill-security` command that scans `.agents/skills` or `src/repo_familiar/templates/skills` and emits text plus JSON output for CI.
+- Default to static, credential-free scans with `--no-llm`; make LLM-backed semantic analysis an explicit opt-in because it requires provider credentials and can vary by network/model availability.
+- Invoke SkillSpector through a pinned external runner such as `uvx --python 3.12 --from git+https://github.com/NVIDIA/SkillSpector@<sha> skillspector scan <skill-dir> --no-llm --format json`, rather than adding it to repo-familiar's normal dependencies while repo-familiar supports Python 3.11 and SkillSpector requires Python 3.12+.
+- Scan whole skill directories, not only `SKILL.md`, so support scripts and reference files are included.
+- Fail automated checks only on HIGH/CRITICAL risk initially; keep LOW/MEDIUM findings visible for manual review to account for expected false positives in security-oriented skills.
+- Add `--scan-security` to `add-skill` only after the standalone checker exists; downstream bootstrap should warn or skip gracefully when the scanner is unavailable instead of blocking ordinary additive bootstrap work.
+
+Acceptance criteria:
+
+- `uv run python -m repo_familiar check-skill-security --skills-root .agents/skills` reports a compact status summary.
+- `uv run python -m repo_familiar check-skill-security --skills-root .agents/skills --format json` is parseable.
+- Tests use a fake scanner runner and do not require network access, external GitHub installs, LLM credentials, or real SkillSpector execution.
+- Documentation explains that `check-skill-sources` handles provenance/drift and `check-skill-security` handles security risk scanning.
+
 ### 8. Add Drift Detection
 
 Status: done for current generated metadata, registry-backed profile output, and root `.agents/` dogfood consistency.

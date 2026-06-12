@@ -289,6 +289,8 @@ Existing bootstrap metadata uses `bootstrap_mode: existing_repository` and recor
 
 Granular bootstrap can use `--asset-group` with `agent`, `config`, `docs`, `metadata`, `models`, `plan`, `skills`, or `tools`. The `skills` group includes selected skill files and `.agents/skill-sources.yml` provenance for future upstream drift checks.
 
+Planned skill maintenance should pair source drift checks with security scanning. `check-skill-sources` remains the read-only provenance and upstream drift command. A future `check-skill-security` command should run NVIDIA SkillSpector over whole vendored skill directories using static `--no-llm` scans by default, expose JSON output for CI, fail only on HIGH/CRITICAL findings initially, and keep LLM-backed analysis opt-in because it needs provider credentials. SkillSpector should be invoked through a pinned external runner rather than becoming a normal repo-familiar dependency while its Python support and release packaging differ from repo-familiar's own runtime contract.
+
 Use `check` to detect missing or modified generated assets from checksum metadata:
 
 ```bash

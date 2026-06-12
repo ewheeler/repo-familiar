@@ -62,6 +62,8 @@ uv run python -m repo_familiar check-skill-sources \
 
 The skill source check is read-only. It compares GitHub `SKILL.md` sources, reports upstream-newer vendored skills, and flags missing support files such as upstream reference documents.
 
+Planned vendored skill security scanning should complement this provenance check. A future `check-skill-security` command should scan whole skill directories with NVIDIA SkillSpector, default to static `--no-llm` analysis so the check is deterministic and credential-free, and expose JSON output for CI. LLM-backed SkillSpector analysis should remain explicit opt-in because it depends on provider credentials and model/network availability. While SkillSpector requires Python 3.12+ and has no stable PyPI release/tag contract in current evaluation, invoke it through a pinned external runner rather than adding it to repo-familiar's normal dependencies.
+
 Classify generated asset changes for possible upstream contribution:
 
 ```bash
