@@ -273,9 +273,11 @@ uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill ponytail --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill upstream-improvement --apply
 uv run python -m repo_familiar add-tool --path /path/to/repo --tool cq --apply
 uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-homebrew-path --apply
+uv run python -m repo_familiar add-tool --path /path/to/repo --tool ponytail-agent-rules --apply
 uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
 uv run python -m repo_familiar add-sandbox --path /path/to/repo --sandbox-profile sandbox-light --apply
 uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profile kvenv-azure-keyvault --apply

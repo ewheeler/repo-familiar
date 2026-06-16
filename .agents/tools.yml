@@ -54,6 +54,21 @@ profiles:
     verify:
       - "micropython-wasm -c \"print(1 + 1)\""
       - "python -c \"from micropython_wasm import run; print(run('print(2 + 2)').stdout)\""
+  ponytail-agent-rules:
+    purpose: "guide agents toward YAGNI, stdlib/native features, fewer dependencies, and the smallest working diff"
+    config: "Use Ponytail as optional agent rules or a selectable skill; do not install plugins or lifecycle hooks automatically from repo-familiar"
+    notes:
+      - "Ponytail changes agent behavior, so keep it explicit and reversible rather than silently enabling it for every downstream repository"
+      - "Lazy mode must not remove trust-boundary validation, data-loss prevention, security, accessibility, or explicitly requested behavior"
+      - "Generated repositories should record guidance only; plugin marketplaces, hooks, and machine-level config stay user-owned"
+    setup:
+      - "Select the repo-familiar `ponytail` skill when on-demand lazy senior developer mode is enough"
+      - "For always-on Ponytail, install the upstream plugin or extension for the target harness from https://github.com/DietrichGebert/ponytail"
+      - "For OpenCode always-on mode, use an explicit Ponytail checkout and plugin path only after reviewing the upstream hooks"
+      - "Set PONYTAIL_DEFAULT_MODE to lite, full, ultra, or off only in user-owned shell/runtime config when a default mode is desired"
+    verify:
+      - "Confirm `.agents/skills/ponytail/SKILL.md` exists if the repo-familiar skill was selected"
+      - "Run `/ponytail` or the harness-specific Ponytail command in a fresh agent session when an upstream plugin is installed"
   headroom-context-compression:
     purpose: "reduce agent context/token usage with local-first reversible compression, proxy, wrapper, and MCP workflows"
     config: "Use Headroom as an explicit opt-in context compression layer for large repos, long agent sessions, verbose logs, RAG chunks, or multi-agent memory workflows"

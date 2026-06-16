@@ -127,6 +127,25 @@ TOOL_PROFILES = {
             "Treat the upstream package as experimental and pin/test it before relying on it for hostile code execution",
         ],
     },
+    "ponytail-agent-rules": {
+        "purpose": "guide agents toward YAGNI, stdlib/native features, fewer dependencies, and the smallest working diff",
+        "config": "Use Ponytail as optional agent rules or a selectable skill; do not install plugins or lifecycle hooks automatically from repo-familiar",
+        "setup": [
+            "Select the repo-familiar `ponytail` skill when on-demand lazy senior developer mode is enough",
+            "For always-on Ponytail, install the upstream plugin or extension for the target harness from https://github.com/DietrichGebert/ponytail",
+            "For OpenCode always-on mode, use an explicit Ponytail checkout and plugin path only after reviewing the upstream hooks",
+            "Set PONYTAIL_DEFAULT_MODE to lite, full, ultra, or off only in user-owned shell/runtime config when a default mode is desired",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/ponytail/SKILL.md` exists if the repo-familiar skill was selected",
+            "Run `/ponytail` or the harness-specific Ponytail command in a fresh agent session when an upstream plugin is installed",
+        ],
+        "notes": [
+            "Ponytail changes agent behavior, so keep it explicit and reversible rather than silently enabling it for every downstream repository",
+            "Lazy mode must not remove trust-boundary validation, data-loss prevention, security, accessibility, or explicitly requested behavior",
+            "Generated repositories should record guidance only; plugin marketplaces, hooks, and machine-level config stay user-owned",
+        ],
+    },
     "headroom-context-compression": {
         "purpose": "reduce agent context/token usage with local-first reversible compression, proxy, wrapper, and MCP workflows",
         "config": "Use Headroom as an explicit opt-in context compression layer for large repos, long agent sessions, verbose logs, RAG chunks, or multi-agent memory workflows",
@@ -590,6 +609,7 @@ SKILLS = {
     "liteparse": "Parse local unstructured documents with LiteParse",
     "migrate-to-shoehorn": "Migrate tests from type assertions to @total-typescript/shoehorn",
     "playwright-cli": "Use Playwright CLI for browser inspection, screenshots, console errors, and web interaction checks",
+    "ponytail": "Use lazy senior developer mode for YAGNI, stdlib-first, minimal-diff implementation",
     "privacy-review": "Review data flows, prompts, logs, memory, and outputs for privacy risks",
     "prompt-migration": "Migrate prompt DAGs across model versions safely",
     "prompt-eval-design": "Design lightweight evals for prompt DAGs and model-version migrations",
@@ -680,6 +700,20 @@ SKILL_SOURCES = {
         "source_type": "external",
         "source_url": "https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md",
         "notes": "Adapted from Microsoft playwright-cli skill for repo-familiar browser automation guidance.",
+    },
+    "ponytail": {
+        "source_type": "external",
+        "source_url": "https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md",
+        "notes": "Adapted from DietrichGebert/ponytail for repo-familiar selectable skill guidance.",
+        "setup": [
+            "Select with repo-familiar using `--skill ponytail` when generating or bootstrapping a repository",
+            "Use the `ponytail-agent-rules` tool profile when the repository should document always-on Ponytail plugin or extension setup",
+            "For source installs outside repo-familiar, install the upstream plugin or extension from https://github.com/DietrichGebert/ponytail",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/ponytail/SKILL.md` exists after generation or bootstrap",
+            "Invoke the skill by asking for `ponytail` or lazy mode in a skill-capable harness",
+        ],
     },
     "privacy-review": {
         "source_type": "local",

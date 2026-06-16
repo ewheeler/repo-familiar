@@ -63,6 +63,22 @@ verify:
 
 This profile is useful for lightweight execution of untrusted or generated Python-like snippets. It is MicroPython, not CPython: standard-library coverage and behavior differ. Do not preopen project roots or home directories; expose only narrow read-only input directories and use memory, fuel, wall-clock, and output limits.
 
+`ponytail-agent-rules`:
+
+```yaml
+purpose: guide agents toward YAGNI, stdlib/native features, fewer dependencies, and the smallest working diff
+config: Use Ponytail as optional agent rules or a selectable skill; do not install plugins or lifecycle hooks automatically from repo-familiar
+setup:
+  - Select the repo-familiar `ponytail` skill when on-demand lazy senior developer mode is enough
+  - For always-on Ponytail, install the upstream plugin or extension for the target harness from https://github.com/DietrichGebert/ponytail
+  - For OpenCode always-on mode, use an explicit Ponytail checkout and plugin path only after reviewing the upstream hooks
+verify:
+  - Confirm `.agents/skills/ponytail/SKILL.md` exists if the repo-familiar skill was selected
+  - Run `/ponytail` or the harness-specific Ponytail command in a fresh agent session when an upstream plugin is installed
+```
+
+Use this profile when a repository wants a documented agent preference for lazy senior developer mode. The profile records guidance only: plugin marketplaces, lifecycle hooks, `PONYTAIL_DEFAULT_MODE`, and machine-level harness config remain user-owned. Pair it with `--skill ponytail` for a vendored, on-demand skill.
+
 `opencode-homebrew-path`:
 
 ```yaml

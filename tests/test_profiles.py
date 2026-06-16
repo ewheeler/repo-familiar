@@ -30,8 +30,10 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("default-coding", profiles.list_names(profiles.MODEL_PROFILES))
         self.assertIn("browser-automation", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("micropython-wasm", profiles.list_names(profiles.TOOL_PROFILES))
+        self.assertIn("ponytail-agent-rules", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("sandbox-micropython-wasm", profiles.list_names(profiles.SANDBOX_PROFILES))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
+        self.assertIn("ponytail", profiles.list_names(profiles.SKILLS))
         self.assertIn("session-focus", profiles.list_names(profiles.SKILLS))
 
     def test_validates_profile_selections(self) -> None:
@@ -63,6 +65,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("headroom proxy --port 8787", profiles.render_tool_profiles(("headroom-proxy",)))
         self.assertIn("micropython-wasm:", profiles.render_tool_profiles(("micropython-wasm",)))
         self.assertIn("MicroPythonSession", profiles.render_tool_profiles(("micropython-wasm",)))
+        self.assertIn("ponytail-agent-rules:", profiles.render_tool_profiles(("ponytail-agent-rules",)))
+        self.assertIn("PONYTAIL_DEFAULT_MODE", profiles.render_tool_profiles(("ponytail-agent-rules",)))
         self.assertIn("memory-local:", memory)
         self.assertIn("sandbox-micropython-wasm", profiles.render_advisory_profiles(profiles.SANDBOX_PROFILES, ("sandbox-micropython-wasm",)))
         self.assertIn("sops-age", profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, ("sops-age",)))
@@ -115,8 +119,10 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("https://github.com/run-llama/llamaparse-agent-skills/blob/main/skills/liteparse/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("lit --version", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("chub --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("playwright-cli --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("ponytail-agent-rules", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
 
 
 def _all_profile_options() -> GenerationOptions:

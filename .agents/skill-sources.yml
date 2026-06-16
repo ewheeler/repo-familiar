@@ -105,6 +105,17 @@ skills:
       - "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx --no-install playwright-cli` when available project-locally"
     verify:
       - "playwright-cli --help or npx --no-install playwright-cli --help"
+  ponytail:
+    source_type: "external"
+    source_url: "https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md"
+    notes: "Adapted from DietrichGebert/ponytail for repo-familiar selectable skill guidance."
+    setup:
+      - "Select with repo-familiar using `--skill ponytail` when generating or bootstrapping a repository"
+      - "Use the `ponytail-agent-rules` tool profile when the repository should document always-on Ponytail plugin or extension setup"
+      - "For source installs outside repo-familiar, install the upstream plugin or extension from https://github.com/DietrichGebert/ponytail"
+    verify:
+      - "Confirm `.agents/skills/ponytail/SKILL.md` exists after generation or bootstrap"
+      - "Invoke the skill by asking for `ponytail` or lazy mode in a skill-capable harness"
   privacy-review:
     source_type: "local"
     source_url: "local:repo-familiar"
