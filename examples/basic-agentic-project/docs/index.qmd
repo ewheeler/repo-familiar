@@ -10,3 +10,12 @@ This documentation site was generated with `repo-familiar`.
 - Review `plan.md` for goals and first milestones.
 - Review `AGENTS.md` for agent-facing working instructions.
 - Review `.repo-familiar/bootstrap.yml` for generation provenance.
+
+## Documentation Map
+
+This Quarto site follows the [Divio documentation system](https://docs.divio.com/documentation-system/), keeping four kinds of documentation separate:
+
+- [Tutorials](./tutorials.qmd): learning-oriented lessons for a first successful path through the project.
+- [How-to guides](./how-to.qmd): goal-oriented recipes for specific tasks.
+- [Reference](./reference.qmd): information-oriented descriptions of commands, APIs, configuration, schemas, and generated assets.
+- [Explanation](./explanation.qmd): understanding-oriented context, architecture, tradeoffs, and decisions.

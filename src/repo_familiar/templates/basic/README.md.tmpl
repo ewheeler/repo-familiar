@@ -26,6 +26,8 @@ This repository was generated with `repo-familiar`.
 
 ## Documentation
 
+The Quarto docs scaffold follows the [Divio documentation system](https://docs.divio.com/documentation-system/): tutorials, how-to guides, reference, and explanation are kept separate so both humans and agents can find the right kind of context.
+
 Render docs with:
 
 ```bash

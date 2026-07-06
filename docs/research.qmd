@@ -9,6 +9,7 @@ title: "Research"
 - [AI agent coding](https://minimaxir.com/2026/02/ai-agent-coding/)
 - [How I write software with LLMs](https://www.stavros.io/posts/how-i-write-software-with-llms/)
 - [How to write good AGENTS.md files](https://www.augmentcode.com/blog/how-to-write-good-agents-dot-md-files)
+- [The Documentation System](https://docs.divio.com/documentation-system/)
 
 ## Candidate Inputs
 

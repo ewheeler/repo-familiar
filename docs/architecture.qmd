@@ -40,6 +40,10 @@ The generated asset set currently includes:
 - selected skill support files under `.agents/skills/` when upstream skill directories include references or companion docs
 - `docs/_quarto.yml`
 - `docs/index.qmd`
+- `docs/tutorials.qmd`
+- `docs/how-to.qmd`
+- `docs/reference.qmd`
+- `docs/explanation.qmd`
 - `docs/usage.qmd`
 - `docs/architecture.qmd`
 - `plan.md`

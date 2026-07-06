@@ -1,0 +1,15 @@
+---
+title: "Explanation"
+---
+
+Explanation pages are understanding-oriented context. They clarify why the project is shaped the way it is.
+
+## Add Explanation Here
+
+Use this section for background such as:
+
+- Architecture, system boundaries, and tradeoffs.
+- Domain concepts and terminology that need deeper discussion.
+- ADRs, alternatives considered, and why a decision was made.
+
+Keep step-by-step tasks in [How-to Guides](./how-to.qmd) and exact machinery descriptions in [Reference](./reference.qmd).

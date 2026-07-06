@@ -9,6 +9,15 @@ This repository was generated with `repo-familiar`.
 - Keep agent runtime configuration in `.agents/`.
 - Keep generator provenance in `.repo-familiar/bootstrap.yml`.
 
+## Documentation Defaults
+
+- Keep the Quarto docs site organized around the Divio documentation system: tutorials, how-to guides, reference, and explanation.
+- Before adding or changing docs, decide which documentation type the page serves and keep that purpose clean.
+- Use tutorials for beginner learning paths with reliable, concrete steps and visible results.
+- Use how-to guides for goal-oriented recipes that solve a specific user problem.
+- Use reference pages for accurate descriptions of commands, APIs, schemas, configuration, and generated assets.
+- Use explanation pages for context, architecture, tradeoffs, ADRs, and why the project works the way it does.
+
 ## Engineering Defaults
 
 - Use red/green TDD for behavior changes whenever practical.

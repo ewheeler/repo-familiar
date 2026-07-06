@@ -1,8 +1,8 @@
 skills:
   grill-with-docs:
-    source_type: "external"
+    source_type: "local-adapted"
     source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/grill-with-docs/SKILL.md"
-    notes: "Adapted from mattpocock/skills for repo-familiar documentation and planning workflows."
+    notes: "Originally adapted from mattpocock/skills; upstream simplified to delegate to /grilling and /domain-modeling. Local version retains full documentation workflow guidance."
     setup:
       - "Select with repo-familiar using `--skill grill-with-docs` when generating or bootstrapping a repository"
       - "For source installs outside repo-familiar, run `npx skills@latest add mattpocock/skills`"

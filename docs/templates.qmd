@@ -20,7 +20,7 @@ It is intentionally small and focused on the core contract:
 - Vendored skill support files, such as reference documents included by upstream skill directories.
 - Skill source provenance in `.agents/skill-sources.yml`.
 - Generator provenance in `.repo-familiar/bootstrap.yml`.
-- Quarto documentation scaffold in `docs/`.
+- Quarto documentation scaffold in `docs/`, organized around tutorials, how-to guides, reference, and explanation.
 - Safe local environment placeholders in `.env.example`.
 - Initial planning artifact in `plan.md`.
 - Project-level `README.md` and `.gitignore`.

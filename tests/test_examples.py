@@ -52,6 +52,8 @@ class ExampleSnapshotTests(unittest.TestCase):
         agents = (EXAMPLE_ROOT / "AGENTS.md").read_text()
 
         self.assertIn("## Engineering Defaults", agents)
+        self.assertIn("## Documentation Defaults", agents)
+        self.assertIn("Divio documentation system", agents)
         self.assertIn("Use red/green TDD", agents)
         self.assertIn("real browser flow", agents)
         self.assertIn("screen readers", agents)

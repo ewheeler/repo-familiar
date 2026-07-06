@@ -40,6 +40,7 @@ This project draws from agentic engineering writing, skill ecosystems, and repos
 - [Harness engineering](https://openai.com/index/harness-engineering/)
 - [Agent-Agnostic Repository Guide](https://gist.github.com/davidgibsonp/337be9b80b3f03eccd188235c287bb05)
 - [How to write good AGENTS.md files](https://www.augmentcode.com/blog/how-to-write-good-agents-dot-md-files)
+- [The Documentation System](https://docs.divio.com/documentation-system/)
 - [mattpocock/skills](https://github.com/mattpocock/skills)
 - [superpowers](https://github.com/obra/superpowers)
 - [unicef/design.md](https://github.com/unicef/design.md)
@@ -133,7 +134,7 @@ uv run python -m repo_familiar generate --interactive
 
 `questionary` is imported lazily for interactive commands and installed by `uv sync`.
 
-This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/public-interest.yml`, `.agents/worktrees.yml`, `.agents/skill-sources.yml`, selected skills, a Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
+This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/public-interest.yml`, `.agents/worktrees.yml`, `.agents/skill-sources.yml`, selected skills, a Divio-style Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
 
 Generated repositories should receive vendored copies of the selected assets by default. Each generated repository should also include `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version used to create it. Live synchronization can come later as an explicit upgrade command, but initial bootstraps should be stable and self-contained.
 

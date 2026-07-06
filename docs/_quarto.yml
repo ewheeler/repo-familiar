@@ -14,6 +14,7 @@ project:
     - pre-bootstrap.qmd
     - examples.qmd
     - architecture.qmd
+    - documentation.qmd
     - naming.qmd
     - decisions.qmd
     - research.qmd
@@ -42,6 +43,8 @@ website:
         text: Generator
       - href: architecture.qmd
         text: Architecture
+      - href: documentation.qmd
+        text: Docs
       - href: naming.qmd
         text: Naming
       - href: decisions.qmd
@@ -67,6 +70,7 @@ website:
           - pre-bootstrap.qmd
           - examples.qmd
       - architecture.qmd
+      - documentation.qmd
       - naming.qmd
       - decisions.qmd
       - section: ADRs

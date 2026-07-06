@@ -31,9 +31,11 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("browser-automation", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("micropython-wasm", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("ponytail-agent-rules", profiles.list_names(profiles.TOOL_PROFILES))
+        self.assertIn("python-guardrails", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("sandbox-micropython-wasm", profiles.list_names(profiles.SANDBOX_PROFILES))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
         self.assertIn("ponytail", profiles.list_names(profiles.SKILLS))
+        self.assertIn("setup-python-guardrails", profiles.list_names(profiles.SKILLS))
         self.assertIn("session-focus", profiles.list_names(profiles.SKILLS))
 
     def test_validates_profile_selections(self) -> None:
@@ -67,6 +69,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("MicroPythonSession", profiles.render_tool_profiles(("micropython-wasm",)))
         self.assertIn("ponytail-agent-rules:", profiles.render_tool_profiles(("ponytail-agent-rules",)))
         self.assertIn("PONYTAIL_DEFAULT_MODE", profiles.render_tool_profiles(("ponytail-agent-rules",)))
+        self.assertIn("python-guardrails:", profiles.render_tool_profiles(("python-guardrails",)))
+        self.assertIn("pre-commit run --all-files", profiles.render_tool_profiles(("python-guardrails",)))
         self.assertIn("memory-local:", memory)
         self.assertIn("sandbox-micropython-wasm", profiles.render_advisory_profiles(profiles.SANDBOX_PROFILES, ("sandbox-micropython-wasm",)))
         self.assertIn("sops-age", profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, ("sops-age",)))
@@ -113,7 +117,7 @@ class ProfileRegistryTests(unittest.TestCase):
 
         self.assertEqual(root_skill_names - skill_source_names, set())
         self.assertEqual(root_skill_names - set(profiles.SKILLS), set())
-        self.assertIn("https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("https://github.com/mattpocock/skills", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/andrewyng/context-hub/blob/main/cli/skills/get-api-docs/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/run-llama/llamaparse-agent-skills/blob/main/skills/liteparse/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
@@ -123,6 +127,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("chub --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("playwright-cli --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("ponytail-agent-rules", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("setup-python-guardrails", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
 
 
 def _all_profile_options() -> GenerationOptions:

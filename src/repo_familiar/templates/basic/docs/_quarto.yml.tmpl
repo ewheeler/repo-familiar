@@ -3,6 +3,10 @@ project:
   output-dir: _site
   render:
     - index.qmd
+    - tutorials.qmd
+    - how-to.qmd
+    - reference.qmd
+    - explanation.qmd
     - usage.qmd
     - architecture.qmd
 
@@ -13,10 +17,30 @@ website:
     left:
       - href: index.qmd
         text: Home
+      - href: tutorials.qmd
+        text: Tutorials
+      - href: how-to.qmd
+        text: How-to
+      - href: reference.qmd
+        text: Reference
+      - href: explanation.qmd
+        text: Explanation
       - href: usage.qmd
         text: Usage
       - href: architecture.qmd
         text: Architecture
+  sidebar:
+    style: docked
+    contents:
+      - index.qmd
+      - section: Documentation System
+        contents:
+          - tutorials.qmd
+          - how-to.qmd
+          - reference.qmd
+          - explanation.qmd
+      - usage.qmd
+      - architecture.qmd
 
 format:
   html:

@@ -1,117 +1,61 @@
 ---
 name: write-a-skill
-description: Create new agent skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill.
+description: Reference for writing and editing skills well — the vocabulary and principles that make a skill predictable. Use when user wants to create, write, or build a new skill.
+disable-model-invocation: true
 ---
 
-# Writing Skills
+A skill exists to wrangle determinism out of a stochastic system. **Predictability** — the agent taking the same _process_ every run, not producing the same output — is the root virtue; every lever below serves it.
 
-## Process
+## Invocation
 
-1. **Gather requirements** - ask user about:
-   - What task/domain does the skill cover?
-   - What specific use cases should it handle?
-   - Does it need executable scripts or just instructions?
-   - Any reference materials to include?
+Two choices, trading different costs:
 
-2. **Draft the skill** - create:
-   - SKILL.md with concise instructions
-   - Additional reference files if content exceeds 500 lines
-   - Utility scripts if deterministic operations needed
+- A **model-invoked** skill keeps a **description**, so the agent can fire it autonomously _and_ other skills can reach it (you can still type its name too). It contributes to **context load** — the description sits in the window every turn.
+- A **user-invoked** skill strips the description from the agent's reach: only you, typing its name, can invoke it — and no other skill can. Zero context load, but it spends **cognitive load**: _you_ are the index that must remember it exists.
 
-3. **Review with user** - present draft and ask:
-   - Does this cover your use cases?
-   - Anything missing or unclear?
-   - Should any section be more/less detailed?
+Pick model-invocation only when the agent must reach the skill on its own, or another skill must. If it only ever fires by hand, make it user-invoked and pay no context load.
 
-## Skill Structure
+## Writing the description
 
-```
-skill-name/
-├── SKILL.md           # Main instructions (required)
-├── REFERENCE.md       # Detailed docs (if needed)
-├── EXAMPLES.md        # Usage examples (if needed)
-└── scripts/           # Utility scripts (if needed)
-    └── helper.js
-```
+A model-invoked **description** does two jobs — state what the skill is, and list the **branches** that should trigger it. Every word increases **context load**, so a description earns even harder pruning than the body:
 
-## SKILL.md Template
+- **Front-load the skill's leading word** — the description is where it does its invocation work.
+- **One trigger per branch.** Synonyms that rename a single branch are **duplication** — collapse them.
+- **Cut identity that's already in the body.** Keep the description to triggers, plus any "when another skill needs…" reach clause.
 
-```md
----
-name: skill-name
-description: Brief description of capability. Use when [specific triggers].
----
+## Information hierarchy
 
-# Skill Name
+A skill is built from two content types — **steps** and **reference** — that mix freely. The core decision is which to use and where each sits on the **information hierarchy**, a ladder ranked by how immediately the agent needs the material:
 
-## Quick start
+1. **In-skill step** — an ordered action in `SKILL.md`, the primary tier: what the agent does, in order. Each step ends on a **completion criterion**, the condition that tells the agent the work is done.
+2. **In-skill reference** — a definition, rule, or fact in `SKILL.md`, consulted on demand.
+3. **External reference** — reference pushed out of `SKILL.md` into a separate file, reached by a **context pointer**, loaded only when the pointer fires.
 
-[Minimal working example]
+**Progressive disclosure** is the move down the ladder — out of `SKILL.md` into a linked file — so the top stays legible. Some skills are used in more than one way, and each distinct way is a **branch** — different runs taking different paths through the skill.
 
-## Workflows
+## When to split
 
-[Step-by-step processes with checklists for complex tasks]
+**Granularity** is how finely you divide skills, and each cut spends one of the two loads, so split only when the cut earns it. Two cuts:
 
-## Advanced features
+- **By invocation** — split off a **model-invoked** skill when you have a distinct **leading word** that should trigger it on its own, or another skill must reach it.
+- **By sequence** — split a run of **steps** when the steps still ahead tempt the agent to rush the one in front of it (**premature completion**).
 
-[Link to separate files: See [REFERENCE.md](REFERENCE.md)]
-```
+## Pruning
 
-## Description Requirements
+Keep each meaning in a **single source of truth**: one authoritative place, so changing the behaviour is a one-place edit.
 
-The description is **the only thing your agent sees** when deciding which skill to load. It's surfaced in the system prompt alongside all other installed skills. Your agent reads these descriptions and picks the relevant skill based on the user's request.
+Check every line for **relevance**: does it still bear on what the skill does?
 
-**Goal**: Give your agent just enough info to know:
+Then hunt **no-ops** sentence by sentence: run the no-op test on each sentence in isolation, and when one fails, delete the whole sentence rather than trim words from it.
 
-1. What capability this skill provides
-2. When/why to trigger it (specific keywords, contexts, file types)
+## Leading words
 
-**Format**:
+A **leading word** is a compact concept already living in the model's pretraining that the agent thinks with while running the skill. Repeated throughout the text, it accumulates a distributed definition and anchors a whole region of behaviour in the fewest tokens, by recruiting priors the model already holds.
 
-- Max 1024 chars
-- Write in third person
-- First sentence: what it does
-- Second sentence: "Use when [specific triggers]"
+## Failure modes
 
-**Good example**:
-
-```
-Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when user mentions PDFs, forms, or document extraction.
-```
-
-**Bad example**:
-
-```
-Helps with documents.
-```
-
-The bad example gives your agent no way to distinguish this from other document skills.
-
-## When to Add Scripts
-
-Add utility scripts when:
-
-- Operation is deterministic (validation, formatting)
-- Same code would be generated repeatedly
-- Errors need explicit handling
-
-Scripts save tokens and improve reliability vs generated code.
-
-## When to Split Files
-
-Split into separate files when:
-
-- SKILL.md exceeds 100 lines
-- Content has distinct domains (finance vs sales schemas)
-- Advanced features are rarely needed
-
-## Review Checklist
-
-After drafting, verify:
-
-- [ ] Description includes triggers ("Use when...")
-- [ ] SKILL.md under 100 lines
-- [ ] No time-sensitive info
-- [ ] Consistent terminology
-- [ ] Concrete examples included
-- [ ] References one level deep
+- **Premature completion** — ending a step before it's genuinely done, attention slipping to _being done_.
+- **Duplication** — the same meaning in more than one place.
+- **Sediment** — stale layers that settle because adding feels safe and removing feels risky.
+- **Sprawl** — a skill simply too long, even when every line is live and unique.
+- **No-op** — a line the model already obeys by default, so you pay load to say nothing.

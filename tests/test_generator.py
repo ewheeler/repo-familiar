@@ -58,6 +58,10 @@ class GeneratorTests(unittest.TestCase):
             self.assertTrue((output_dir / ".env.example").exists())
             self.assertTrue((output_dir / ".agents/skills/grill-with-docs/SKILL.md").exists())
             self.assertTrue((output_dir / "docs/_quarto.yml").exists())
+            self.assertTrue((output_dir / "docs/tutorials.qmd").exists())
+            self.assertTrue((output_dir / "docs/how-to.qmd").exists())
+            self.assertTrue((output_dir / "docs/reference.qmd").exists())
+            self.assertTrue((output_dir / "docs/explanation.qmd").exists())
             self.assertTrue((output_dir / "plan.md").exists())
             self.assertTrue((output_dir / ".repo-familiar/bootstrap.yml").exists())
 
@@ -90,7 +94,7 @@ class GeneratorTests(unittest.TestCase):
             models = (output_dir / ".agents/models.yml").read_text()
             self.assertIn("default-coding:", models)
             self.assertIn("budget-review:", models)
-            self.assertEqual(len(assets), 27)
+            self.assertEqual(len(assets), 31)
 
     def test_refuses_non_empty_output_without_force(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -118,7 +122,7 @@ class GeneratorTests(unittest.TestCase):
                 )
             )
 
-            self.assertEqual(len(assets), 27)
+            self.assertEqual(len(assets), 31)
             self.assertFalse(output_dir.exists())
 
     def test_skips_opencode_config_when_harness_not_selected(self) -> None:

@@ -296,7 +296,31 @@ TOOL_PROFILES = {
             "Project config should reference ${CONTEXT7_API_KEY}, not a literal token",
             "Use only when current package/library documentation lookup through Context7 is needed",
         ],
-    }
+    },
+    "python-guardrails": {
+        "purpose": "document deterministic guardrails for Python projects using pre-commit, ruff, and mypy with opt-in deep coverage",
+        "config": "Select the `setup-python-guardrails` skill to install the pre-commit framework with ruff and mypy; add deep-coverage hooks (bandit, pip-audit, vulture, import-linter, jscpd, radon) when the project needs them",
+        "setup": [
+            "Run the `setup-python-guardrails` skill to create .pre-commit-config.yaml with ruff and mypy as defaults",
+            "Add bandit and pip-audit hooks when the security-audit skill needs deterministic security checks",
+            "Add import-linter when the project has feature folders that must not import across boundaries",
+            "Add jscpd (npm i -g jscpd) when copy-paste detection is needed across files",
+            "Add vulture when ruff's F-rules are not catching enough dead code",
+            "Add radon when maintainability index scoring is needed beyond mccabe complexity",
+        ],
+        "verify": [
+            "pre-commit run --all-files",
+            "Confirm .pre-commit-config.yaml exists with ruff and mypy hooks",
+            "Confirm [tool.ruff] and [tool.mypy] sections exist in pyproject.toml",
+        ],
+        "notes": [
+            "Ruff covers linting, import sorting, unused imports/variables, line length, and mccabe complexity in one tool",
+            "Standardize on the Python pre-commit framework so hooks run in CI and locally with the same config",
+            "The security-audit skill references bandit and pip-audit hooks configured by this guardrail setup",
+            "Deep-coverage tools are opt-in; start with ruff alone and add tools when the project demonstrates the need",
+            "Mandate `pre-commit run --all-files` in agent rules so agents run guardrails before task completion",
+        ],
+    },
 }
 
 MEMORY_PROFILES = {
@@ -622,6 +646,7 @@ SKILLS = {
     "session-focus": "Prevent goal drift during multi-step agent tasks",
     "setup-matt-pocock-skills": "Set up agent skill context and issue-tracker documentation",
     "setup-pre-commit": "Set up Husky pre-commit hooks with formatting, type checks, and tests",
+    "setup-python-guardrails": "Set up Python pre-commit guardrails with ruff, mypy, and opt-in deep coverage hooks",
     "tdd": "Use red-green-refactor test-driven development",
     "to-issues": "Break a plan into independently grabbable implementation issues",
     "to-prd": "Turn conversation context into a product requirements document",
@@ -638,9 +663,9 @@ SKILL_SOURCES = {
         "notes": "Authored for repo-familiar accessibility scanning guidance.",
     },
     "caveman": {
-        "source_type": "external",
-        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/caveman/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/mattpocock/skills",
+        "notes": "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path.",
     },
     "cq": {
         "source_type": "external",
@@ -649,8 +674,8 @@ SKILL_SOURCES = {
     },
     "diagnose": {
         "source_type": "external",
-        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnose/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnosing-bugs/SKILL.md",
+        "notes": "Adapted from mattpocock/skills; upstream renamed from diagnose to diagnosing-bugs.",
     },
     "get-api-docs": {
         "source_type": "external",
@@ -663,19 +688,19 @@ SKILL_SOURCES = {
         "notes": "Adapted from mattpocock/skills.",
     },
     "grill-me": {
-        "source_type": "external",
+        "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Originally adapted from mattpocock/skills; upstream simplified to delegate to /grilling session. Local version retains full interview guidance.",
     },
     "grill-with-docs": {
-        "source_type": "external",
+        "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/grill-with-docs/SKILL.md",
-        "notes": "Adapted from mattpocock/skills for repo-familiar documentation and planning workflows.",
+        "notes": "Originally adapted from mattpocock/skills; upstream simplified to delegate to /grilling and /domain-modeling. Local version retains full documentation workflow guidance.",
     },
     "improve-codebase-architecture": {
-        "source_type": "external",
+        "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Originally adapted from mattpocock/skills; upstream now depends on /codebase-design and /domain-modeling skills not vendored here. Local version retains inline vocabulary in LANGUAGE.md.",
     },
     "liteparse": {
         "source_type": "external",
@@ -689,6 +714,7 @@ SKILL_SOURCES = {
         "verify": [
             "lit --version",
             "Confirm `.agents/skills/liteparse/SKILL.md` exists after generation or bootstrap",
+            "Confirm `.agents/skills/liteparse/scripts/search.py` exists when BM25 search is needed",
         ],
     },
     "migrate-to-shoehorn": {
@@ -775,6 +801,11 @@ SKILL_SOURCES = {
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/setup-pre-commit/SKILL.md",
         "notes": "Adapted from mattpocock/skills.",
     },
+    "setup-python-guardrails": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar Python guardrail setup, informed by deterministic guardrails article (balajeerc.info).",
+    },
     "tdd": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md",
@@ -802,13 +833,13 @@ SKILL_SOURCES = {
     },
     "write-a-skill": {
         "source_type": "external",
-        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/write-a-skill/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/writing-great-skills/SKILL.md",
+        "notes": "Adapted from mattpocock/skills; upstream renamed from write-a-skill to writing-great-skills.",
     },
     "zoom-out": {
-        "source_type": "external",
-        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/zoom-out/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/mattpocock/skills",
+        "notes": "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path.",
     },
 }
 
