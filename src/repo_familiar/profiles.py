@@ -108,6 +108,42 @@ TOOL_PROFILES = {
             "Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary",
         ],
     },
+    "flint-chart": {
+        "purpose": "let agents author compact semantic chart specs and compile them to Vega-Lite, ECharts, or Chart.js",
+        "config": "Use the `flint-chart` npm package for JavaScript or TypeScript integration; use the `flint-chart-author` skill for spec authoring guidance",
+        "setup": [
+            "Select the repo-familiar `flint-chart-author` skill when agents need to create valid ChartAssemblyInput specs",
+            "For application integration, install with `npm install flint-chart` and add only the renderer dependencies required by the chosen backend",
+            "Transform, aggregate, join, or reshape data before calling Flint; Flint compiles chart specs rather than acting as a data-wrangling engine",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/flint-chart-author/SKILL.md` exists if the repo-familiar skill was selected",
+            "In a JavaScript or TypeScript project, run a small `assembleVegaLite`, `assembleECharts`, or `assembleChartjs` smoke test",
+        ],
+        "notes": [
+            "Author Flint ChartAssemblyInput values instead of backend-native chart JSON by default",
+            "Use semantic types such as Quantity, Amount, Percentage, Date, Category, and Region to drive formatting and layout decisions",
+            "Keep large datasets out of prompts; bind data from host variables, prepared files, or small inline rows only when appropriate",
+        ],
+    },
+    "flint-chart-mcp": {
+        "purpose": "expose local Flint chart validation, rendering, compilation, and chart previews as MCP tools",
+        "config": "Use `npx -y flint-chart-mcp` as a stdio MCP server; add `--disable-file-reference` when the server should accept inline rows only",
+        "setup": [
+            "Ensure Node.js and npx are visible to the MCP client's shell before relying on the server",
+            "Configure MCP clients with command `npx` and args `-y`, `flint-chart-mcp`",
+            "Use `--disable-file-reference` for untrusted deployments so MCP calls cannot read local data files by URL",
+        ],
+        "verify": [
+            "npx -y flint-chart-mcp --help",
+            "In the MCP client, call `list_chart_types` or load `flint://agent-skill` to confirm the server is connected",
+        ],
+        "notes": [
+            "The MCP server renders locally and can read local JSON, CSV, or TSV files by default; remote URLs are not fetched",
+            "Use `create_chart_view` when the host supports MCP Apps, `render_chart` for static PNG or SVG artifacts, and `compile_chart` for backend-native JSON",
+            "Pair with `flint-chart-author` so agents know the valid chart types, semantic types, channels, and validation checklist",
+        ],
+    },
     "micropython-wasm": {
         "purpose": "run small Python snippets in a fresh MicroPython WASI WebAssembly sandbox",
         "config": "Use simonw/micropython-wasm through Python or its CLI when lightweight no-network Python execution is safer than running host Python directly",
@@ -259,6 +295,25 @@ TOOL_PROFILES = {
         "notes": [
             "This profile does not install browsers or Node dependencies by itself",
             "Use with browser-automation, playwright-cli, or a11y-web-scan when browser MCP tooling is useful",
+        ],
+    },
+    "opencode-flint-chart-mcp": {
+        "purpose": "configure project-local OpenCode access to Flint chart MCP tools",
+        "config": "Adds a non-secret local MCP server entry to opencode.json using npx -y flint-chart-mcp --disable-file-reference",
+        "generated_assets": ["opencode.json"],
+        "requires_agent_harnesses": ["opencode"],
+        "setup": [
+            "Select this profile only when OpenCode should launch Flint chart MCP tools for this project",
+            "Ensure Node.js and npx are visible to OpenCode's shell before relying on the MCP server",
+            "Remove `--disable-file-reference` only when project policy allows Flint MCP to read local JSON, CSV, or TSV data files by URL",
+        ],
+        "verify": [
+            "npx -y flint-chart-mcp --help",
+            "Restart OpenCode after opencode.json changes",
+        ],
+        "notes": [
+            "Use with flint-chart-mcp and flint-chart-author when agents should validate, render, or preview charts through MCP",
+            "The generated OpenCode entry defaults to inline data only; keep broader local file access as an explicit project decision",
         ],
     },
     "opencode-cq-mcp": {
@@ -625,6 +680,7 @@ SKILLS = {
     "caveman": "Use ultra-compressed communication when brevity is explicitly requested",
     "cq": "Query the knowledge commons before implementation work and error fixes",
     "diagnose": "Diagnose hard bugs and performance regressions with a disciplined loop",
+    "flint-chart-author": "Author valid Flint ChartAssemblyInput specs for chart rendering and MCP workflows",
     "get-api-docs": "Fetch current third-party API, SDK, and library documentation before integration work",
     "git-guardrails-claude-code": "Set up Claude Code hooks to block dangerous git commands",
     "grill-me": "Stress-test a plan or design through focused questioning",
@@ -676,6 +732,20 @@ SKILL_SOURCES = {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnosing-bugs/SKILL.md",
         "notes": "Adapted from mattpocock/skills; upstream renamed from diagnose to diagnosing-bugs.",
+    },
+    "flint-chart-author": {
+        "source_type": "external",
+        "source_url": "https://github.com/microsoft/flint-chart/blob/main/agent-skills/flint-chart-author/SKILL.md",
+        "notes": "Vendored from Microsoft Flint Chart authoring skill for semantic chart spec guidance.",
+        "setup": [
+            "Select with repo-familiar using `--skill flint-chart-author` when generating or bootstrapping a repository",
+            "Use the `flint-chart` tool profile for library integration guidance",
+            "Use the `flint-chart-mcp` and harness-specific MCP profiles when agents should render or validate charts through MCP",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/flint-chart-author/SKILL.md` exists after generation or bootstrap",
+            "Ask a skill-capable agent to author a ChartAssemblyInput for a simple two-column bar chart",
+        ],
     },
     "get-api-docs": {
         "source_type": "external",
@@ -980,6 +1050,12 @@ def render_opencode_config(tool_profile_names: tuple[str, ...]) -> str:
         mcp["playwright"] = {
             "type": "local",
             "command": ["npx", "-y", "@playwright/mcp"],
+            "enabled": True,
+        }
+    if "opencode-flint-chart-mcp" in tool_profile_names:
+        mcp["flint"] = {
+            "type": "local",
+            "command": ["npx", "-y", "flint-chart-mcp", "--disable-file-reference"],
             "enabled": True,
         }
     if "opencode-cq-mcp" in tool_profile_names:

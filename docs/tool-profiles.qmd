@@ -48,6 +48,36 @@ notes:
 
 Install Playwright CLI with `npm install -g @playwright/cli@latest`, or use `npx --no-install playwright-cli` only when the command is already available project-locally. Avoid the deprecated bare `playwright-cli` npm package as an install target.
 
+`flint-chart`:
+
+```yaml
+purpose: let agents author compact semantic chart specs and compile them to Vega-Lite, ECharts, or Chart.js
+config: Use the `flint-chart` npm package for JavaScript or TypeScript integration; use the `flint-chart-author` skill for spec authoring guidance
+setup:
+  - Select the repo-familiar `flint-chart-author` skill when agents need to create valid ChartAssemblyInput specs
+  - For application integration, install with `npm install flint-chart` and add only the renderer dependencies required by the chosen backend
+verify:
+  - Confirm `.agents/skills/flint-chart-author/SKILL.md` exists if the repo-familiar skill was selected
+```
+
+Use this profile when a repository needs agent-authored charts from small semantic specs rather than backend-native Vega-Lite, ECharts, or Chart.js JSON. Transform data before Flint when aggregation, joins, pivots, or derived columns are needed.
+
+`flint-chart-mcp`:
+
+```yaml
+purpose: expose local Flint chart validation, rendering, compilation, and chart previews as MCP tools
+config: Use `npx -y flint-chart-mcp` as a stdio MCP server; add `--disable-file-reference` when the server should accept inline rows only
+setup:
+  - Ensure Node.js and npx are visible to the MCP client's shell before relying on the server
+  - Configure MCP clients with command `npx` and args `-y`, `flint-chart-mcp`
+  - Use `--disable-file-reference` for untrusted deployments so MCP calls cannot read local data files by URL
+verify:
+  - npx -y flint-chart-mcp --help
+  - In the MCP client, call `list_chart_types` or load `flint://agent-skill` to confirm the server is connected
+```
+
+Flint MCP renders locally and can read local JSON, CSV, or TSV files by default; remote URLs are not fetched. Use `create_chart_view` when MCP Apps are supported, `render_chart` for static artifacts, and `compile_chart` for backend-native JSON.
+
 `micropython-wasm`:
 
 ```yaml
@@ -96,6 +126,7 @@ notes:
 OpenCode MCP profiles:
 
 - `opencode-playwright-mcp`: adds a project-local `opencode.json` MCP entry for `npx -y @playwright/mcp`.
+- `opencode-flint-chart-mcp`: adds a project-local `opencode.json` MCP entry for `npx -y flint-chart-mcp --disable-file-reference`.
 - `opencode-cq-mcp`: adds a project-local `opencode.json` MCP entry for `cq mcp` on `PATH`.
 - `opencode-context7-mcp`: adds a project-local remote Context7 MCP entry using `${CONTEXT7_API_KEY}`, never a literal key.
 

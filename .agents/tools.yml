@@ -39,6 +39,34 @@ profiles:
     verify:
       - "playwright-cli --help or npx playwright-cli --help"
       - "rodney --help"
+  flint-chart:
+    purpose: "let agents author compact semantic chart specs and compile them to Vega-Lite, ECharts, or Chart.js"
+    config: "Use the `flint-chart` npm package for JavaScript or TypeScript integration; use the `flint-chart-author` skill for spec authoring guidance"
+    notes:
+      - "Author Flint ChartAssemblyInput values instead of backend-native chart JSON by default"
+      - "Use semantic types such as Quantity, Amount, Percentage, Date, Category, and Region to drive formatting and layout decisions"
+      - "Keep large datasets out of prompts; bind data from host variables, prepared files, or small inline rows only when appropriate"
+    setup:
+      - "Select the repo-familiar `flint-chart-author` skill when agents need to create valid ChartAssemblyInput specs"
+      - "For application integration, install with `npm install flint-chart` and add only the renderer dependencies required by the chosen backend"
+      - "Transform, aggregate, join, or reshape data before calling Flint; Flint compiles chart specs rather than acting as a data-wrangling engine"
+    verify:
+      - "Confirm `.agents/skills/flint-chart-author/SKILL.md` exists if the repo-familiar skill was selected"
+      - "In a JavaScript or TypeScript project, run a small `assembleVegaLite`, `assembleECharts`, or `assembleChartjs` smoke test"
+  flint-chart-mcp:
+    purpose: "expose local Flint chart validation, rendering, compilation, and chart previews as MCP tools"
+    config: "Use `npx -y flint-chart-mcp` as a stdio MCP server; add `--disable-file-reference` when the server should accept inline rows only"
+    notes:
+      - "The MCP server renders locally and can read local JSON, CSV, or TSV files by default; remote URLs are not fetched"
+      - "Use `create_chart_view` when the host supports MCP Apps, `render_chart` for static PNG or SVG artifacts, and `compile_chart` for backend-native JSON"
+      - "Pair with `flint-chart-author` so agents know the valid chart types, semantic types, channels, and validation checklist"
+    setup:
+      - "Ensure Node.js and npx are visible to the MCP client's shell before relying on the server"
+      - "Configure MCP clients with command `npx` and args `-y`, `flint-chart-mcp`"
+      - "Use `--disable-file-reference` for untrusted deployments so MCP calls cannot read local data files by URL"
+    verify:
+      - "npx -y flint-chart-mcp --help"
+      - "In the MCP client, call `list_chart_types` or load `flint://agent-skill` to confirm the server is connected"
   micropython-wasm:
     purpose: "run small Python snippets in a fresh MicroPython WASI WebAssembly sandbox"
     config: "Use simonw/micropython-wasm through Python or its CLI when lightweight no-network Python execution is safer than running host Python directly"
@@ -155,6 +183,19 @@ profiles:
       - "Ensure Node and npx are visible to OpenCode's shell before relying on this MCP server"
     verify:
       - "npx -y @playwright/mcp --help"
+      - "Restart OpenCode after opencode.json changes"
+  opencode-flint-chart-mcp:
+    purpose: "configure project-local OpenCode access to Flint chart MCP tools"
+    config: "Adds a non-secret local MCP server entry to opencode.json using npx -y flint-chart-mcp --disable-file-reference"
+    notes:
+      - "Use with flint-chart-mcp and flint-chart-author when agents should validate, render, or preview charts through MCP"
+      - "The generated OpenCode entry defaults to inline data only; keep broader local file access as an explicit project decision"
+    setup:
+      - "Select this profile only when OpenCode should launch Flint chart MCP tools for this project"
+      - "Ensure Node.js and npx are visible to OpenCode's shell before relying on the MCP server"
+      - "Remove `--disable-file-reference` only when project policy allows Flint MCP to read local JSON, CSV, or TSV data files by URL"
+    verify:
+      - "npx -y flint-chart-mcp --help"
       - "Restart OpenCode after opencode.json changes"
   opencode-cq-mcp:
     purpose: "configure project-local OpenCode access to the cq MCP server"

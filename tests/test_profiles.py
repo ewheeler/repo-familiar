@@ -29,10 +29,13 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("paseo", profiles.list_names(profiles.AGENT_HARNESSES))
         self.assertIn("default-coding", profiles.list_names(profiles.MODEL_PROFILES))
         self.assertIn("browser-automation", profiles.list_names(profiles.TOOL_PROFILES))
+        self.assertIn("flint-chart", profiles.list_names(profiles.TOOL_PROFILES))
+        self.assertIn("flint-chart-mcp", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("micropython-wasm", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("ponytail-agent-rules", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("python-guardrails", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("sandbox-micropython-wasm", profiles.list_names(profiles.SANDBOX_PROFILES))
+        self.assertIn("flint-chart-author", profiles.list_names(profiles.SKILLS))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
         self.assertIn("ponytail", profiles.list_names(profiles.SKILLS))
         self.assertIn("setup-python-guardrails", profiles.list_names(profiles.SKILLS))
@@ -65,6 +68,10 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("verify:", tools)
         self.assertIn("headroom-mcp:", profiles.render_tool_profiles(("headroom-mcp",)))
         self.assertIn("headroom proxy --port 8787", profiles.render_tool_profiles(("headroom-proxy",)))
+        self.assertIn("flint-chart:", profiles.render_tool_profiles(("flint-chart",)))
+        self.assertIn("ChartAssemblyInput", profiles.render_tool_profiles(("flint-chart",)))
+        self.assertIn("flint-chart-mcp:", profiles.render_tool_profiles(("flint-chart-mcp",)))
+        self.assertIn("--disable-file-reference", profiles.render_tool_profiles(("flint-chart-mcp",)))
         self.assertIn("micropython-wasm:", profiles.render_tool_profiles(("micropython-wasm",)))
         self.assertIn("MicroPythonSession", profiles.render_tool_profiles(("micropython-wasm",)))
         self.assertIn("ponytail-agent-rules:", profiles.render_tool_profiles(("ponytail-agent-rules",)))
@@ -128,6 +135,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("playwright-cli --help", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("ponytail-agent-rules", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("setup-python-guardrails", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("https://github.com/microsoft/flint-chart/blob/main/agent-skills/flint-chart-author/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
 
 
 def _all_profile_options() -> GenerationOptions:

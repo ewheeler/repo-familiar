@@ -138,7 +138,7 @@ This first skeleton uses `questionary` for optional interaction and keeps templa
 
 Generated repositories should receive vendored copies of the selected assets by default. Each generated repository should also include `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version used to create it. Live synchronization can come later as an explicit upgrade command, but initial bootstraps should be stable and self-contained.
 
-When `opencode` is selected as an agent harness, the template also writes `opencode.json` so OpenCode discovers vendored skills under `.agents/skills`. Optional OpenCode MCP entries can be included by selecting tool profiles such as `opencode-playwright-mcp`, `opencode-cq-mcp`, or `opencode-context7-mcp`. These MCP profiles use non-secret defaults only; API keys and machine-specific executable paths should stay in environment variables or user-level config.
+When `opencode` is selected as an agent harness, the template also writes `opencode.json` so OpenCode discovers vendored skills under `.agents/skills`. Optional OpenCode MCP entries can be included by selecting tool profiles such as `opencode-playwright-mcp`, `opencode-flint-chart-mcp`, `opencode-cq-mcp`, or `opencode-context7-mcp`. These MCP profiles use non-secret defaults only; API keys and machine-specific executable paths should stay in environment variables or user-level config.
 
 The first bootstrap metadata schema should stay small:
 

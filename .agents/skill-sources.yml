@@ -33,6 +33,17 @@ skills:
       - "For source installs outside repo-familiar, run `npx skills@latest add mattpocock/skills`"
     verify:
       - "Confirm `.agents/skills/diagnose/SKILL.md` exists after generation or bootstrap"
+  flint-chart-author:
+    source_type: "external"
+    source_url: "https://github.com/microsoft/flint-chart/blob/main/agent-skills/flint-chart-author/SKILL.md"
+    notes: "Vendored from Microsoft Flint Chart authoring skill for semantic chart spec guidance."
+    setup:
+      - "Select with repo-familiar using `--skill flint-chart-author` when generating or bootstrapping a repository"
+      - "Use the `flint-chart` tool profile for library integration guidance"
+      - "Use the `flint-chart-mcp` and harness-specific MCP profiles when agents should render or validate charts through MCP"
+    verify:
+      - "Confirm `.agents/skills/flint-chart-author/SKILL.md` exists after generation or bootstrap"
+      - "Ask a skill-capable agent to author a ChartAssemblyInput for a simple two-column bar chart"
   get-api-docs:
     source_type: "external"
     source_url: "https://github.com/andrewyng/context-hub/blob/main/cli/skills/get-api-docs/SKILL.md"
