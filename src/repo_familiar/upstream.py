@@ -16,6 +16,7 @@ class UpstreamCandidateDiff:
     current_sha256: str | None = None
     current_reference_sha256: str | None = None
     current_reference_status: str = "not_checked"
+    strategy: str = "unavailable"
 
 
 @dataclass(frozen=True)

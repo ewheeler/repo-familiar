@@ -76,7 +76,18 @@ Preview upgrade readiness without writing files:
 ```bash
 uv run python -m repo_familiar upgrade --path /path/to/repo
 uv run python -m repo_familiar upgrade --path /path/to/repo --format json
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --preview
 ```
+
+Apply the currently supported safe refresh slice after reviewing the preview:
+
+```bash
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --apply
+```
+
+Skills apply replaces vendored skill files only when their downstream content still matches the checksum recorded at bootstrap. It also adds newly introduced support files for selected skills and refreshes `.agents/skill-sources.yml` plus `.repo-familiar/bootstrap.yml`. Locally modified skills are reported for review and left untouched.
+
+When the downstream path is in Git, apply refuses a dirty worktree by default. Commit or stash first; `--allow-dirty` is an explicit escape hatch. A clean Reference Source checkout contributes its current commit to bootstrap metadata automatically. Packaged installs use the repo-familiar version; use `--reference-ref <commit-or-tag>` to provide a specific source identity. Removed or renamed skill assets are blocked for manual review rather than deleted. The write batch is staged and rolls back completed replacements when an apply error occurs.
 
 Get recommendations for an existing repository before bootstrapping:
 
@@ -331,9 +342,9 @@ Generated asset records include `content_sha256` for drift detection. The metada
 
 `diff-upstream-candidate` is read-only. It classifies recorded generated assets as unchanged, modified, missing, or unchecked and adds a recommendation such as `review-for-upstream-improvement`, `review-profile-improvement`, `review-private-or-local-only`, or `restore-generated-asset`. Current Reference Source comparison is advisory; template-variable-heavy assets may report `reference-may-have-changed` until Bootstrap Metadata records richer template context.
 
-`upgrade` is read-only in the current implementation. It reports assets that would need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade. It deliberately reports no safe auto-apply path until Bootstrap Metadata records enough template context for exact rendered comparisons.
+`upgrade` remains read-only by default. `--asset-group skills --apply` is the only write-capable path: it refreshes unchanged vendored skills and missing support files, then updates provenance and checksums. Other groups report strategies such as mapping merge, line union, heading merge, JSON merge, or manual review without writing.
 
-The next upgrade evolution should be an explicit selected-asset refresh, not automatic sync. A future `upgrade --preview` or `refresh-selected-assets --preview` should compare selected generated assets, skill templates, profile output, and skill-source provenance against the current Reference Source. Apply mode should stay opt-in and conservative: auto-update only unchanged generated files, use line-union `.gitignore` merges, preview `AGENTS.md` heading merges, and default `README.md`/`plan.md` to manual review. See [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md) for the reference-source design note that explains why current metadata is enough for read-only checks but not safe refresh writes.
+The next upgrade evolution should extend the existing strategy previews into narrowly scoped apply behavior, not automatic sync. Profile YAML should use mapping-aware merges, `.gitignore` should use line union, `AGENTS.md` should use heading-aware merge previews, `opencode.json` should use JSON merge previews, and `README.md`, docs prose, and `plan.md` should remain manual-review by default. See [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md).
 
 `resolve-conflicts` is also read-only. It previews merge strategies for conflicted files, starting with Markdown heading suggestions for `AGENTS.md` and line-union suggestions for `.gitignore`.
 

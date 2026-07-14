@@ -3,10 +3,13 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable
 from dataclasses import dataclass
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 
+from . import __version__
 from . import profiles
 from .generator import (
     ExistingBootstrapOptions,
@@ -43,7 +46,7 @@ from .interactive import (
 from .metadata import GeneratedAsset, load_bootstrap_metadata
 from .skill_sources import check_skill_sources
 from .upstream import diff_upstream_candidate
-from .upgrade import preview_upgrade
+from .upgrade import apply_upgrade, preview_upgrade
 
 
 @dataclass(frozen=True)
@@ -313,8 +316,14 @@ def build_parser() -> argparse.ArgumentParser:
     diff_upstream.add_argument("--path", required=True, type=Path, help="generated or bootstrapped repository path")
     diff_upstream.add_argument("--format", choices=("text", "json"), default="text")
 
-    upgrade = subparsers.add_parser("upgrade", help="preview a read-only generated asset upgrade report")
+    upgrade = subparsers.add_parser("upgrade", help="preview upgrades or apply the safe skills refresh slice")
     upgrade.add_argument("--path", required=True, type=Path, help="generated or bootstrapped repository path")
+    _add_asset_group_argument(upgrade)
+    upgrade_mode = upgrade.add_mutually_exclusive_group()
+    upgrade_mode.add_argument("--preview", action="store_true", help="preview refresh candidates without writing (default)")
+    upgrade_mode.add_argument("--apply", action="store_true", help="apply safe refresh candidates; currently skills only")
+    upgrade.add_argument("--reference-ref", default=None, help="current Reference Source commit, tag, or version recorded on apply")
+    upgrade.add_argument("--allow-dirty", action="store_true", help="allow apply in a dirty Git worktree")
     upgrade.add_argument("--format", choices=("text", "json"), default="text")
 
     skill_sources = subparsers.add_parser("check-skill-sources", help="compare vendored skills with recorded upstream sources")
@@ -694,12 +703,29 @@ def _diff_upstream_candidate(args: argparse.Namespace) -> int:
 
 
 def _upgrade(args: argparse.Namespace) -> int:
+    asset_groups = tuple(args.asset_groups or ("all",))
     try:
-        report = preview_upgrade(args.path, _current_reference_assets(args.path))
+        current_plan = _current_reference_plan(args.path)
+        if args.apply:
+            result = apply_upgrade(
+                args.path,
+                {asset.path: asset for asset in current_plan},
+                asset_groups=asset_groups,
+                reference_ref=args.reference_ref or _current_reference_ref(),
+                allow_dirty=args.allow_dirty,
+            )
+            report = result.report
+        else:
+            result = None
+            report = preview_upgrade(
+                args.path,
+                {asset.path: asset.as_generated_asset() for asset in current_plan},
+                asset_groups=asset_groups,
+            )
     except (FileNotFoundError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
-    _print_upgrade_or_json(report, args.format)
+    _print_upgrade_or_json(report, args.format, written_paths=result.written_paths if result else ())
     return 0
 
 
@@ -714,10 +740,15 @@ def _check_skill_sources(args: argparse.Namespace) -> int:
 
 
 def _current_reference_assets(path: Path) -> dict[str, GeneratedAsset]:
+    return {asset.path: asset.as_generated_asset() for asset in _current_reference_plan(path)}
+
+
+def _current_reference_plan(path: Path) -> list[PlannedAsset]:
     metadata = load_bootstrap_metadata(path / BOOTSTRAP_METADATA_PATH)
+    project_name, project_description = _downstream_render_identity(path, metadata)
     options = GenerationOptions(
-        name=path.name,
-        description="Generated with repo-familiar.",
+        name=project_name,
+        description=project_description,
         output_dir=path,
         template=metadata.selected_template,
         docs=metadata.docs,
@@ -734,7 +765,11 @@ def _current_reference_assets(path: Path) -> dict[str, GeneratedAsset]:
         design_profiles=metadata.selected_options.get("design_profiles", ()),
         worktree_profiles=metadata.selected_options.get("worktree_profiles", ()),
         public_interest_profiles=metadata.selected_options.get("public_interest_profiles", ()),
-        skills=metadata.selected_options.get("skills", ("grill-with-docs",)),
+        skills=tuple(
+            skill
+            for skill in metadata.selected_options.get("skills", ("grill-with-docs",))
+            if skill in list_skills()
+        ),
         reference_type=metadata.reference_type,
         reference_url=metadata.reference_url,
         reference_ref=metadata.reference_ref,
@@ -743,7 +778,49 @@ def _current_reference_assets(path: Path) -> dict[str, GeneratedAsset]:
         bootstrap_mode=metadata.bootstrap_mode,
         dry_run=True,
     )
-    return {asset.path: asset.as_generated_asset() for asset in plan_project(options)}
+    return plan_project(options)
+
+
+def _current_reference_ref() -> str:
+    source_root = Path(__file__).resolve().parents[2]
+    if not (source_root / ".git").exists():
+        return f"repo-familiar@{__version__}"
+    try:
+        status = subprocess.run(
+            ["git", "-C", str(source_root), "status", "--porcelain", "--untracked-files=all"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        if status.stdout.strip():
+            raise ValueError(
+                "Reference Source worktree is dirty; commit its changes or pass an explicit --reference-ref"
+            )
+        result = subprocess.run(
+            ["git", "-C", str(source_root), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError) as error:
+        raise ValueError(f"Unable to verify Reference Source provenance: {error}") from error
+    return result.stdout.strip() or f"repo-familiar@{__version__}"
+
+
+def _downstream_render_identity(path: Path, metadata) -> tuple[str, str]:
+    fallback = (path.name, "Generated with repo-familiar.")
+    readme_asset = next((asset for asset in metadata.generated_assets if asset.path == "README.md"), None)
+    readme_path = path / "README.md"
+    if not readme_asset or not readme_asset.content_sha256 or not readme_path.is_file() or readme_path.is_symlink():
+        return fallback
+    content = readme_path.read_text()
+    if hashlib.sha256(content.encode()).hexdigest() != readme_asset.content_sha256:
+        return fallback
+    lines = content.splitlines()
+    if not lines or not lines[0].startswith("# "):
+        return fallback
+    description = next((line for line in lines[1:] if line.strip()), fallback[1])
+    return lines[0][2:].strip(), description.strip()
 
 
 def _bootstrap_existing(args: argparse.Namespace, guidance: TargetedAddGuidance | None = None) -> int:
@@ -966,7 +1043,7 @@ def _print_upstream_diff_or_json(report, output_format: str) -> None:
 def _print_upstream_diff_items(label: str, items) -> None:
     print(f"{label}: {len(items)}")
     for item in items:
-        print(f"- {item.asset.path} ({item.asset.kind}) {item.recommendation}")
+        print(f"- {item.asset.path} ({item.asset.kind}) {item.recommendation}; strategy={item.strategy}")
 
 
 def _upstream_diff_to_dict(report) -> dict:
@@ -990,6 +1067,7 @@ def _upstream_diff_item_to_dict(item) -> dict:
     payload["status"] = item.status
     payload["recommendation"] = item.recommendation
     payload["current_reference_status"] = item.current_reference_status
+    payload["strategy"] = item.strategy
     if item.current_sha256:
         payload["current_sha256"] = item.current_sha256
     if item.current_reference_sha256:
@@ -997,11 +1075,14 @@ def _upstream_diff_item_to_dict(item) -> dict:
     return payload
 
 
-def _print_upgrade_or_json(report, output_format: str) -> None:
+def _print_upgrade_or_json(report, output_format: str, *, written_paths: tuple[str, ...] = ()) -> None:
     if output_format == "json":
-        print(json.dumps(_upgrade_to_dict(report), indent=2))
+        payload = _upgrade_to_dict(report)
+        payload["written_paths"] = list(written_paths)
+        print(json.dumps(payload, indent=2))
         return
     print(f"Upgrade preview: {report.path}")
+    print(f"Asset groups: {', '.join(report.asset_groups)}")
     print(
         "Summary: "
         f"{len(report.safe_to_auto_apply)} safe_to_auto_apply, "
@@ -1011,6 +1092,11 @@ def _print_upgrade_or_json(report, output_format: str) -> None:
     )
     for note in report.notes:
         print(f"- {note}")
+    if written_paths:
+        print(f"Applied: {len(written_paths)} assets")
+        for path in written_paths:
+            print(f"- {path}")
+    _print_upstream_diff_items("Safe to auto apply", report.safe_to_auto_apply)
     _print_upstream_diff_items("Needs user review", report.needs_user_review)
     _print_upstream_diff_items("Blocked", report.blocked)
 
@@ -1018,6 +1104,7 @@ def _print_upgrade_or_json(report, output_format: str) -> None:
 def _upgrade_to_dict(report) -> dict:
     return {
         "path": str(report.path),
+        "asset_groups": list(report.asset_groups),
         "summary": {
             "safe_to_auto_apply": len(report.safe_to_auto_apply),
             "needs_user_review": len(report.needs_user_review),

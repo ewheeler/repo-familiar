@@ -18,7 +18,7 @@ The primary product is a project generator for downstream repositories. This rep
 
 ## Current Status
 
-The first Python generator is implemented with `uv`-first CLI usage, optional `questionary` interaction, the `basic` template, generated Bootstrap Metadata, existing-repository bootstrap, targeted add commands, drift checks, read-only upgrade previews, and skill source provenance checks.
+The first Python generator is implemented with `uv`-first CLI usage, optional `questionary` interaction, the `basic` template, generated Bootstrap Metadata, existing-repository bootstrap, targeted add commands, drift checks, preview-first upgrades with a safe skills-only apply slice, and skill source provenance checks.
 
 Generated and bootstrapped repositories receive vendored assets by default. Refresh and upgrade behavior remains explicit and preview-first rather than live synchronization.
 

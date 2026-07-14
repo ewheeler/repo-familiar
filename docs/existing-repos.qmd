@@ -123,15 +123,19 @@ uv run python -m repo_familiar add-skill --path /path/to/repo --skill upstream-i
 uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
 ```
 
-Use `upgrade` to preview upgrade readiness without writing files:
+Use `upgrade` to preview upgrade readiness. Preview selected skills before applying:
 
 ```bash
 uv run python -m repo_familiar upgrade --path /path/to/repo
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --preview
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --apply
 ```
 
-The current `upgrade` command is read-only. It reports assets that need user review, assets that block a future write-capable upgrade, and assets that are unavailable for upgrade until richer template context is recorded.
+The default `upgrade` command is read-only. Skills are the first write-capable slice: apply refreshes unchanged vendored skills, adds missing support files, and updates skill-source and bootstrap metadata. It never overwrites a locally modified skill.
 
-Future refresh behavior should remain explicit rather than live sync. The intended next evolution is a preview-first `upgrade` or `refresh-selected-assets` workflow that compares selected generated assets, skill templates, profile output, and `.agents/skill-sources.yml` provenance against the current Reference Source. Apply mode should be opt-in, scoped by asset group, and conservative: update unchanged generated files, line-union `.gitignore`, preview heading-based `AGENTS.md` merges, and keep `README.md`/`plan.md` manual-review by default. For the Metadata v2 concepts and safety boundaries behind that future workflow, see [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md).
+Run apply from a clean downstream Git worktree. Use `--allow-dirty` only when preserving unrelated working changes is intentional. Bootstrap metadata records the current clean Reference Source commit or installed repo-familiar version; `--reference-ref` can supply an explicit commit or tag. Removed-reference assets are reported as blocked and retained. Staged writes roll back if the apply batch fails.
+
+Future refresh behavior remains explicit rather than live sync. Non-skill groups currently expose conservative strategy previews only: mapping-aware profile merges, line-union `.gitignore`, heading-aware `AGENTS.md`, JSON-aware `opencode.json`, and manual review for docs prose, `README.md`, and `plan.md`. For the Metadata v2 concepts and safety boundaries behind broader write support, see [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md).
 
 For Reference Source maintenance, use `check-skill-sources` before refreshing vendored skills. It compares recorded GitHub skill source URLs with local vendored skills and reports missing support files without writing changes.
 

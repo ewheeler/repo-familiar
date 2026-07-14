@@ -302,7 +302,16 @@ uv run python -m repo_familiar check --path /path/to/repo --format json
 
 Use `diff-upstream-candidate` to classify generated asset changes before proposing reusable improvements back to this Reference Source. Pair it with the `upstream-improvement` skill so private details and local-only changes are filtered before any upstream PR is drafted.
 
-Use `upgrade` as a read-only readiness preview before any future write-capable upgrade. It reports user-review items, blockers, and unavailable update candidates without changing files.
+Use `upgrade` without `--apply` as a read-only readiness preview. The first write-capable slice is skills-only:
+
+```bash
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --preview
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --apply
+```
+
+Apply replaces only unchanged vendored skills, adds missing support files, and updates `.agents/skill-sources.yml` plus `.repo-familiar/bootstrap.yml`. Modified downstream skills remain untouched. Docs, profile, and template assets expose merge strategies in preview but are not write-capable yet.
+
+Skills apply requires a clean downstream Git worktree when the target is in Git; use `--allow-dirty` only after deliberately reviewing unrelated changes. The command records the current clean Reference Source commit automatically for editable/source checkouts, or the installed repo-familiar version for packaged installs. Use `--reference-ref <commit-or-tag>` when the source identity must be supplied explicitly. Removed or renamed upstream skill assets are reported as blocked review items and are never deleted automatically. Writes are staged and rolled back if replacement fails before the batch completes.
 
 Future refresh behavior should stay explicit rather than becoming live sync. The intended next evolution is a read-first `upgrade`/`refresh-selected-assets --preview` workflow that compares selected generated assets, skill templates, profile output, and `.agents/skill-sources.yml` provenance against the current Reference Source. Apply mode should be opt-in, asset-group scoped, and safe by default: update only unchanged generated files automatically, merge `.gitignore` by line union, preview `AGENTS.md` heading merges, and leave `README.md`/`plan.md` for manual review unless the user explicitly chooses otherwise.
 
@@ -397,4 +406,4 @@ Current skill sources and adjacent tooling:
 - Keep `string.Template` until prompt or project templates need Banks or a broader generator framework.
 - Add more model profiles and harness-specific adapters.
 - Dogfood on real existing repositories and capture any schema or advice gaps.
-- Design write-capable upgrade behavior after read-only upgrade previews prove the metadata contract.
+- Extend write-capable upgrade behavior beyond the safe skills slice after strategy previews prove the metadata contract.

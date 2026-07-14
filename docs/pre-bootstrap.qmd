@@ -123,11 +123,20 @@ Pair this with the `upstream-improvement` skill before copying any downstream ch
 
 ## 8. Preview Upgrade Readiness
 
-Before any future write-capable upgrade, use the read-only preview:
+Before refreshing a previously bootstrapped repository, use the read-only preview:
 
 ```bash
 uv run python -m repo_familiar upgrade --path /path/to/repo
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --preview
 ```
+
+Apply only after reviewing the skills preview:
+
+```bash
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --apply
+```
+
+The current apply path updates only unchanged vendored skills and missing support files. Other asset groups remain preview-only.
 
 The current command does not write files. It reports user-review items, blockers, and unavailable update candidates.
 

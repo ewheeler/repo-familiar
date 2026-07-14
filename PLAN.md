@@ -259,7 +259,7 @@ Acceptance criteria:
 
 ### 6. Design Explicit Upgrade Behavior
 
-Status: read-only preview implemented; write-capable upgrades remain future work.
+Status: preview implemented; first skills-only write slice implemented.
 
 - Define what an upgrade command may update. Started with read-only readiness categories: `safe_to_auto_apply`, `needs_user_review`, `blocked`, and `unavailable`.
 - Decide whether to add checksums or content fingerprints to `generated_assets`. Done with `content_sha256` for non-metadata assets.
@@ -271,9 +271,10 @@ Acceptance criteria:
 - Upgrade behavior is explicit and opt-in.
 - User edits are never overwritten silently.
 - Bootstrap metadata remains sufficient to reason about old generated repositories.
-- Current `upgrade` command is read-only and writes no files.
-- No safe auto-apply path is exposed until Bootstrap Metadata records enough template context for exact rendered comparisons.
-- Next evolution: add an explicit `refresh-selected-assets` or expanded `upgrade --preview/--apply` workflow that compares selected generated assets against current Reference Source output, separates safe unchanged assets from local edits, and never overwrites local changes silently.
+- Current `upgrade` command is read-only by default. `--asset-group skills --apply` refreshes only unchanged vendored skills and missing support files, then updates skill-source and bootstrap metadata.
+- Skills apply records the current Reference Source ref/version, blocks removed-reference assets, refuses dirty Git worktrees unless explicitly overridden, and stages writes with rollback on failure.
+- No apply path is exposed for docs, profiles, or template-heavy assets until their preview strategies have sufficient comparison context.
+- Next evolution: implement the reported mapping, line-union, heading, and JSON merge strategies one asset group at a time without overwriting local changes silently.
 - Refresh strategies should be asset-aware: skills update only when unchanged from recorded checksums, `.agents/*.yml` can merge profile keys when safe, `.agents/skill-sources.yml` can refresh provenance when unmodified, `AGENTS.md` should use heading-based merge preview, `.gitignore` should use line-union merge, and `README.md`/`plan.md` should remain manual-review by default.
 
 ### 6a. Track External Skill Source Drift

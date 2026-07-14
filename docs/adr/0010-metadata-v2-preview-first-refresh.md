@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted as a reference-source design note for future refresh work. This ADR does not change the current read-only behavior of `upgrade`, `diff-upstream-candidate`, or existing bootstrap commands.
+Accepted and partially implemented. `upgrade --asset-group skills --apply` implements the first conservative write slice; other asset groups remain preview-only.
 
 ## Context
 
@@ -12,7 +12,7 @@ Bootstrap Metadata v1 deliberately stays small. `schema_version`, `reference_sou
 - Which selected options and source paths produced those assets?
 - Has a recorded asset drifted, gone missing, or become hard to compare?
 
-That is enough for `check`, for advisory `diff-upstream-candidate` output, and for today's read-only `upgrade` report. It is not enough for safe write-capable refresh because v1 cannot reliably reconstruct the original render basis for every asset or distinguish between assets that were generated, adopted, skipped, or left in conflict.
+That is enough for `check`, advisory `diff-upstream-candidate` output, and a narrow skills refresh because vendored skill files are deterministic copies with recorded checksums. It is not enough for broad write-capable refresh because v1 cannot reliably reconstruct the original render basis for every template asset or distinguish between assets that were generated, adopted, skipped, or left in conflict.
 
 ## Why Metadata V1 Is Enough For Read-Only Checks
 
@@ -131,6 +131,8 @@ Preview output should show, for each asset:
 
 Apply must remain narrower than preview. It should require explicit user intent, stay scoped by asset or asset group, and refuse to silently escalate from "manual review" or "conflict" into overwrite behavior.
 
+The implemented skills slice additionally requires a clean downstream Git worktree by default, records the current Reference Source commit/version, blocks removed-reference assets instead of deleting them, and stages the write set with rollback on apply failure. `--allow-dirty` and `--reference-ref` are explicit overrides rather than inferred behavior.
+
 ## Safety Boundaries
 
 Metadata v2 and future refresh work must preserve the existing product boundary:
@@ -143,7 +145,7 @@ Metadata v2 and future refresh work must preserve the existing product boundary:
 
 ## Consequences
 
-- `check`, `diff-upstream-candidate`, and `upgrade` stay read-only until metadata can justify narrower write behavior.
+- `check` and `diff-upstream-candidate` stay read-only. `upgrade` may write only within an explicitly supported asset-group strategy; skills are the first supported group.
 - Future implementation should add Metadata v2 fields only when preview/apply behavior needs them, not preemptively.
 - Lifecycle and upgrade docs should point maintainers to this ADR instead of re-explaining the full design in every command page.
 
