@@ -547,6 +547,7 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
         "selected_privacy_profiles_list": _markdown_list(options.privacy_profiles),
         "repomap_profiles_yaml": profile_registry.render_advisory_profiles(profile_registry.REPOMAP_PROFILES, options.repomap_profiles),
         "selected_repomap_profiles_list": _markdown_list(options.repomap_profiles),
+        "repository_routing_section": _repository_routing_section(options.repomap_profiles),
         "sandbox_profiles_yaml": profile_registry.render_advisory_profiles(profile_registry.SANDBOX_PROFILES, options.sandbox_profiles),
         "selected_sandbox_profiles_list": _markdown_list(options.sandbox_profiles),
         "secrets_profiles_yaml": profile_registry.render_advisory_profiles(profile_registry.SECRETS_PROFILES, options.secrets_profiles),
@@ -608,6 +609,18 @@ def _write_text(path: Path, content: str, *, force: bool) -> None:
 
 def _markdown_list(values: tuple[str, ...]) -> str:
     return "\n".join(f"- `{value}`" for value in values)
+
+
+def _repository_routing_section(repomap_profiles: tuple[str, ...]) -> str:
+    if "semantic-routing-map" not in repomap_profiles:
+        return ""
+    return """
+## Repository Routing
+
+- Read `docs/agents/repository-map.md` before broad code search or architectural work when the map exists.
+- Keep the map selective: record semantic ownership, high-leverage seams, adjacent tests, and generated boundaries rather than an exhaustive tree.
+- Update the map in the same change that moves ownership or adds a high-leverage interface.
+"""
 
 
 def _slugify(value: str) -> str:

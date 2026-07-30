@@ -178,6 +178,14 @@ skills:
       - "For source installs outside repo-familiar, copy the matching skill from omega-memory/omega-skills"
     verify:
       - "Confirm `.agents/skills/qa-test-design/SKILL.md` exists after generation or bootstrap"
+  repository-map:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for selective semantic repository routing maps."
+    setup:
+      - "Select with repo-familiar using `--skill repository-map` when generating or bootstrapping a repository"
+    verify:
+      - "Confirm `.agents/skills/repository-map/SKILL.md` exists after generation or bootstrap"
   rodney-browser:
     source_type: "local-adapted"
     source_url: "https://github.com/simonw/rodney"

@@ -38,8 +38,10 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("flint-chart-author", profiles.list_names(profiles.SKILLS))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
         self.assertIn("ponytail", profiles.list_names(profiles.SKILLS))
+        self.assertIn("repository-map", profiles.list_names(profiles.SKILLS))
         self.assertIn("setup-python-guardrails", profiles.list_names(profiles.SKILLS))
         self.assertIn("session-focus", profiles.list_names(profiles.SKILLS))
+        self.assertIn("semantic-routing-map", profiles.list_names(profiles.REPOMAP_PROFILES))
 
     def test_validates_profile_selections(self) -> None:
         profiles.validate_profile_selections(
@@ -79,6 +81,13 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("python-guardrails:", profiles.render_tool_profiles(("python-guardrails",)))
         self.assertIn("pre-commit run --all-files", profiles.render_tool_profiles(("python-guardrails",)))
         self.assertIn("memory-local:", memory)
+        self.assertIn(
+            "project-owned semantic repository routing map",
+            profiles.render_advisory_profiles(
+                profiles.REPOMAP_PROFILES,
+                ("semantic-routing-map",),
+            ),
+        )
         self.assertIn("sandbox-micropython-wasm", profiles.render_advisory_profiles(profiles.SANDBOX_PROFILES, ("sandbox-micropython-wasm",)))
         self.assertIn("sops-age", profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, ("sops-age",)))
 

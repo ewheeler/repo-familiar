@@ -65,7 +65,7 @@ Detailed walkthroughs live in [Existing Repositories](./existing-repos.qmd) and 
 | `safety_profiles` | `list-safety-profiles` | `--safety-profile` | `add-safety` | Writes `.agents/safety.yml`; keep sensitive fixtures sanitized. |
 | `privacy_profiles` | `list-privacy-profiles` | `--privacy-profile` | `add-privacy` | Writes `.agents/privacy.yml`; keep private data out of committed assets. |
 | `public_interest_profiles` | `list-public-interest-profiles` | `--public-interest-profile` | `add-public-interest` | Writes `.agents/public-interest.yml`; use for civic, education, or child-facing work. |
-| `repomap_profiles` | `list-repomap-profiles` | `--repomap-profile` | `add-repomap` | Writes `.agents/repomap.yml`; use for DAG or architecture mapping guidance. |
+| `repomap_profiles` | `list-repomap-profiles` | `--repomap-profile` | `add-repomap` | Writes `.agents/repomap.yml`; use `semantic-routing-map` for a project-owned routing map or `hamilton-dag` for DAG guidance. |
 | `sandbox_profiles` | `list-sandbox-profiles` | `--sandbox-profile` | `add-sandbox` | Writes `.agents/sandbox.yml`; sandbox tooling stays user-installed. |
 | `secrets_profiles` | `list-secrets-profiles` | `--secrets-profile` | `add-secrets` | Writes `.agents/secrets.yml` and, for some profiles, safe scaffolding such as `.env.example`; use `--sops-age-recipient` when the selected profile is `sops-age` and SOPS scaffolding should be generated. |
 | `design_profiles` | `list-design-profiles` | `--design-profile` | `add-design` | Writes `.agents/design.yml`; use for design critique or accessibility guidance. |

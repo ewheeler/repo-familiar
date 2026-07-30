@@ -9,6 +9,7 @@ from repo_familiar.metadata import SELECTED_OPTION_KEYS, load_bootstrap_metadata
 
 
 DOCS_DIR = Path(__file__).resolve().parents[1] / "docs"
+REPO_ROOT = DOCS_DIR.parent
 BOOTSTRAP_LIFECYCLE_DOC = DOCS_DIR / "bootstrap-lifecycle.qmd"
 QUARTO_CONFIG = DOCS_DIR / "_quarto.yml"
 USAGE_DOC = DOCS_DIR / "usage.qmd"
@@ -17,6 +18,7 @@ EXISTING_REPOS_DOC = DOCS_DIR / "existing-repos.qmd"
 PRE_BOOTSTRAP_DOC = DOCS_DIR / "pre-bootstrap.qmd"
 DECISIONS_DOC = DOCS_DIR / "decisions.qmd"
 METADATA_V2_ADR = DOCS_DIR / "adr/0010-metadata-v2-preview-first-refresh.md"
+REPOSITORY_MAP_DOC = DOCS_DIR / "agents/repository-map.md"
 EXAMPLE_BOOTSTRAP_METADATA = (
     Path(__file__).resolve().parents[1]
     / "examples/basic-agentic-project/.repo-familiar/bootstrap.yml"
@@ -61,6 +63,30 @@ def _subcommand_names() -> tuple[str, ...]:
 
 
 class DocsTests(unittest.TestCase):
+    def test_repository_map_routes_key_implementation_seams(self) -> None:
+        content = REPOSITORY_MAP_DOC.read_text()
+        required_paths = {
+            "AGENTS.md",
+            "CONTEXT.md",
+            "PLAN.md",
+            "src/repo_familiar/generator.py",
+            "src/repo_familiar/asset_plan.py",
+            "src/repo_familiar/profiles.py",
+            "src/repo_familiar/metadata.py",
+            "src/repo_familiar/advice.py",
+            "src/repo_familiar/advice_dag.py",
+            "src/repo_familiar/upgrade.py",
+            "tests/test_generator.py",
+            "tests/test_profiles.py",
+            "tests/test_docs.py",
+        }
+
+        for path in required_paths:
+            self.assertTrue((REPO_ROOT / path).exists(), path)
+            self.assertIn(f"`{path}`", content, path)
+        self.assertIn("docs/agents/repository-map.md", (REPO_ROOT / "AGENTS.md").read_text())
+        self.assertIn("agents/repository-map.md", QUARTO_CONFIG.read_text())
+
     def test_generator_doc_lists_all_list_commands(self) -> None:
         content = GENERATOR_DOC.read_text()
 

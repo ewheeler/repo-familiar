@@ -14,7 +14,7 @@ This repository was generated with `repo-familiar`.
 - `.agents/safety.yml` contains selected prompt/output safety guidance.
 - `.agents/privacy.yml` contains selected data and privacy review guidance.
 - `.agents/public-interest.yml` contains selected public-interest digital guidance.
-- `.agents/repomap.yml` contains selected codebase graph guidance.
+- `.agents/repomap.yml` contains selected repository map and codebase graph guidance.
 - `.agents/sandbox.yml` contains selected sandbox guidance.
 - `.agents/secrets.yml` contains selected local environment and secret-loading guidance.
 - `.agents/design.yml` contains selected design guidance.

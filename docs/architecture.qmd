@@ -183,6 +183,8 @@ Planned SkillSpector integration should be another read-only maintenance gate fo
 
 Memory, prompt, safety, privacy, repo-map, sandbox, secrets, design, and worktree profiles are advisory profile families. They are written to `.agents/*.yml` files and recorded by name in bootstrap metadata.
 
+The `semantic-routing-map` profile and `repository-map` skill standardize how a Downstream Repository creates `docs/agents/repository-map.md`. The map itself remains project-owned rather than a Vendored Generated Asset: a static generator cannot infer semantic ownership, and normal architecture maintenance should not create generator-upgrade conflicts.
+
 ## Python Defaults
 
 Python-oriented templates should default to `uv`, Hamilton, Banks, Hydra/OmegaConf, Structlog, fsspec/universal-pathlib, Polars, and Pydantic when those choices fit the project.

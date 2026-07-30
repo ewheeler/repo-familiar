@@ -24,6 +24,7 @@ selected_options:
   privacy_profiles: []
   repomap_profiles:
     - "hamilton-dag"
+    - "semantic-routing-map"
   sandbox_profiles:
     - "sandbox-light"
   secrets_profiles:
@@ -49,7 +50,7 @@ generated_assets:
   - path: ".agents/repomap.yml"
     kind: "template_config"
     source: "templates/basic/.agents/repomap.yml.tmpl"
-    content_sha256: "732d233a39f90f1db49fda553cfbf3e47006876954a72fce756a38077761b7b9"
+    content_sha256: "182883049b7186a5583c77f222abf02dea4899f11a6e2f22ddd76fbd4bc106b9"
   - path: ".agents/sandbox.yml"
     kind: "template_config"
     source: "templates/basic/.agents/sandbox.yml.tmpl"

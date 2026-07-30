@@ -66,6 +66,20 @@ class AdviceTests(unittest.TestCase):
         self.assertIn("public-interest", report.recommended_asset_groups)
         self.assertIn("repomap", report.recommended_asset_groups)
 
+    def test_recommends_semantic_map_for_documented_tested_repositories(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            (repo / "docs").mkdir()
+            (repo / "tests").mkdir()
+            (repo / "CONTEXT.md").write_text("# Context\n")
+            (repo / "plan.md").write_text("# Plan\n")
+
+            report = advise_existing_repository(repo)
+
+        self.assertIn("semantic-routing-map", report.recommended_repomap_profiles)
+        self.assertIn("repository-map", report.recommended_skills)
+        self.assertIn("repomap", report.recommended_asset_groups)
+
     def test_research_advice_includes_model_and_tool_asset_groups(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             repo = Path(tmpdir)

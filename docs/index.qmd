@@ -11,6 +11,7 @@ The primary product is a project generator for downstream repositories. This rep
 
 - How to use the repository to start new projects.
 - Architecture for templates, skills, and generated project assets.
+- [Semantic repository routing](./agents/repository-map.md) for implementation ownership and test locality.
 - Documentation conventions for Quarto sites and generated project docs.
 - Design decisions and tradeoffs.
 - Background research and reference links.

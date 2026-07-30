@@ -57,6 +57,7 @@ Recommended high-value workflow for downstream repositories:
 - Use Impeccable early on user-facing design work. Run `/impeccable teach` or install the skill with `npx skills add pbakaus/impeccable` when the agent harness supports skills; use `npx impeccable detect <path-or-url>` for deterministic design anti-pattern checks. If Impeccable is installed, periodically run `npx impeccable skills update` to refresh the local skill bundle.
 - Use `playwright-cli` or `rodney-browser` for rendered UI, navigation, layout, accessibility-tree, console-error, and screenshot checks. Prefer assertions about visible behavior and geometry over selector existence alone.
 - Use `liteparse` when work depends on local parsing of PDFs, Office documents, spreadsheets, or images. Install the upstream skill with `npx skills add run-llama/llamaparse-agent-skills --skill liteparse` and verify parser availability with `lit --version`.
+- Use `semantic-routing-map` with the `repository-map` skill in mature repositories where module ownership, test locality, or generated boundaries are no longer obvious from the filesystem.
 - For public-interest, child-facing, education, or policy-sensitive work, add `prompt-output-safety`, `privacy-review`, `security-audit`, `a11y-web-scan`, and the relevant public-interest profile before production-maintenance work.
 
 ## New Project Bootstrap

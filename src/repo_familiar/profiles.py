@@ -461,6 +461,21 @@ REPOMAP_PROFILES = {
             "Record node/edge counts and graph fingerprints when using DAGs for regression checks",
             "Use DAG boundaries to choose prompt eval fixtures and review abstraction seams",
         ],
+    },
+    "semantic-routing-map": {
+        "tool": "project-owned semantic repository routing map",
+        "purpose": "route contributors and agents to owning interfaces, architecture seams, tests, and generated boundaries",
+        "verify": [
+            "Confirm `docs/agents/repository-map.md` is linked from repository-level agent instructions",
+            "Confirm referenced repository paths exist or are explicitly marked as proposed",
+        ],
+        "guidance": [
+            "Keep the map selective and semantic rather than copying an exhaustive filesystem tree",
+            "Route changes through owning interfaces, adjacent configuration, and nearest focused tests",
+            "Distinguish implemented behavior from accepted or proposed architecture",
+            "Document durable inputs, generated outputs, and files that must not be hand-edited",
+            "Update the map in the same change that moves ownership or adds a high-leverage seam",
+        ],
     }
 }
 
@@ -696,6 +711,7 @@ SKILLS = {
     "prompt-output-safety": "Review prompts and outputs for unsafe or policy-sensitive behavior",
     "prototype": "Build throwaway prototypes to flush out design questions",
     "qa-test-design": "Design meaningful tests before writing implementation or test code",
+    "repository-map": "Create or refresh a selective semantic repository routing map",
     "rodney-browser": "Use Rodney for persistent Chrome automation, shell-scripted web checks, and accessibility tree queries",
     "scaffold-exercises": "Create exercise directory structures and stubs",
     "security-audit": "Review code, dependencies, secrets, and auth patterns for security risks",
@@ -840,6 +856,11 @@ SKILL_SOURCES = {
         "source_type": "external",
         "source_url": "https://github.com/omega-memory/omega-skills/blob/main/skills/qa-test-design/SKILL.md",
         "notes": "Adapted from omega-memory/omega-skills.",
+    },
+    "repository-map": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for selective semantic repository routing maps.",
     },
     "rodney-browser": {
         "source_type": "local-adapted",

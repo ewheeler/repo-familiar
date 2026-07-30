@@ -73,6 +73,8 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
     public_interest_profiles = _recommended_public_interest_profiles(is_policy_or_education)
     secrets_profiles = _extend(advice_dag.recommended_secrets_profiles(), _recommended_sops_profiles(signals))
     skills = _extend(advice_dag.recommended_skills(has_user_facing_web, has_prompt_dag, safety_profiles, privacy_profiles), _intent_skills(intended_work))
+    if "semantic-routing-map" in repomap_profiles:
+        skills = _extend(skills, ("repository-map",))
     model_profiles = advice_dag.recommended_model_profiles()
     memory_profiles = advice_dag.recommended_memory_profiles()
     asset_groups = _asset_groups_for_recommendations(

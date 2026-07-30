@@ -79,9 +79,12 @@ def recommended_privacy_profiles(is_policy_or_education: bool, has_user_facing_w
 
 
 def recommended_repomap_profiles(has_prompt_dag: bool, signals) -> tuple[str, ...]:
+    profiles = []
+    if signals.has_docs and signals.has_tests:
+        profiles.append("semantic-routing-map")
     if has_prompt_dag or signals.has_python:
-        return ("hamilton-dag",)
-    return ()
+        profiles.append("hamilton-dag")
+    return tuple(profiles)
 
 
 def recommended_sandbox_profiles(recommended_stage: str, signals) -> tuple[str, ...]:

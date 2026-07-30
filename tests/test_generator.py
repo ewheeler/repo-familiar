@@ -110,6 +110,25 @@ class GeneratorTests(unittest.TestCase):
                     )
                 )
 
+    def test_semantic_routing_profile_adds_guidance_without_generating_map(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "demo-project"
+            generate_project(
+                GenerationOptions(
+                    name="Demo Project",
+                    description="A generated demo.",
+                    output_dir=output_dir,
+                    repomap_profiles=("semantic-routing-map",),
+                    skills=("repository-map",),
+                )
+            )
+
+            agents = (output_dir / "AGENTS.md").read_text()
+            self.assertIn("## Repository Routing", agents)
+            self.assertIn("docs/agents/repository-map.md", agents)
+            self.assertTrue((output_dir / ".agents/skills/repository-map/SKILL.md").exists())
+            self.assertFalse((output_dir / "docs/agents/repository-map.md").exists())
+
     def test_dry_run_does_not_write_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "demo-project"
