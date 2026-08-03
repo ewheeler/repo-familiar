@@ -19,6 +19,7 @@ project:
     - naming.qmd
     - decisions.qmd
     - research.qmd
+    - writing-style-skills-assessment.qmd
     - user-stories.qmd
     - adr/0001-project-generator-as-primary-product.md
     - adr/0002-vendor-generated-assets-by-default.md
@@ -87,7 +88,10 @@ website:
           - adr/0008-named-model-profile-schema.md
           - adr/0009-existing-repository-bootstrap.md
           - adr/0010-metadata-v2-preview-first-refresh.md
-      - research.qmd
+      - section: Research
+        contents:
+          - research.qmd
+          - writing-style-skills-assessment.qmd
       - user-stories.qmd
   page-footer:
     left: "Personal agentic engineering notes."

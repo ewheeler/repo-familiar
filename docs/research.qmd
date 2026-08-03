@@ -19,6 +19,10 @@ title: "Research"
 - [unicef/design.md](https://github.com/unicef/design.md)
 - [impeccable.style](https://impeccable.style/)
 
+## Assessments
+
+- [Writing Style Skill Assessment](./writing-style-skills-assessment.qmd): evaluates SimpleEnglish and Economist Style as optional skills for downstream repositories.
+
 ## Research Questions
 
 - Which setup choices should be universal, and which should be selected interactively per project?

@@ -1,0 +1,198 @@
+---
+title: "Writing Style Skill Assessment"
+description: "Assessment of SimpleEnglish and economist-style as optional skills for downstream repositories."
+date: "2026-08-03"
+---
+
+This page assesses two external writing aids as optional **Vendored Generated Assets** for **Downstream Repositories**:
+
+- [AminBlg/SimpleEnglish](https://github.com/AminBlg/SimpleEnglish)
+- [TAJD/economist-style-guide-plugin](https://github.com/TAJD/economist-style-guide-plugin)
+
+The assessment covers product fit, writing quality, evidence, maturity, maintenance, licensing, security, prompt safety, context cost, and conflicts between the two skills. Repository metadata and upstream content were reviewed on August 3, 2026.
+
+## Recommendation
+
+| Candidate | Potential value | Adoption readiness | Recommendation |
+|---|---:|---:|---|
+| SimpleEnglish | 8/10 | 5/10 | Include after fixes or as a reviewed adaptation |
+| Economist Style | 6/10 | 4/10 | Defer pending evaluation and provenance review |
+
+Both candidates are task-level agent skills. Neither requires a runtime tool, MCP server, repository configuration, or new advisory profile family. If adopted, expose them through the existing skill selector and vendor their reviewed files under `.agents/skills/`.
+
+Neither skill should be selected by default. The presence of Markdown, Quarto, or other documentation is not enough evidence that a **Downstream Repository** wants a restrictive house style.
+
+## Product Fit
+
+### Best representation
+
+Use selectable skills rather than Tool Profiles:
+
+- `simple-english` for controlled technical writing, procedures, runbooks, error messages, incident reports, and translation preparation.
+- `economist-style` for explicitly requested editorial review of articles, policy briefs, blogs, and narrative prose.
+
+Do not vendor the Economist Claude Code marketplace or plugin wrapper. Its `SKILL.md` and reference files can use the same agent-agnostic `.agents/skills/` delivery model as other repo-familiar skills.
+
+Do not add a writing advisory profile family yet. Two optional skills do not justify another CLI family, generated YAML file, or metadata field. A category label in skill catalog output would be sufficient if discovery needs improvement later.
+
+### Selection and precedence
+
+The two skills overlap on clarity, brevity, active voice, jargon, filler, and vague claims. They also conflict on important rules:
+
+- SimpleEnglish requires American spelling; Economist Style detects and preserves the document dialect.
+- SimpleEnglish imposes hard sentence limits, bans semicolons and several modals, and restricts verb forms.
+- Economist Style preserves more editorial discretion and applies publication-specific punctuation, date, number, and honorific conventions.
+- SimpleEnglish intentionally produces flat procedural prose; Economist Style aims for a broader editorial voice.
+
+Do not activate both on the same passage without explicit precedence. SimpleEnglish should own controlled technical instructions. Economist Style should own explicitly requested editorial prose. If a sequential review is requested, apply Economist Style first and SimpleEnglish last so controlled-language constraints win.
+
+## SimpleEnglish
+
+### Scope
+
+SimpleEnglish adapts ASD-STE100 Simplified Technical English for software documentation. Its main skill defines pragmatic and strict modes, procedural and descriptive classifications, 53 paraphrased rules, vocabulary guidance, examples, and a final self-check. Supporting references cover a review checklist and software-specific use cases.
+
+The strongest use cases for **Downstream Repositories** are:
+
+- Operational runbooks and standard operating procedures
+- Error messages and troubleshooting instructions
+- API guides and release notes
+- Incident reports and status updates
+- Agent instructions where conditions and commands must be unambiguous
+- Documentation prepared for translation or non-native English readers
+
+It explicitly excludes marketing, brand writing, and blog voice.
+
+### Strengths
+
+- **Clear, testable constraints.** Sentence limits, condition-first commands, one instruction per sentence, terminology consistency, and untouchable code spans are more actionable than a generic request to "write clearly."
+- **Strong technical-documentation fit.** Runbooks and error messages benefit directly from short commands, explicit conditions, and reduced ambiguity.
+- **Portable delivery.** The vendorable skill subtree contains only Markdown. It has no runtime dependency, network call, script, secret access, or harness-specific plugin requirement.
+- **Identifier protection.** The skill tells agents not to alter code blocks, identifiers, commands, paths, configuration keys, product names, or quoted errors.
+- **Transparent evidence.** Upstream commits raw outputs, scenarios, a deterministic linter, and methodology caveats rather than reporting only favorable examples.
+- **Measured improvement.** The published benchmark reports 72.9% fewer mechanically detected STE violations across six Claude models and eight tasks, with shorter output from all six models.
+- **License and disclaimer.** The repository uses the MIT license and identifies the project as unofficial, not endorsed by ASD or STEMG, and unable to certify STE compliance.
+
+### Weaknesses and risks
+
+- **Very low maturity.** The repository was created on July 21, 2026. At review time it had one contributor, nine commits, no tagged release, six open issues, and four open pull requests.
+- **Known correctness disputes.** Issues [#3](https://github.com/AminBlg/SimpleEnglish/issues/3) and [#4](https://github.com/AminBlg/SimpleEnglish/issues/4) report incorrect or misleading strict-mode vocabulary and part-of-speech guidance.
+- **Broken internal reference.** Issues [#2](https://github.com/AminBlg/SimpleEnglish/issues/2) and [#7](https://github.com/AminBlg/SimpleEnglish/issues/7) report that `references/checklist.md` points to a nonexistent `rules.md` instead of `SKILL.md`.
+- **Factuality guardrail is incomplete.** The current skill does not state strongly enough that a rewrite must preserve every source fact and must not invent causes, metrics, times, identifiers, commands, outcomes, or requirements. Open pull request [#10](https://github.com/AminBlg/SimpleEnglish/pull/10) proposes this guardrail and two vocabulary corrections.
+- **Limited benchmark design.** The 96 runs are one generation per model, task, and condition. They test Claude models only. The regex linter measures rules that closely match the skill and does not test comprehension, factual preservation, passive voice, or full vocabulary compliance.
+- **Context cost.** The main `SKILL.md` is 18,477 bytes and the full skill subtree is about 25.5KB. This is acceptable for explicit use, but expensive for broad automatic activation.
+- **Broad trigger language.** Phrases such as "make this readable" can activate controlled language when the user only wants a light edit.
+- **Installer telemetry concern.** Upstream issue [#1](https://github.com/AminBlg/SimpleEnglish/issues/1) objects to telemetry in the external `npx skills` installer. Static repo-familiar vendoring avoids this installer and should not copy its command into generated guidance.
+
+The benchmark result is promising evidence that models follow the mechanical rules. It is not evidence of STE certification, factual accuracy, human comprehension, or reliable behavior across all supported harnesses.
+
+### Adoption conditions
+
+Adopt SimpleEnglish only after the upstream fixes land or after making a reviewed local adaptation that:
+
+1. Corrects the broken `rules.md` references.
+2. Resolves issues #3 and #4 against the official ASD-STE100 Issue 9 source.
+3. Adds an explicit factual-preservation invariant.
+4. Labels strict mode as best effort and preserves the non-certification disclaimer.
+5. Narrows activation to explicit technical-writing, rewriting, controlled-language, or STE audit requests.
+6. Preserves the MIT notice, upstream copyright, trademark statement, source URL, and reviewed commit.
+7. Excludes upstream README installation commands, benchmark scripts, raw results, and optional MCP additions from the vendored skill.
+8. Adds local behavioral fixtures for factual preservation, identifiers, commands, quoted errors, activation scope, and strict versus pragmatic behavior.
+
+If these conditions cannot be met, defer adoption until the open correctness and factuality work is merged upstream.
+
+## Economist Style
+
+### Scope
+
+The Economist Style plugin applies editorial rules for clarity, precision, brevity, dialect consistency, structure, punctuation, numbers, tone, abbreviations, capitalization, and common usage errors. The repository packages the skill as a Claude Code plugin, but its core consists of a conventional `SKILL.md` and Markdown reference files.
+
+Its strongest potential use cases are:
+
+- Articles, essays, and blog posts
+- Policy briefs and analytical reports
+- Narrative documentation and project introductions
+- Marketing or professional prose that needs editorial review
+- Explicit requests for Economist-like house style
+
+This scope is broader and less technical than SimpleEnglish.
+
+### Strengths
+
+- **Useful editorial workflow.** It reviews structure, clarity, precision, dialect, punctuation, numbers, tone, and usage rather than applying only a word-substitution list.
+- **Factual restraint in the core example.** The skill demonstrates placeholders such as `[specify: how many?]` instead of silently inventing a number.
+- **Dialect awareness.** It attempts to preserve an existing British or American convention rather than imposing one globally.
+- **Code and quotation boundaries.** It excludes direct quotations, code examples, technical terms without plain alternatives, proper nouns, and established spelling patterns.
+- **Static and low-risk packaging.** The skill contains Markdown only and needs no network access, executable code, provider secret, or runtime dependency.
+- **Reference decomposition.** A compact signature page and topic-specific references are better foundations for progressive disclosure than one monolithic prompt.
+- **Release history.** The project has tagged releases, with v1.4.2 published on July 31, 2026.
+
+### Weaknesses and risks
+
+- **No meaningful behavioral evaluation.** CI validates file presence, JSON syntax, and frontmatter. Its Claude behavior step requires a secret and was skipped in the latest successful workflow run.
+- **Progressive disclosure is incomplete.** The main workflow normally directs the agent to load the signature plus clarity, precision, common-errors, punctuation, numbers, structure, and tone references. That path can load roughly 57KB; the complete skill bundle is about 88KB.
+- **Overbroad activation.** Its description covers "any written text," creating conflicts with repository-owned style guides, legal or scientific wording, controlled technical procedures, accessibility language, and source-faithful editing.
+- **Internal tension.** Dialect matching can conflict with globally stated signature conventions for dates, punctuation, honorifics, and spelling.
+- **Prescriptive or disputed rulings.** Some absolute guidance about words such as "decimate," "unique," and "comprised of" represents a house preference or contested usage rather than an objective correctness rule.
+- **Unsupported-specificity risk.** Reference examples replace vague claims with exact figures. Although the main example uses placeholders, the full prompt should state explicitly that agents must never invent those figures.
+- **Limited maturity and maintenance depth.** At review time the project had 92 stars, four forks, one substantive maintainer, and no public issue history demonstrating outside validation.
+- **Provenance and IP uncertainty.** The repository is MIT licensed and includes non-affiliation language, but it paraphrases a proprietary style guide. The author recently reduced quoted material and added disclaimers. Before repo-familiar redistributes a substantial adapted subtree, preserve all notices and obtain an appropriate license and provenance review.
+
+The current CI proves that the Claude plugin has the expected shape. It does not prove that the editing behavior is accurate, safe, fact-preserving, or portable across OpenCode, Codex, and other Agent Skills harnesses.
+
+### Adoption conditions
+
+Reconsider Economist Style after the following work:
+
+1. Narrow activation to explicit Economist-style or editorial-prose requests.
+2. Exclude technical procedures, legal text, direct quotations, generated files, and project-owned house styles unless the user explicitly overrides them.
+3. Add a factual-preservation rule and remove examples that can imply invented evidence.
+4. Make detailed references genuinely on demand rather than loading most of the bundle for a normal review.
+5. Independently verify or soften disputed usage rulings and edition-specific claims.
+6. Complete a license and provenance review for redistribution of the adapted reference material.
+7. Add fixtures for dialect precedence, quotation and code preservation, unsupported claims, sensitive text, and conflicts with SimpleEnglish.
+8. Test the extracted skill through OpenCode or Codex plus at least one other Agent Skills harness.
+
+Until then, retain it as a research candidate rather than a selectable **Agentic Engineering Default**.
+
+## Security and Prompt Safety
+
+Direct execution risk is low for both candidates because their vendorable skill directories contain Markdown only. The main risks are behavioral:
+
+- Rewriting can change facts, requirements, safety language, legal meaning, or quoted material.
+- Broad automatic activation can apply a house style where fidelity is more important than polish.
+- Prompt instructions can conflict with user, project, accessibility, inclusive-language, or domain-specific rules.
+- Long reference bundles increase context use and the chance that lower-priority style rules displace task-specific constraints.
+
+The **Downstream Repository** must keep this precedence order:
+
+1. User instructions and project-owned requirements
+2. Factual fidelity, safety, privacy, accessibility, and legal constraints
+3. Domain-specific terminology and source preservation
+4. The explicitly selected writing skill
+5. Optional house-style preferences
+
+Neither skill creates a privacy boundary. Agents must not send private documents, secrets, personal data, or proprietary text to a provider beyond the repository's established processing policy.
+
+## Proposed Integration Plan
+
+If repo-familiar proceeds with SimpleEnglish first:
+
+1. Review the upstream fixes and choose a pinned commit.
+2. Add the reviewed subtree under `src/repo_familiar/templates/skills/simple-english/`.
+3. Include a license file and preserve the upstream disclaimers.
+4. Register the skill and exact provenance in `src/repo_familiar/profiles.py`.
+5. Update the Reference Source dogfood copy and generated snapshot according to existing parity rules.
+6. Add focused registry, provenance, nested-reference, and behavioral tests.
+7. Document that selection is explicit and that the skill is not an STE certification tool.
+
+Keep Economist Style on the research watchlist. If it later meets the adoption conditions, vendor only the skill subtree, not `.claude-plugin/` or marketplace assets.
+
+## Review Snapshot
+
+| Repository | Reviewed state |
+|---|---|
+| SimpleEnglish | `main` at `379728b51981b6d2ee1de0f201164483a9648972`; created July 21, 2026; 1,442 stars; 54 forks; no release |
+| economist-style-guide-plugin | `main` at `cfb132d62447b959dea5a49940e28da89e1ba75b`; v1.4.2 at `ef250c453d958ba44dd8a7d477697aa7af0c28e0`; 92 stars; four forks |
+
+These values are a point-in-time maturity signal, not a durable quality measure. Recheck upstream issues, releases, licenses, and skill contents before implementation.
