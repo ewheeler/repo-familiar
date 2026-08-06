@@ -177,6 +177,9 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("ponytail-agent-rules", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("setup-python-guardrails", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/microsoft/flint-chart/blob/main/agent-skills/flint-chart-author/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertIn("Originally adapted from mattpocock/skills; upstream skill no longer exists", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertNotIn("skills/engineering/to-issues/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+        self.assertNotIn("skills/engineering/to-prd/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
 
     def test_refreshed_skill_guidance_is_vendored(self) -> None:
         cq = (REPO_ROOT / ".agents/skills/cq/SKILL.md").read_text()

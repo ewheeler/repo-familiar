@@ -257,21 +257,19 @@ skills:
     verify:
       - "Confirm `.agents/skills/tdd/SKILL.md` exists after generation or bootstrap"
   to-issues:
-    source_type: "external"
-    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-issues/SKILL.md"
-    notes: "Adapted from mattpocock/skills."
+    source_type: "local-adapted"
+    source_url: "https://github.com/mattpocock/skills"
+    notes: "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path."
     setup:
       - "Select with repo-familiar using `--skill to-issues` when generating or bootstrapping a repository"
-      - "For source installs outside repo-familiar, run `npx skills@latest add mattpocock/skills`"
     verify:
       - "Confirm `.agents/skills/to-issues/SKILL.md` exists after generation or bootstrap"
   to-prd:
-    source_type: "external"
-    source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-prd/SKILL.md"
-    notes: "Adapted from mattpocock/skills."
+    source_type: "local-adapted"
+    source_url: "https://github.com/mattpocock/skills"
+    notes: "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path."
     setup:
       - "Select with repo-familiar using `--skill to-prd` when generating or bootstrapping a repository"
-      - "For source installs outside repo-familiar, run `npx skills@latest add mattpocock/skills`"
     verify:
       - "Confirm `.agents/skills/to-prd/SKILL.md` exists after generation or bootstrap"
   triage:

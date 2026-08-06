@@ -903,14 +903,20 @@ SKILL_SOURCES = {
         "notes": "Adapted from mattpocock/skills.",
     },
     "to-issues": {
-        "source_type": "external",
-        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-issues/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/mattpocock/skills",
+        "notes": "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path.",
+        "setup": [
+            "Select with repo-familiar using `--skill to-issues` when generating or bootstrapping a repository",
+        ],
     },
     "to-prd": {
-        "source_type": "external",
-        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/to-prd/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/mattpocock/skills",
+        "notes": "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path.",
+        "setup": [
+            "Select with repo-familiar using `--skill to-prd` when generating or bootstrapping a repository",
+        ],
     },
     "triage": {
         "source_type": "external",
