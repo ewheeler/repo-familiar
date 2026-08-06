@@ -116,7 +116,7 @@ Prefer focused tests at the owning seam. Run the full suite when shared planning
 
 ## Change Locality
 
-- Profile change: update `src/repo_familiar/profiles.py`, rendered root `.agents/` dogfood, profile tests, and user-facing profile docs.
+- Profile change: update `src/repo_familiar/profiles.py`, rendered root `.agents/` dogfood, profile tests, user-facing profile docs, and any baseline recorded in `.repo-familiar/bootstrap.yml`.
 - Skill change: update the canonical template under `src/repo_familiar/templates/skills/`, its root dogfood copy, provenance registry, and parity tests.
 - Template change: update the canonical template, generation tests, and `examples/basic-agentic-project/` when default output changes.
 - CLI change: update parser/dispatch, lifecycle or usage documentation, and CLI/documentation contract tests together.

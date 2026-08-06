@@ -30,7 +30,8 @@ Detailed walkthroughs live in [Existing Repositories](./existing-repos.qmd) and 
 1. Treat this repository as the Reference Source for docs, templates, registries, and command behavior.
 2. Use `check-skill-sources` before manually refreshing vendored skills from recorded upstream URLs.
 3. Use `diff-upstream-candidate` in a Downstream Repository before copying generated-asset changes back into the Reference Source.
-4. Keep this page short: update the routing contract here, and move longer examples or rationale into the linked command pages.
+4. When an intentional Reference Source dogfood change modifies an asset recorded in `.repo-familiar/bootstrap.yml`, update its selected options and checksum in the same change.
+5. Keep this page short: update the routing contract here, and move longer examples or rationale into the linked command pages.
 
 ## Command Safety
 

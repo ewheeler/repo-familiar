@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 import unittest
 from pathlib import Path
 
 from repo_familiar import profiles
 from repo_familiar.generator import GenerationOptions, plan_project
+from repo_familiar.metadata import load_bootstrap_metadata
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROFILE_ASSET_PATHS = (
@@ -129,6 +131,29 @@ class ProfileRegistryTests(unittest.TestCase):
 
         for path in expected_paths:
             self.assertEqual((REPO_ROOT / path).read_text(), generated[path], path)
+
+    def test_root_bootstrap_metadata_matches_recorded_dogfood_baselines(self) -> None:
+        metadata = load_bootstrap_metadata(REPO_ROOT / ".repo-familiar/bootstrap.yml")
+        expected_selections = {
+            "tool_profiles": tuple(profiles.TOOL_PROFILES),
+            "memory_profiles": tuple(profiles.MEMORY_PROFILES),
+            "repomap_profiles": tuple(profiles.REPOMAP_PROFILES),
+            "sandbox_profiles": tuple(profiles.SANDBOX_PROFILES),
+            "secrets_profiles": tuple(profiles.SECRETS_PROFILES),
+            "design_profiles": tuple(profiles.DESIGN_PROFILES),
+            "worktree_profiles": tuple(profiles.WORKTREE_PROFILES),
+        }
+
+        for key, expected in expected_selections.items():
+            self.assertEqual(metadata.selected_options[key], expected, key)
+
+        for asset in metadata.generated_assets:
+            if not asset.content_sha256:
+                continue
+            path = REPO_ROOT / asset.path
+            self.assertTrue(path.is_file(), asset.path)
+            current_sha256 = hashlib.sha256(path.read_text().encode()).hexdigest()
+            self.assertEqual(current_sha256, asset.content_sha256, asset.path)
 
     def test_root_skill_sources_cover_every_dogfood_skill(self) -> None:
         skill_source_names = _skill_source_names((REPO_ROOT / ".agents/skill-sources.yml").read_text())

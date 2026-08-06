@@ -11,7 +11,7 @@
 
 - Generator or bootstrap behavior: start in `src/repo_familiar/generator.py`, then update the nearest focused tests.
 - Asset kinds or grouping: start in `src/repo_familiar/asset_plan.py`.
-- Profiles or skills: update the registry, canonical template, dogfood copy, provenance, and profile tests together.
+- Profiles or skills: update the registry, canonical template, dogfood copy, provenance, profile tests, and any recorded dogfood checksum together.
 - CLI contracts: keep `src/repo_familiar/cli.py`, lifecycle documentation, and CLI/documentation tests aligned.
 
 ## Validation
