@@ -34,10 +34,10 @@ profiles:
       - "Keep browser session directories such as .rodney/ out of version control"
       - "Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary"
     setup:
-      - "Install Playwright CLI with npm install -g @playwright/cli@latest, or use npx --no-install playwright-cli when the CLI is already available project-locally"
+      - "Install Playwright CLI with npm install -g @playwright/cli@latest, or use npx playwright cli when Playwright is available project-locally"
       - "Install or build Rodney from https://github.com/simonw/rodney when persistent Chrome sessions or accessibility tree queries are needed"
     verify:
-      - "playwright-cli --help or npx playwright-cli --help"
+      - "playwright-cli --help or npx --no-install playwright --version"
       - "rodney --help"
   flint-chart:
     purpose: "let agents author compact semantic chart specs and compile them to Vega-Lite, ECharts, or Chart.js"

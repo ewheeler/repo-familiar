@@ -93,11 +93,11 @@ TOOL_PROFILES = {
         "purpose": "let agents inspect rendered pages, interact with web apps, capture screenshots, check console errors, and run browser smoke checks",
         "config": "Use the project-appropriate browser driver: Playwright CLI for agent-friendly snapshots and screenshots, or Rodney for persistent Chrome sessions and shell-scriptable checks",
         "setup": [
-            "Install Playwright CLI with npm install -g @playwright/cli@latest, or use npx --no-install playwright-cli when the CLI is already available project-locally",
+            "Install Playwright CLI with npm install -g @playwright/cli@latest, or use npx playwright cli when Playwright is available project-locally",
             "Install or build Rodney from https://github.com/simonw/rodney when persistent Chrome sessions or accessibility tree queries are needed",
         ],
         "verify": [
-            "playwright-cli --help or npx playwright-cli --help",
+            "playwright-cli --help or npx --no-install playwright --version",
             "rodney --help",
         ],
         "notes": [
@@ -1121,7 +1121,7 @@ def render_advisory_profiles(registry: dict, profile_names: tuple[str, ...]) -> 
 
 def render_skill_sources(skill_names: tuple[str, ...]) -> str:
     lines: list[str] = []
-    for name in skill_names:
+    for name in sorted(skill_names):
         source = SKILL_SOURCES[name]
         lines.append(f"  {name}:")
         lines.append(f"    source_type: {_yaml_scalar(source['source_type'])}")
@@ -1150,7 +1150,7 @@ def _skill_setup(name: str, source: dict) -> list[str]:
         ]
     if "microsoft/playwright-cli" in source_url:
         return [
-            "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx --no-install playwright-cli` when available project-locally",
+            "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx playwright cli` when Playwright is available project-locally",
         ]
     if "context-hub" in source_url:
         return [
@@ -1172,7 +1172,7 @@ def _skill_verify(name: str, source: dict) -> list[str]:
         return source["verify"]
     source_url = source.get("source_url", "")
     if "microsoft/playwright-cli" in source_url:
-        return ["playwright-cli --help or npx --no-install playwright-cli --help"]
+        return ["playwright-cli --help or npx --no-install playwright --version"]
     if "context-hub" in source_url:
         return ["chub --help"]
     if "mozilla-ai/cq" in source_url:

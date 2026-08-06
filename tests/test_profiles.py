@@ -68,6 +68,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("screenshots", tools)
         self.assertIn("setup:", tools)
         self.assertIn("verify:", tools)
+        self.assertIn("npx --no-install playwright --version", tools)
+        self.assertNotIn("npx playwright-cli", tools)
         self.assertIn("headroom-mcp:", profiles.render_tool_profiles(("headroom-mcp",)))
         self.assertIn("headroom proxy --port 8787", profiles.render_tool_profiles(("headroom-proxy",)))
         self.assertIn("flint-chart:", profiles.render_tool_profiles(("flint-chart",)))
@@ -113,6 +115,11 @@ class ProfileRegistryTests(unittest.TestCase):
         for path, expected_content in expected.items():
             self.assertEqual(generated[path], expected_content, path)
 
+    def test_skill_source_rendering_has_stable_mapping_order(self) -> None:
+        rendered = profiles.render_skill_sources(("tdd", "cq"))
+
+        self.assertLess(rendered.index("  cq:"), rendered.index("  tdd:"))
+
     def test_root_agents_dogfood_assets_match_registry_templates(self) -> None:
         generated = {asset.path: asset.content for asset in plan_project(_all_profile_options())}
         expected_paths = [
@@ -145,6 +152,19 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("ponytail-agent-rules", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("setup-python-guardrails", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
         self.assertIn("https://github.com/microsoft/flint-chart/blob/main/agent-skills/flint-chart-author/SKILL.md", (REPO_ROOT / ".agents/skill-sources.yml").read_text())
+
+    def test_refreshed_skill_guidance_is_vendored(self) -> None:
+        cq = (REPO_ROOT / ".agents/skills/cq/SKILL.md").read_text()
+        diagnose = (REPO_ROOT / ".agents/skills/diagnose/SKILL.md").read_text()
+        playwright = (REPO_ROOT / ".agents/skills/playwright-cli/SKILL.md").read_text()
+        architecture = (
+            REPO_ROOT / ".agents/skills/improve-codebase-architecture/SKILL.md"
+        ).read_text()
+
+        self.assertIn("waiting for their approval", cq)
+        self.assertIn("redacted captured artifact", diagnose)
+        self.assertIn('playwright-cli find "Sign in"', playwright)
+        self.assertIn("Scope before scanning", architecture)
 
 
 def _all_profile_options() -> GenerationOptions:

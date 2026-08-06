@@ -114,9 +114,9 @@ skills:
     source_url: "https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md"
     notes: "Adapted from Microsoft playwright-cli skill for repo-familiar browser automation guidance."
     setup:
-      - "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx --no-install playwright-cli` when available project-locally"
+      - "Install Playwright CLI with `npm install -g @playwright/cli@latest` or use `npx playwright cli` when Playwright is available project-locally"
     verify:
-      - "playwright-cli --help or npx --no-install playwright-cli --help"
+      - "playwright-cli --help or npx --no-install playwright --version"
   ponytail:
     source_type: "external"
     source_url: "https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md"
@@ -136,14 +136,6 @@ skills:
       - "Select with repo-familiar using `--skill privacy-review` when generating or bootstrapping a repository"
     verify:
       - "Confirm `.agents/skills/privacy-review/SKILL.md` exists after generation or bootstrap"
-  prompt-migration:
-    source_type: "local"
-    source_url: "local:repo-familiar"
-    notes: "Authored for repo-familiar prompt migration workflows."
-    setup:
-      - "Select with repo-familiar using `--skill prompt-migration` when generating or bootstrapping a repository"
-    verify:
-      - "Confirm `.agents/skills/prompt-migration/SKILL.md` exists after generation or bootstrap"
   prompt-eval-design:
     source_type: "local"
     source_url: "local:repo-familiar"
@@ -152,6 +144,14 @@ skills:
       - "Select with repo-familiar using `--skill prompt-eval-design` when generating or bootstrapping a repository"
     verify:
       - "Confirm `.agents/skills/prompt-eval-design/SKILL.md` exists after generation or bootstrap"
+  prompt-migration:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar prompt migration workflows."
+    setup:
+      - "Select with repo-familiar using `--skill prompt-migration` when generating or bootstrapping a repository"
+    verify:
+      - "Confirm `.agents/skills/prompt-migration/SKILL.md` exists after generation or bootstrap"
   prompt-output-safety:
     source_type: "local"
     source_url: "local:repo-familiar"
