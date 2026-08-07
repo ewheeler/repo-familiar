@@ -18,6 +18,7 @@ EXISTING_REPOS_DOC = DOCS_DIR / "existing-repos.qmd"
 PRE_BOOTSTRAP_DOC = DOCS_DIR / "pre-bootstrap.qmd"
 DECISIONS_DOC = DOCS_DIR / "decisions.qmd"
 METADATA_V2_ADR = DOCS_DIR / "adr/0010-metadata-v2-preview-first-refresh.md"
+AGENT_PLUGIN_ADR = DOCS_DIR / "adr/0011-agent-plugins-export-pilot.md"
 REPOSITORY_MAP_DOC = DOCS_DIR / "agents/repository-map.md"
 EXAMPLE_BOOTSTRAP_METADATA = (
     Path(__file__).resolve().parents[1]
@@ -70,6 +71,7 @@ class DocsTests(unittest.TestCase):
             "CONTEXT.md",
             "PLAN.md",
             "src/repo_familiar/generator.py",
+            "src/repo_familiar/agent_plugins.py",
             "src/repo_familiar/asset_plan.py",
             "src/repo_familiar/profiles.py",
             "src/repo_familiar/metadata.py",
@@ -77,6 +79,7 @@ class DocsTests(unittest.TestCase):
             "src/repo_familiar/advice_dag.py",
             "src/repo_familiar/upgrade.py",
             "tests/test_generator.py",
+            "tests/test_agent_plugins.py",
             "tests/test_profiles.py",
             "tests/test_docs.py",
         }
@@ -108,6 +111,19 @@ class DocsTests(unittest.TestCase):
         quarto_config = QUARTO_CONFIG.read_text()
 
         self.assertIn("- adr/0010-metadata-v2-preview-first-refresh.md", quarto_config)
+
+    def test_agent_plugin_pilot_is_documented_and_rendered(self) -> None:
+        self.assertIn(
+            "- adr/0011-agent-plugins-export-pilot.md",
+            QUARTO_CONFIG.read_text(),
+        )
+        self.assertIn(
+            "uv run python -m repo_familiar export-plugin",
+            GENERATOR_DOC.read_text(),
+        )
+        adr = AGENT_PLUGIN_ADR.read_text()
+        self.assertIn("optional derived export format", adr)
+        self.assertIn("does not mutate a Downstream Repository", adr)
 
     def test_metadata_v2_adr_includes_preview_first_sections(self) -> None:
         content = METADATA_V2_ADR.read_text()

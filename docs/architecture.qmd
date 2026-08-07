@@ -177,6 +177,8 @@ Paseo is different: it is a machine-level orchestration harness for supervising 
 
 Selected skills are vendored under `.agents/skills/` and recorded as `skill` assets in bootstrap metadata.
 
+`src/repo_familiar/agent_plugins.py` provides a separate, optional export adapter for the Agent Plugins 1.0.0 package layout. The first pilot derives `plugin.json` and `skills/repository-map/SKILL.md` from canonical Reference Source inputs. It does not change Downstream Repository generation, claim installation portability, or participate in Bootstrap Metadata and upgrade ownership. See [ADR 0011](./adr/0011-agent-plugins-export-pilot.md).
+
 `check-skill-sources` is a read-only maintenance command for the Reference Source. It reads `.agents/skill-sources.yml`, compares GitHub-backed skill sources with local vendored files, and reports upstream-newer skills or missing support files before a manual refresh.
 
 Planned SkillSpector integration should be another read-only maintenance gate for vendored skills. It should scan whole skill directories, default to static `--no-llm` checks, provide JSON for CI, and stay separate from ordinary generated-repository runtime dependencies. The command boundary should make the distinction explicit: source drift proves provenance freshness, while security scanning reviews potentially unsafe instructions, scripts, and support files before installation or refresh.

@@ -87,6 +87,7 @@ uv run python -m repo_familiar list-skills
 uv run python -m repo_familiar advise --path /path/to/existing-repo
 uv run python -m repo_familiar advise --path /path/to/existing-repo --intent significant-refactor
 uv run python -m repo_familiar check --path /path/to/generated-project
+uv run python -m repo_familiar export-plugin --output /tmp/repo-familiar-repository-map
 ```
 
 Preview generated assets without writing files:
@@ -134,6 +135,8 @@ uv run python -m repo_familiar generate --interactive
 ```
 
 `questionary` is imported lazily for interactive commands and installed by `uv sync`.
+
+The experimental `export-plugin` command builds a skills-only [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package containing the canonical `repository-map` skill. It creates a portable package directory but does not install or activate it; compatible clients retain their own installation workflows. This export is additive and does not replace project generation, `.agents/skills/`, Bootstrap Metadata, or preview-first upgrades.
 
 This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/public-interest.yml`, `.agents/worktrees.yml`, `.agents/skill-sources.yml`, selected skills, a Divio-style Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
 

@@ -43,6 +43,15 @@ uv run python -m repo_familiar list-worktree-profiles
 uv run python -m repo_familiar list-skills
 ```
 
+Export the skills-only Agent Plugins pilot:
+
+```bash
+uv run python -m repo_familiar export-plugin \
+  --output /tmp/repo-familiar-repository-map
+```
+
+This command renders `plugin.json` and `skills/repository-map/SKILL.md` from the canonical skill template. It targets Agent Plugins 1.0.0 and refuses a non-empty output directory. The command creates a package only: installation, activation, and updates remain client-specific. It does not write Bootstrap Metadata or replace downstream `.agents/skills/` generation. See [ADR 0011](./adr/0011-agent-plugins-export-pilot.md).
+
 Check generated assets against bootstrap metadata:
 
 ```bash

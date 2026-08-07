@@ -31,6 +31,7 @@ project:
     - adr/0008-named-model-profile-schema.md
     - adr/0009-existing-repository-bootstrap.md
     - adr/0010-metadata-v2-preview-first-refresh.md
+    - adr/0011-agent-plugins-export-pilot.md
 
 website:
   title: "repo-familiar"
@@ -88,6 +89,7 @@ website:
           - adr/0008-named-model-profile-schema.md
           - adr/0009-existing-repository-bootstrap.md
           - adr/0010-metadata-v2-preview-first-refresh.md
+          - adr/0011-agent-plugins-export-pilot.md
       - section: Research
         contents:
           - research.qmd

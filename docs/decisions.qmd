@@ -19,6 +19,7 @@ This page records important project decisions as the repository evolves.
 | 2026-05-10 | [Use named model profile handles](./adr/0008-named-model-profile-schema.md) | Accepted | Keeps model defaults stable and pragmatic without over-normalizing provider metadata. |
 | 2026-05-10 | [Support existing repository bootstrap](./adr/0009-existing-repository-bootstrap.md) | Accepted | Existing repos should be audited and patched additively rather than force-migrated. |
 | 2026-06-09 | [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md) | Accepted, partially implemented | Skills now have a preview-first safe apply slice; other asset groups remain strategy-preview only. |
+| 2026-08-07 | [Pilot Agent Plugins as an optional export format](./adr/0011-agent-plugins-export-pilot.md) | Accepted, client validation pending | Export one canonical skill without replacing project bootstrap, provenance, or client-specific installation. |
 | 2026-05-10 | Implement a stdlib-first generator skeleton | Accepted | Proves the generation contract before choosing a heavier template engine. |
 | 2026-05-10 | Refuse non-empty output directories by default | Accepted | Prevents accidental overwrites while template behavior is still evolving. |
 | 2026-05-10 | Commit deterministic generated example snapshots | Accepted | Keeps examples useful as documentation and regression fixtures. |

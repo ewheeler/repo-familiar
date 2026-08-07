@@ -11,6 +11,7 @@ import sys
 
 from . import __version__
 from . import profiles
+from .agent_plugins import AgentPluginExportOptions, export_agent_plugin
 from .generator import (
     ExistingBootstrapOptions,
     GenerationOptions,
@@ -339,6 +340,12 @@ def build_parser() -> argparse.ArgumentParser:
     generate.add_argument("--force", action="store_true", help="overwrite generated files")
     generate.add_argument("--dry-run", action="store_true", help="preview generated assets")
 
+    export_plugin = subparsers.add_parser(
+        "export-plugin",
+        help="export the repository-map Agent Plugins pilot",
+    )
+    export_plugin.add_argument("--output", required=True, type=Path, help="plugin directory to create")
+
     audit = subparsers.add_parser("audit", help="audit an existing repository for bootstrap")
     audit.add_argument("--path", required=True, type=Path, help="existing repository path")
     audit.add_argument("--name", default=None, help="project display name; defaults to directory name")
@@ -544,6 +551,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "check-skill-sources":
         return _check_skill_sources(args)
 
+    if args.command == "export-plugin":
+        return _export_plugin(args)
+
     if args.command == "advise":
         return _advise(args)
 
@@ -615,6 +625,19 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(f"Generated {options.name} at {options.output_dir}")
         print(f"Wrote {len(generated_assets)} assets")
+    return 0
+
+
+def _export_plugin(args: argparse.Namespace) -> int:
+    try:
+        assets = export_agent_plugin(AgentPluginExportOptions(output_dir=args.output))
+    except (FileExistsError, NotADirectoryError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(f"Exported Agent Plugin at {args.output}")
+    print(f"Wrote {len(assets)} assets")
+    for asset in assets:
+        print(f"- {asset.path}")
     return 0
 
 

@@ -30,6 +30,10 @@ _Avoid_: Target folder, local checkout
 Copies of selected templates, skills, instructions, and documentation files written into a **Downstream Repository** during bootstrap.
 _Avoid_: Live dependency, synced files
 
+**Agent Plugin Export**:
+An optional derived Agent Plugins package containing portable skills or MCP configuration for installation by compatible clients. It is not a **Downstream Repository** and does not replace **Vendored Generated Assets**.
+_Avoid_: Project bootstrap, universal installer
+
 **Existing Repository Bootstrap**:
 A non-destructive workflow that audits an existing **Downstream Repository** and adds selected **Agentic Engineering Defaults** without overwriting user-owned files by default.
 _Avoid_: Migration script, repository takeover
@@ -75,6 +79,7 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - **Advisory Profiles** live in `.agents/*.yml` files and record recommended tools or practices without installing them.
 - **Advisory Profiles** for secrets generate `.agents/secrets.yml` and `.env.example`; real `.env` files remain ignored and user-owned.
 - **Vendored Generated Assets** are the default delivery model for **Agentic Engineering Defaults**.
+- An **Agent Plugin Export** is an optional portable subset derived from the **Reference Source**; client-specific installation and activation remain outside the **Project Generator**.
 - **Bootstrap Metadata** lives in the **Repo Familiar Metadata Directory** and records which **Reference Source** produced a **Downstream Repository**.
 - An **Upgrade Command** may later refresh **Vendored Generated Assets**, but updates are explicit rather than live-synced.
 - The **Dotfiles Metaphor** explains portability, not the product scope.

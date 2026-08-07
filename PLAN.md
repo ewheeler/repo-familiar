@@ -313,6 +313,22 @@ Acceptance criteria:
 - Tests use a fake scanner runner and do not require network access, external GitHub installs, LLM credentials, or real SkillSpector execution.
 - Documentation explains that `check-skill-sources` handles provenance/drift and `check-skill-security` handles security risk scanning.
 
+### 6c. Pilot Agent Plugins Export
+
+Status: skills-only exporter implemented; compatible-client installation validation pending.
+
+- Add an optional `export-plugin` command that derives an Agent Plugins 1.0.0 package from canonical skill templates.
+- Limit the first package to the locally authored `repository-map` skill and omit MCP configuration.
+- Keep client installation, activation, updates, and permissions outside the Project Generator.
+- Preserve `.agents/skills/`, Bootstrap Metadata, provenance, and preview-first upgrades as the default Downstream Repository delivery model.
+
+Acceptance criteria:
+
+- Export writes only `plugin.json` and `skills/repository-map/SKILL.md`.
+- Manifest and skill metadata match the pinned portable specifications.
+- Non-empty output directories are refused.
+- At least two compatible clients successfully install the package before broader adoption.
+
 ### 8. Add Drift Detection
 
 Status: done for current generated metadata, registry-backed profile output, and root `.agents/` dogfood consistency.

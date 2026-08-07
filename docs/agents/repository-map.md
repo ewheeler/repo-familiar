@@ -37,6 +37,7 @@ Maintenance flows reuse those contracts for advice, targeted additions, upstream
 | Path | Responsibility |
 |---|---|
 | `src/repo_familiar/cli.py` | Command parser, command-family contracts, report formatting, and command dispatch. |
+| `src/repo_familiar/agent_plugins.py` | Optional Agent Plugins package planning and guarded export. |
 | `src/repo_familiar/generator.py` | Generation options, project planning orchestration, new project writes, existing-repository audit/bootstrap, and repository signal entry points. |
 | `src/repo_familiar/asset_plan.py` | Planned asset model, template traversal, asset kinds, and asset-group filtering. |
 | `src/repo_familiar/profiles.py` | Canonical agent harness, profile, skill, and provenance registries plus YAML and harness-config rendering. |
@@ -59,6 +60,10 @@ Maintenance flows reuse those contracts for advice, targeted additions, upstream
 ### Existing repositories
 
 `ExistingBootstrapOptions` reuses the generation plan. Audit classifies assets as missing, present, or conflicting; apply remains additive and non-destructive unless force is explicit. Targeted add commands select one profile or skill family plus metadata rather than taking ownership of unrelated files.
+
+### Agent Plugin exports
+
+`src/repo_familiar/agent_plugins.py` derives the skills-only Agent Plugins pilot from canonical skill templates. Export is a separate package-building path: it does not create a Downstream Repository, write Bootstrap Metadata, or install the package into a client.
 
 ### Advice
 
@@ -86,6 +91,7 @@ The `semantic-routing-map` profile standardizes the convention and the `reposito
 | Change | Start with |
 |---|---|
 | CLI, generation, bootstrap, targeted additions, or interaction | `tests/test_generator.py` |
+| Agent Plugin layout, manifest, or export safety | `tests/test_agent_plugins.py` |
 | Asset kinds, traversal, or groups | `tests/test_asset_plan.py` |
 | Profile rendering, skill registration, or dogfood parity | `tests/test_profiles.py` |
 | Advice signals or recommendations | `tests/test_advice.py` |
@@ -108,7 +114,7 @@ Prefer focused tests at the owning seam. Run the full suite when shared planning
 
 ## Implemented Versus Proposed
 
-- New generation, advice, audit, additive existing-repository bootstrap, targeted additions, checksums, profile catalogs, deterministic snapshots, and skill-source checks are implemented.
+- New generation, advice, audit, additive existing-repository bootstrap, targeted additions, checksums, profile catalogs, deterministic snapshots, skill-source checks, and the skills-only Agent Plugins export pilot are implemented.
 - Upgrade apply is intentionally limited to safe vendored-skill refreshes and missing skill support files. Other generated asset groups remain preview-only.
 - Metadata v2 is accepted in `docs/adr/0010-metadata-v2-preview-first-refresh.md`, while runtime Bootstrap Metadata remains schema version 1.
 - Advice rules are Hamilton-compatible but currently execute as direct Python calls; no Hamilton driver owns runtime advice execution.

@@ -80,7 +80,12 @@ def plan_template_assets(template_root: Path, template_name: str, context: dict[
     return planned_assets
 
 
-def plan_skill_assets(skills_root: Path, skills: tuple[str, ...], context: dict[str, str]) -> list[PlannedAsset]:
+def plan_skill_assets(
+    skills_root: Path,
+    skills: tuple[str, ...],
+    context: dict[str, str],
+    destination_root: Path = Path(".agents/skills"),
+) -> list[PlannedAsset]:
     planned_assets: list[PlannedAsset] = []
     for skill in skills:
         skill_root = skills_root / skill
@@ -89,11 +94,11 @@ def plan_skill_assets(skills_root: Path, skills: tuple[str, ...], context: dict[
         for source_path in sorted(skill_root.rglob("*.tmpl")):
             relative_template = source_path.relative_to(skill_root)
             relative_output = relative_template.with_suffix("")
-            path = (Path(".agents/skills") / skill / relative_output).as_posix()
+            path = (destination_root / skill / relative_output).as_posix()
             planned_assets.append(
                 PlannedAsset(
                     path=path,
-                    kind=asset_kind(path),
+                    kind="skill",
                     source=f"templates/skills/{skill}/{relative_template.as_posix()}",
                     content=Template(source_path.read_text()).safe_substitute(context),
                 )
