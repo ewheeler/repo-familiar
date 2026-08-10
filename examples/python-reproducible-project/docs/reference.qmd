@@ -1,0 +1,21 @@
+---
+title: "Reference"
+---
+
+## Commands
+
+| Command | Contract |
+|---|---|
+| `uv sync --frozen` | Synchronize exactly from `uv.lock`. |
+| `uv run reproduce --check` | Reproduce twice and fail if deterministic outputs differ. |
+| `uv run pytest` | Verify known analysis behavior. |
+| `uv run pre-commit run --all-files` | Run all local quality and documentation gates. |
+| `quarto render docs` | Render the Divio documentation site. |
+
+## Configuration
+
+`config/default.toml` accepts `input_path`, non-negative `minimum_value`, and `category`. The category `all` disables category filtering.
+
+## Output
+
+`AnalysisResult` contains category, count, total, average, input SHA-256, and configuration SHA-256.

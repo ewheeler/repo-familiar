@@ -39,7 +39,7 @@ Maintenance flows reuse those contracts for advice, targeted additions, upstream
 | `src/repo_familiar/cli.py` | Command parser, command-family contracts, report formatting, and command dispatch. |
 | `src/repo_familiar/agent_plugins.py` | Optional Agent Plugins package planning and guarded export. |
 | `src/repo_familiar/generator.py` | Generation options, project planning orchestration, new project writes, existing-repository audit/bootstrap, and repository signal entry points. |
-| `src/repo_familiar/asset_plan.py` | Planned asset model, template traversal, asset kinds, and asset-group filtering. |
+| `src/repo_familiar/asset_plan.py` | Concrete template composition registry, declared overlay checks, planned asset model, output-path rendering, asset kinds, and asset-group filtering. |
 | `src/repo_familiar/profiles.py` | Canonical agent harness, profile, skill, and provenance registries plus YAML and harness-config rendering. |
 | `src/repo_familiar/metadata.py` | Bootstrap Metadata parsing, validation, and rendering. |
 | `src/repo_familiar/interactive.py` | `questionary` adapters for generation and existing-repository options. |
@@ -55,11 +55,11 @@ Maintenance flows reuse those contracts for advice, targeted additions, upstream
 
 ### New repositories
 
-`GenerationOptions` flows through `plan_project()` in `src/repo_familiar/generator.py`. `src/repo_familiar/asset_plan.py` renders canonical project templates and selected skill templates, then `src/repo_familiar/metadata.py` records the selected options and generated assets before guarded writes occur.
+`GenerationOptions` flows through `plan_project()` in `src/repo_familiar/generator.py`. `src/repo_familiar/asset_plan.py` composes the registered `basic`, `python-reproducible`, and `static-quarto-application` layers, renders canonical project and skill templates, and rejects undeclared path collisions. `src/repo_familiar/metadata.py` records the concrete selected template, surviving per-file sources, selected options, and generated assets before guarded writes occur.
 
 ### Existing repositories
 
-`ExistingBootstrapOptions` reuses the generation plan. Audit classifies assets as missing, present, or conflicting; apply remains additive and non-destructive unless force is explicit. Targeted add commands select one profile or skill family plus metadata rather than taking ownership of unrelated files.
+`ExistingBootstrapOptions` reuses the generation plan with a separate `basic` fallback or the repository's recorded template. Audit classifies assets as missing, present, or conflicting; unknown recorded templates fail closed. Apply remains additive for current asset families, while Python/application scaffold assets are preview-only under Metadata v1. Targeted add commands select one profile or skill family plus metadata rather than taking ownership of unrelated files.
 
 ### Agent Plugin exports
 

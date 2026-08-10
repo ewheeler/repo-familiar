@@ -186,6 +186,14 @@ skills:
       - "Select with repo-familiar using `--skill repository-map` when generating or bootstrapping a repository"
     verify:
       - "Confirm `.agents/skills/repository-map/SKILL.md` exists after generation or bootstrap"
+  reproducible-data-science:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar reproducible data science guidance."
+    setup:
+      - "Select with repo-familiar using `--skill reproducible-data-science` when generating or bootstrapping a repository"
+    verify:
+      - "Confirm `.agents/skills/reproducible-data-science/SKILL.md` exists after generation or bootstrap"
   rodney-browser:
     source_type: "local-adapted"
     source_url: "https://github.com/simonw/rodney"
@@ -247,6 +255,14 @@ skills:
       - "Select with repo-familiar using `--skill setup-python-guardrails` when generating or bootstrapping a repository"
     verify:
       - "Confirm `.agents/skills/setup-python-guardrails/SKILL.md` exists after generation or bootstrap"
+  static-quarto-application:
+    source_type: "local"
+    source_url: "local:repo-familiar"
+    notes: "Authored for repo-familiar Static Quarto Application architecture guidance."
+    setup:
+      - "Select with repo-familiar using `--skill static-quarto-application` when generating or bootstrapping a repository"
+    verify:
+      - "Confirm `.agents/skills/static-quarto-application/SKILL.md` exists after generation or bootstrap"
   tdd:
     source_type: "external"
     source_url: "https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md"

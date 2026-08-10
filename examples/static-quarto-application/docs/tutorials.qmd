@@ -1,0 +1,36 @@
+---
+title: "Tutorials"
+---
+
+## Use The Static Application
+
+1. Synchronize the locked application environment:
+
+   ```bash
+   uv sync --frozen
+   ```
+
+2. Prove deterministic batch behavior:
+
+   ```bash
+   uv run reproduce --check
+   ```
+
+3. Render and serve the application:
+
+   ```bash
+   quarto render app
+   uv run uvicorn static_quarto_application.api:app --reload
+   ```
+
+4. Open `http://127.0.0.1:8000`, select category `beta`, keep minimum value `10`, and select **Analyze**.
+
+The visible result is count `2`, total `36`, and average `18.0`. Expand provenance to see the input checksum.
+
+5. Run the tests covering the same path:
+
+   ```bash
+   uv run pytest tests/test_api.py
+   uv run playwright install chromium
+   uv run pytest -m browser tests/test_browser.py
+   ```

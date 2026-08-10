@@ -5,6 +5,7 @@ from pathlib import Path
 import unittest
 
 from repo_familiar.cli import PROFILE_FAMILY_COMMANDS, TARGETED_ADD_COMMANDS, build_parser
+from repo_familiar.generator import GenerationOptions, list_templates
 from repo_familiar.metadata import SELECTED_OPTION_KEYS, load_bootstrap_metadata
 
 
@@ -97,6 +98,22 @@ class DocsTests(unittest.TestCase):
 
         for command_name in sorted(name for name in _subcommand_names() if name.startswith("list-")):
             self.assertIn(f"uv run python -m repo_familiar {command_name}", content)
+
+    def test_template_docs_cover_registered_templates_and_split_defaults(self) -> None:
+        templates_doc = (DOCS_DIR / "templates.qmd").read_text()
+        generator_doc = GENERATOR_DOC.read_text()
+
+        for template in list_templates():
+            self.assertIn(f"`{template}`", templates_doc)
+        self.assertEqual(
+            GenerationOptions(
+                name="Default",
+                description="Default.",
+                output_dir=Path("unused"),
+            ).template,
+            "python-reproducible",
+        )
+        self.assertIn("Existing-repository commands use `basic`", generator_doc)
 
     def test_existing_repo_doc_lists_all_targeted_add_commands(self) -> None:
         content = EXISTING_REPOS_DOC.read_text()
@@ -291,6 +308,7 @@ class DocsTests(unittest.TestCase):
             preview_block,
         )
         self.assertIn("--output /tmp/basic-agentic-project", preview_block)
+        self.assertIn("--template basic", preview_block)
 
         for value in metadata.selected_options["agent_harnesses"]:
             self.assertIn(f"--agent-harness {value}", preview_block)

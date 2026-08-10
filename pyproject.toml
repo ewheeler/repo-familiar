@@ -15,16 +15,33 @@ dependencies = [
 [project.scripts]
 repo-familiar = "repo_familiar.cli:main"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
 repo_familiar = [
   "templates/basic/.gitignore.tmpl",
+  "templates/basic/.env.example.tmpl",
+  "templates/basic/.sops.yaml.tmpl",
   "templates/basic/*",
   "templates/basic/.agents/*",
   "templates/basic/docs/*",
   "templates/basic/secrets/*",
+  "templates/basic/secrets/.gitignore.tmpl",
+  "templates/python-reproducible/.python-version.tmpl",
+  "templates/python-reproducible/.pre-commit-config.yaml.tmpl",
+  "templates/python-reproducible/.gitignore.tmpl",
+  "templates/python-reproducible/.github/workflows/*",
+  "templates/python-reproducible/*",
+  "templates/python-reproducible/*/*",
+  "templates/python-reproducible/*/*/*",
+  "templates/python-reproducible/*/*/*/*",
+  "templates/static-quarto-application/*",
+  "templates/static-quarto-application/*/*",
+  "templates/static-quarto-application/*/*/*",
   "templates/skills/*/*",
   "templates/skills/*/*/*",
 ]

@@ -71,7 +71,7 @@ uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profil
 
 `bootstrap-existing --interactive` uses `questionary` to prompt for repository path, asset groups, selected profiles, and whether to apply changes. It still defaults to dry-run behavior unless write confirmation is selected.
 
-Use `--asset-group` with `audit` or `bootstrap-existing` to scope work to selected groups: `agent`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, or `worktrees`.
+Use `--asset-group` with `audit` or `bootstrap-existing` to scope work to selected groups: `agent`, `application`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `public-interest`, `python`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, or `worktrees`. The `python` and `application` scaffold groups are audit-only under Metadata v1.
 
 Audit output includes the comparison basis, selected option set, and asset groups. This is important when checking whether a full-adoption audit is using default selections or explicit selections.
 
@@ -114,7 +114,7 @@ uv run python -m repo_familiar add-skill --path /path/to/repo --skill privacy-re
 
 Existing repository bootstrap should write `.repo-familiar/bootstrap.yml` with `bootstrap_mode: existing_repository`. The current implementation records assets actually written by the operation and does not claim skipped conflicts as generated assets.
 
-Generated asset records include `content_sha256` for written non-metadata assets. This allows `check` to report generated assets as `ok`, `modified`, `missing`, or `unchecked`.
+Generated asset records include `content_sha256` for written non-metadata assets. This allows `check` to report generated assets as `ok`, `modified`, `downstream-managed`, `missing`, or `unchecked`. A changed generated dependency lock is downstream-managed and does not make `check` fail; refresh remains manual.
 
 Use `diff-upstream-candidate` after local changes to classify generated asset drift before proposing improvements back to the Reference Source. It is read-only and should be paired with the `upstream-improvement` skill before copying downstream content upstream. Current Reference Source comparison is advisory; template-variable-heavy assets may report `reference-may-have-changed` until Bootstrap Metadata records richer template context.
 
@@ -149,9 +149,9 @@ conflicts: []
 
 These fields should not be added to schema v1 until implementation needs them. The ADR above expands this into a broader Metadata v2 design that also covers render inputs, bootstrap history, comparison basis, and asset-specific refresh strategies.
 
-## Planned Python-First Adoption Boundary
+## Python-First Adoption Boundary
 
-The accepted [Python-First Project Plan](./python-first-project-plan.qmd) changes the planned default for new repository generation, not existing-repository bootstrap.
+The accepted [Python-First Project Plan](./python-first-project-plan.qmd) changes the default for new repository generation, not existing-repository bootstrap.
 
 | Existing repository state | Planned behavior |
 |---|---|

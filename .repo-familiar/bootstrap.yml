@@ -32,6 +32,7 @@ selected_options:
     - "opencode-cq-mcp"
     - "opencode-context7-mcp"
     - "python-guardrails"
+    - "preferred-python-stack"
   memory_profiles:
     - "memory-local"
   prompt_profiles: []
@@ -58,6 +59,8 @@ selected_options:
   sops_age_recipients: []
   skills:
     - "get-api-docs"
+    - "reproducible-data-science"
+    - "static-quarto-application"
   docs: "quarto"
 generated_assets:
   - path: ".agents/design.yml"
@@ -83,7 +86,7 @@ generated_assets:
   - path: ".agents/tools.yml"
     kind: "template_config"
     source: "templates/basic/.agents/tools.yml.tmpl"
-    content_sha256: "66ba86ad07288b9de338ab9284c3d7bd6a58e2b8c2fdb5ae08c1dba142dbc5dc"
+    content_sha256: "205af5ec0bdc0d742e909e5851187e1dc610f42444d3b4dc05bafa861e1efca6"
   - path: ".agents/worktrees.yml"
     kind: "template_config"
     source: "templates/basic/.agents/worktrees.yml.tmpl"
@@ -96,6 +99,14 @@ generated_assets:
     kind: "skill"
     source: "templates/skills/get-api-docs/SKILL.md.tmpl"
     content_sha256: "71544bc39990347203ad2f8f47ec77930feffba19969f9c09f46ee94655af9f5"
+  - path: ".agents/skills/reproducible-data-science/SKILL.md"
+    kind: "skill"
+    source: "templates/skills/reproducible-data-science/SKILL.md.tmpl"
+    content_sha256: "6b12d69ff32918e92d2afc5295b16af9d8d71bc54b6c94afd1a444706b5bad62"
+  - path: ".agents/skills/static-quarto-application/SKILL.md"
+    kind: "skill"
+    source: "templates/skills/static-quarto-application/SKILL.md.tmpl"
+    content_sha256: "275095d50bfc55b61cdb6fef50423a51f8e2534f2f351fc49a5df587efa5823a"
   - path: ".repo-familiar/bootstrap.yml"
     kind: "metadata"
     source: "generator:bootstrap"

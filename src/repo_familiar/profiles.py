@@ -376,6 +376,26 @@ TOOL_PROFILES = {
             "Mandate `pre-commit run --all-files` in agent rules so agents run guardrails before task completion",
         ],
     },
+    "preferred-python-stack": {
+        "purpose": "guide agents toward the preferred Python stack without adding unused dependencies",
+        "config": "Use uv by default; choose Pydantic, Polars, Hamilton, FastAPI, Structlog, Hydra/OmegaConf, fsspec/universal-pathlib, and Banks only at their documented thresholds",
+        "setup": [
+            "Use uv for project environments, dependency resolution, lockfiles, and commands",
+            "Use Pydantic at configuration, API, and external-data boundaries",
+            "Use Polars for tabular transformations and Hamilton for graph-shaped analysis pipelines",
+            "Use FastAPI and Structlog for service applications such as a Static Quarto Application",
+        ],
+        "verify": [
+            "Confirm pyproject.toml and uv.lock are committed for Python applications",
+            "Confirm every non-guardrail dependency is exercised by source code or a documented workflow",
+        ],
+        "notes": [
+            "Use Hydra/OmegaConf for composed configuration or experiment matrices, not a single static config",
+            "Use fsspec/universal-pathlib only when storage backends must be remote or interchangeable",
+            "Use Banks when prompt-heavy applications outgrow simple templates",
+            "Do not replace an existing repository's dependency choices merely to match this preference",
+        ],
+    },
 }
 
 MEMORY_PROFILES = {
@@ -712,6 +732,7 @@ SKILLS = {
     "prototype": "Build throwaway prototypes to flush out design questions",
     "qa-test-design": "Design meaningful tests before writing implementation or test code",
     "repository-map": "Create or refresh a selective semantic repository routing map",
+    "reproducible-data-science": "Build reproducible data workflows with locked environments, input provenance, deterministic execution, and executable evidence",
     "rodney-browser": "Use Rodney for persistent Chrome automation, shell-scripted web checks, and accessibility tree queries",
     "scaffold-exercises": "Create exercise directory structures and stubs",
     "security-audit": "Review code, dependencies, secrets, and auth patterns for security risks",
@@ -719,6 +740,7 @@ SKILLS = {
     "setup-matt-pocock-skills": "Set up agent skill context and issue-tracker documentation",
     "setup-pre-commit": "Set up Husky pre-commit hooks with formatting, type checks, and tests",
     "setup-python-guardrails": "Set up Python pre-commit guardrails with ruff, mypy, and opt-in deep coverage hooks",
+    "static-quarto-application": "Preserve a static Quarto browser client and client-initiated FastAPI request/response boundary",
     "tdd": "Use red-green-refactor test-driven development",
     "to-issues": "Break a plan into independently grabbable implementation issues",
     "to-prd": "Turn conversation context into a product requirements document",
@@ -862,6 +884,11 @@ SKILL_SOURCES = {
         "source_url": "local:repo-familiar",
         "notes": "Authored for selective semantic repository routing maps.",
     },
+    "reproducible-data-science": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar reproducible data science guidance.",
+    },
     "rodney-browser": {
         "source_type": "local-adapted",
         "source_url": "https://github.com/simonw/rodney",
@@ -896,6 +923,11 @@ SKILL_SOURCES = {
         "source_type": "local",
         "source_url": "local:repo-familiar",
         "notes": "Authored for repo-familiar Python guardrail setup, informed by deterministic guardrails article (balajeerc.info).",
+    },
+    "static-quarto-application": {
+        "source_type": "local",
+        "source_url": "local:repo-familiar",
+        "notes": "Authored for repo-familiar Static Quarto Application architecture guidance.",
     },
     "tdd": {
         "source_type": "external",

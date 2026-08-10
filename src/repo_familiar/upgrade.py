@@ -241,6 +241,12 @@ def _classify(candidate, safe, review, blocked, unavailable) -> None:
 
 
 def _strategy(path: str) -> str:
+    if path in ("pyproject.toml", "uv.lock"):
+        return "manual_review"
+    if path.startswith(("src/", "tests/", "data/", "app/")):
+        return "manual_review"
+    if path in ("REPRODUCIBILITY.md", "STATIC_QUARTO_APPLICATION.md"):
+        return "manual_review"
     if path.startswith(".agents/skills/"):
         return "replace_if_unchanged"
     if path == ".agents/skill-sources.yml":

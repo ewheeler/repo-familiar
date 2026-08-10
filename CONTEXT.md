@@ -17,11 +17,11 @@ Reusable preferences for agent instructions, skills, model/provider profiles, do
 _Avoid_: Personal shell setup, machine configuration
 
 **Python Reproducible Project**:
-A planned opinionated **Downstream Repository** scaffold whose committed environment, configuration, checksum-identified inputs, executable analysis, tests, and documentation can reproduce validated outputs without network access after environment synchronization.
+An opinionated **Downstream Repository** scaffold whose committed environment, configuration, checksum-identified inputs, executable analysis, tests, and documentation can reproduce validated outputs without network access after environment synchronization.
 _Avoid_: Empty Python skeleton, dependency bundle without an executable exemplar
 
 **Static Quarto Application**:
-A planned **Python Reproducible Project** specialization whose Quarto-rendered static browser client initiates ordinary request/response calls to a FastAPI backend. Product UI under `app/` remains distinct from Divio project documentation under `docs/`.
+A **Python Reproducible Project** specialization whose Quarto-rendered static browser client initiates ordinary request/response calls to a FastAPI backend. Product UI under `app/` remains distinct from Divio project documentation under `docs/`.
 _Avoid_: Quarto documentation site, server-rendered application, WebSocket application
 
 **Executable Exemplar Documentation**:
@@ -66,7 +66,7 @@ _Avoid_: Lockfile, install log
 
 Minimum fields: `schema_version`, `reference_source`, `generated_at`, `generator`, `selected_options`, and `generated_assets`.
 `generated_assets` uses structured records with `path`, `kind`, `source`, and optional `content_sha256` fields.
-Initial `kind` values are `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
+`kind` values are `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, `metadata`, `dependency_manifest`, `dependency_lock`, `source_code`, `test_code`, and `data_fixture`.
 
 **Managed Surface**:
 A planned Metadata v2 lifecycle record for a coherent multi-file capability, including its render basis, paths, comparison strategy, operation history, and ownership states such as `written`, `adopted`, `edited`, `skipped`, or `conflict`.
@@ -89,7 +89,7 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - The **Reference Source** defines one or more **Project Generators**.
 - A **Project Generator** creates a **Downstream Repository**.
 - A **Downstream Repository** receives selected **Agentic Engineering Defaults**.
-- A **Python Reproducible Project** is the planned default scaffold for new repository generation; `basic` remains the generic template and conservative existing-repository fallback.
+- A **Python Reproducible Project** is the default scaffold for new repository generation; `basic` remains the generic template and conservative existing-repository fallback.
 - A **Static Quarto Application** specializes a **Python Reproducible Project** without collapsing its product interface into its Divio documentation site.
 - **Executable Exemplar Documentation** connects product claims to verification commands and regression tests.
 - **Existing Repository Bootstrap** applies selected **Agentic Engineering Defaults** to a **Downstream Repository** that already has user-owned files.
@@ -128,5 +128,5 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - "bootstrap metadata" could live at the root, under `.agents/`, or under a generator namespace. Resolved: use `.repo-familiar/bootstrap.yml` so generator metadata is namespaced and separate from agent runtime instructions.
 - "model profile" could mean runtime defaults or generation provenance. Resolved: `.agents/models.yml` stores agent-facing defaults; `.repo-familiar/bootstrap.yml` stores selected profile names.
 - "bootstrap existing repo" could mean force-migrating or taking ownership of current files. Resolved: **Existing Repository Bootstrap** is additive and non-destructive by default.
-- "Python-first default" could mean changing both new and existing repository behavior. Resolved: it applies to planned new repository generation only; existing workflows retain a separate conservative fallback or their recorded template.
+- "Python-first default" could mean changing both new and existing repository behavior. Resolved: it applies to new repository generation only; existing workflows retain a separate conservative fallback or their recorded template.
 - "Quarto application" could mean a documentation site or a static product client. Resolved: a **Static Quarto Application** has an explicit browser-to-FastAPI interaction boundary and keeps `app/` separate from `docs/`.

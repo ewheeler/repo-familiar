@@ -43,7 +43,7 @@ Check for `uv` (preferred) or `pip` as the package manager.
 
 ```bash
 uv add --dev pre-commit ruff mypy
-# or: pip install --dev pre-commit ruff mypy
+# or: python -m pip install pre-commit ruff mypy
 ```
 
 ### 3. Create `.pre-commit-config.yaml`
@@ -102,14 +102,7 @@ disallow_untyped_defs = false
 
 Start permissive (`disallow_untyped_defs = false`) and tighten over time. Agents generate typed code more reliably when the check is present even if not fully strict.
 
-### 6. Add a `check` script to `pyproject.toml`
-
-```toml
-[tool.scripts]
-check = "pre-commit run --all-files"
-```
-
-Or document the command in the project README:
+### 6. Document the canonical check command
 
 ```bash
 uv run pre-commit run --all-files

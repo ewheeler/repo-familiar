@@ -138,7 +138,7 @@ uv run python -m repo_familiar generate --interactive
 
 The experimental `export-plugin` command builds a skills-only [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package containing the canonical `repository-map` skill. It creates a portable package directory but does not install or activate it; compatible clients retain their own installation workflows. This export is additive and does not replace project generation, `.agents/skills/`, Bootstrap Metadata, or preview-first upgrades.
 
-This first skeleton uses `questionary` for optional interaction and keeps template rendering on `string.Template`. It writes `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/models.yml`, `.agents/tools.yml`, `.agents/memory.yml`, `.agents/sandbox.yml`, `.agents/secrets.yml`, `.agents/design.yml`, `.agents/public-interest.yml`, `.agents/worktrees.yml`, `.agents/skill-sources.yml`, selected skills, a Divio-style Quarto docs scaffold, `plan.md`, and `.repo-familiar/bootstrap.yml`. Banks should be introduced later when prompt or project templates outgrow `string.Template`; Cookiecutter can remain a future option if the project-generation contract needs it.
+The generator uses `questionary` for optional interaction and keeps template rendering on `string.Template`. The `basic` layer writes agent defaults, selected skills, a Divio-style Quarto docs scaffold, planning assets, and Bootstrap Metadata. The default `python-reproducible` template adds a manifest, canonical uv lock, guardrails, deterministic analysis, provenance, tests, CI, and executable docs. The opt-in `static-quarto-application` adds a static Quarto product client, FastAPI boundary, API tests, and browser evidence. Banks remains thresholded until prompt or project templates outgrow simple substitution.
 
 Generated repositories should receive vendored copies of the selected assets by default. Each generated repository should also include `.repo-familiar/bootstrap.yml`, recording the `repo-familiar` source and version used to create it. Live synchronization can come later as an explicit upgrade command, but initial bootstraps should be stable and self-contained.
 
@@ -204,7 +204,7 @@ generated_assets:
 
 `content_sha256` is omitted for `.repo-familiar/bootstrap.yml` itself to avoid self-referential hashing.
 
-The initial `generated_assets[].kind` vocabulary is intentionally small: `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
+The `generated_assets[].kind` vocabulary includes `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, `metadata`, `dependency_manifest`, `dependency_lock`, `source_code`, `test_code`, and `data_fixture`.
 
 Model/provider profiles should be generated into `.agents/models.yml` for agent-facing runtime defaults. `.repo-familiar/bootstrap.yml` should record only the selected profile names under `selected_options.model_profiles`. Do not store provider secrets in either file.
 
@@ -394,7 +394,7 @@ For Python-heavy projects, this repository prefers these tools when the project 
 
 Hamilton is especially important because DAG visualizations make abstraction boundaries, data dependencies, and execution flow inspectable without reading every line of code.
 
-The accepted [Python-First Project Plan](docs/python-first-project-plan.qmd) describes how new generation will make these preferences executable. Existing repositories can adopt current guidance and selected assets additively, while application-source adoption and template promotion wait for Metadata v2.
+The implemented [Python-First Project Plan](docs/python-first-project-plan.qmd) makes these preferences executable through the default `python-reproducible` template and the opt-in `static-quarto-application` template. Existing repositories can adopt current guidance and selected assets additively, while application-source adoption and template promotion wait for Metadata v2.
 
 ## Skill Sources
 

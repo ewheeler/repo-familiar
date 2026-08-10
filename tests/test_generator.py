@@ -21,6 +21,170 @@ from repo_familiar.generator import (
 
 
 class GeneratorTests(unittest.TestCase):
+    def test_new_generation_defaults_to_python_reproducible(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            options = GenerationOptions(
+                name="Python Default",
+                description="Default Python project.",
+                output_dir=Path(tmpdir) / "python-default",
+                dry_run=True,
+            )
+
+            assets = generate_project(options)
+
+        self.assertEqual(options.template, "python-reproducible")
+        self.assertIn("pyproject.toml", {asset.path for asset in assets})
+        self.assertIn("REPRODUCIBILITY.md", {asset.path for asset in assets})
+
+    def test_unbootstrapped_existing_repository_falls_back_to_basic(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+
+            report = audit_existing_repository(ExistingBootstrapOptions(path=repo))
+
+        self.assertEqual(report.selected_options["template"], "basic")
+        self.assertNotIn("pyproject.toml", {asset.path for asset in report.missing})
+
+    def test_bootstrapped_repository_uses_recorded_template(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "recorded-basic"
+            generate_project(
+                GenerationOptions(
+                    name="Recorded Basic",
+                    description="Recorded basic template.",
+                    output_dir=repo,
+                    template="basic",
+                    generated_at="2026-08-10T00:00:00Z",
+                )
+            )
+
+            report = audit_existing_repository(ExistingBootstrapOptions(path=repo))
+
+        self.assertEqual(report.selected_options["template"], "basic")
+
+    def test_bootstrapped_python_and_static_repositories_reaudit_from_recorded_options(self) -> None:
+        for template in ("python-reproducible", "static-quarto-application"):
+            with self.subTest(template=template), tempfile.TemporaryDirectory() as tmpdir:
+                repo = Path(tmpdir) / template
+                generate_project(
+                    GenerationOptions(
+                        name=f"Recorded {template}",
+                        description=f"Recorded {template} template.",
+                        output_dir=repo,
+                        template=template,
+                        generated_at="2026-08-10T00:00:00Z",
+                    )
+                )
+
+                report = audit_existing_repository(ExistingBootstrapOptions(path=repo))
+
+                self.assertEqual(report.selected_options["template"], template)
+                self.assertEqual(report.conflicts, ())
+                self.assertEqual(report.missing, ())
+                self.assertIn("preferred-python-stack", report.selected_options["tool_profiles"])
+                self.assertIn("reproducible-data-science", report.selected_options["skills"])
+
+    def test_cli_audit_uses_recorded_description_and_selections(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "recorded-python"
+            generate_project(
+                GenerationOptions(
+                    name="Recorded Python",
+                    description="A description preserved by CLI audit.",
+                    output_dir=repo,
+                    template="python-reproducible",
+                    generated_at="2026-08-10T00:00:00Z",
+                )
+            )
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exit_code = main(["audit", "--path", str(repo), "--format", "json"])
+
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(payload["summary"]["conflicts"], 0)
+        self.assertEqual(payload["summary"]["missing"], 0)
+        self.assertIn("preferred-python-stack", payload["selected_options"]["tool_profiles"])
+
+    def test_unknown_recorded_template_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            (repo / ".repo-familiar").mkdir()
+            (repo / ".repo-familiar/bootstrap.yml").write_text(
+                "schema_version: 1\nselected_options:\n  template: \"retired\"\n"
+            )
+
+            with self.assertRaisesRegex(ValueError, "Unknown or retired recorded template"):
+                audit_existing_repository(ExistingBootstrapOptions(path=repo))
+
+    def test_recorded_template_rejects_implicit_promotion(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "recorded-basic"
+            generate_project(
+                GenerationOptions(
+                    name="Recorded Basic",
+                    description="Recorded basic template.",
+                    output_dir=repo,
+                    template="basic",
+                    generated_at="2026-08-10T00:00:00Z",
+                )
+            )
+
+            with self.assertRaisesRegex(ValueError, "preview-only until Metadata v2"):
+                audit_existing_repository(
+                    ExistingBootstrapOptions(
+                        path=repo,
+                        template="python-reproducible",
+                    )
+                )
+
+    def test_existing_repository_scaffold_adoption_is_preview_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            options = ExistingBootstrapOptions(
+                path=repo,
+                template="python-reproducible",
+                asset_groups=("python", "metadata"),
+            )
+
+            report = audit_existing_repository(options)
+            self.assertIn("pyproject.toml", {asset.path for asset in report.missing})
+            with self.assertRaisesRegex(ValueError, "preview-only under Metadata v1"):
+                bootstrap_existing_repository(options)
+
+    def test_metadata_only_template_promotion_is_blocked_under_v1(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            options = ExistingBootstrapOptions(
+                path=repo,
+                template="python-reproducible",
+                asset_groups=("metadata",),
+            )
+
+            report = audit_existing_repository(options)
+            self.assertEqual({asset.path for asset in report.missing}, {".repo-familiar/bootstrap.yml"})
+            with self.assertRaisesRegex(ValueError, "promotion and scaffold adoption"):
+                bootstrap_existing_repository(options)
+
+    def test_changed_generated_lock_is_downstream_managed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "python-project"
+            generate_project(
+                GenerationOptions(
+                    name="Python Project",
+                    description="Python project.",
+                    output_dir=repo,
+                    template="python-reproducible",
+                    generated_at="2026-08-10T00:00:00Z",
+                )
+            )
+            (repo / "uv.lock").write_text((repo / "uv.lock").read_text() + "# downstream update\n")
+
+            report = check_generated_repository(repo)
+
+        self.assertIn("uv.lock", {item.asset.path for item in report.downstream_managed})
+        self.assertNotIn("uv.lock", {item.asset.path for item in report.modified})
+
     def test_generates_minimal_downstream_repository(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "demo-project"
@@ -29,6 +193,7 @@ class GeneratorTests(unittest.TestCase):
                     name="Demo Project",
                     description="A generated demo.",
                     output_dir=output_dir,
+                    template="basic",
                     agent_harnesses=("opencode", "hermes"),
                     model_profiles=("default-coding", "budget-review"),
                     reference_type="git",
@@ -137,6 +302,7 @@ class GeneratorTests(unittest.TestCase):
                     name="Demo Project",
                     description="A generated demo.",
                     output_dir=output_dir,
+                    template="basic",
                     dry_run=True,
                 )
             )
@@ -940,7 +1106,9 @@ class GeneratorTests(unittest.TestCase):
             repo = Path(tmpdir) / "existing-project"
             repo.mkdir()
             (repo / ".repo-familiar").mkdir()
-            (repo / ".repo-familiar/bootstrap.yml").write_text("schema_version: 1\n")
+            (repo / ".repo-familiar/bootstrap.yml").write_text(
+                "schema_version: 1\nselected_options:\n  template: \"basic\"\n"
+            )
 
             report = audit_existing_repository(
                 ExistingBootstrapOptions(

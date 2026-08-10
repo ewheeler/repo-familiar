@@ -4,7 +4,7 @@ title: "Python-First Project Plan"
 
 ## Status
 
-Accepted implementation plan. The template, command, profile, skill, and Metadata v2 behavior described here remains planned until its corresponding implementation phase is complete.
+Accepted and partially implemented. Guidance, split defaults, template composition, both greenfield exemplars, package-data validation, and Metadata v1 adoption blocks are complete. Metadata v2 Managed Surfaces and narrow apply remain planned.
 
 This plan makes new repository generation more opinionated while preserving the preview-first, non-destructive contract for existing Downstream Repositories.
 
@@ -253,11 +253,15 @@ Continue using `template_config` where it is accurate. Selection groups such as 
 - Extend advice detection without adding ownership claims.
 - Test that ordinary Quarto docs do not trigger application advice.
 
+Status: implemented.
+
 ### 3. Separate command defaults
 
 - Resolve new-generation and existing-repository defaults independently without activating the new default yet.
 - Fail closed for unknown recorded templates.
 - Cover parser, interactive, targeted-add, and reference-plan behavior.
+
+Status: implemented.
 
 ### 4. Template composition
 
@@ -265,15 +269,21 @@ Continue using `template_config` where it is accurate. Selection groups such as 
 - Compose known linear layers internally.
 - Fail on accidental collisions and test overlay provenance, deterministic order, and package data.
 
+Status: implemented.
+
 ### 5. Python reproducible exemplar
 
 - Add the manifest, lock, guardrails, CI, exemplar data, provenance, deterministic pipeline, tests, and completed Divio docs.
 - Activate the new-repository default only after the exemplar passes its full validation contract.
 
+Status: implemented and active.
+
 ### 6. Static Quarto Application exemplar
 
 - Add the static client, FastAPI boundary, shared analysis, API tests, rendered-artifact test, and browser flow.
 - Keep deployment, authentication, databases, and server push out of the initial template.
+
+Status: implemented as an opt-in template.
 
 ### 7. Metadata v2 preview and attach
 

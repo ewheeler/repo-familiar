@@ -36,12 +36,15 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("micropython-wasm", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("ponytail-agent-rules", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("python-guardrails", profiles.list_names(profiles.TOOL_PROFILES))
+        self.assertIn("preferred-python-stack", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("sandbox-micropython-wasm", profiles.list_names(profiles.SANDBOX_PROFILES))
         self.assertIn("flint-chart-author", profiles.list_names(profiles.SKILLS))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
         self.assertIn("ponytail", profiles.list_names(profiles.SKILLS))
         self.assertIn("repository-map", profiles.list_names(profiles.SKILLS))
+        self.assertIn("reproducible-data-science", profiles.list_names(profiles.SKILLS))
         self.assertIn("setup-python-guardrails", profiles.list_names(profiles.SKILLS))
+        self.assertIn("static-quarto-application", profiles.list_names(profiles.SKILLS))
         self.assertIn("session-focus", profiles.list_names(profiles.SKILLS))
         self.assertIn("semantic-routing-map", profiles.list_names(profiles.REPOMAP_PROFILES))
 
@@ -84,6 +87,8 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("PONYTAIL_DEFAULT_MODE", profiles.render_tool_profiles(("ponytail-agent-rules",)))
         self.assertIn("python-guardrails:", profiles.render_tool_profiles(("python-guardrails",)))
         self.assertIn("pre-commit run --all-files", profiles.render_tool_profiles(("python-guardrails",)))
+        self.assertIn("preferred-python-stack:", profiles.render_tool_profiles(("preferred-python-stack",)))
+        self.assertIn("documented thresholds", profiles.render_tool_profiles(("preferred-python-stack",)))
         self.assertIn("memory-local:", memory)
         self.assertIn(
             "project-owned semantic repository routing map",
@@ -200,6 +205,7 @@ def _all_profile_options() -> GenerationOptions:
         name="Profile Regression",
         description="Verify generated profile files match registry output.",
         output_dir=Path("unused"),
+        template="basic",
         model_profiles=tuple(profiles.MODEL_PROFILES),
         tool_profiles=tuple(profiles.TOOL_PROFILES),
         memory_profiles=tuple(profiles.MEMORY_PROFILES),

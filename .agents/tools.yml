@@ -241,3 +241,19 @@ profiles:
       - "pre-commit run --all-files"
       - "Confirm .pre-commit-config.yaml exists with ruff and mypy hooks"
       - "Confirm [tool.ruff] and [tool.mypy] sections exist in pyproject.toml"
+  preferred-python-stack:
+    purpose: "guide agents toward the preferred Python stack without adding unused dependencies"
+    config: "Use uv by default; choose Pydantic, Polars, Hamilton, FastAPI, Structlog, Hydra/OmegaConf, fsspec/universal-pathlib, and Banks only at their documented thresholds"
+    notes:
+      - "Use Hydra/OmegaConf for composed configuration or experiment matrices, not a single static config"
+      - "Use fsspec/universal-pathlib only when storage backends must be remote or interchangeable"
+      - "Use Banks when prompt-heavy applications outgrow simple templates"
+      - "Do not replace an existing repository's dependency choices merely to match this preference"
+    setup:
+      - "Use uv for project environments, dependency resolution, lockfiles, and commands"
+      - "Use Pydantic at configuration, API, and external-data boundaries"
+      - "Use Polars for tabular transformations and Hamilton for graph-shaped analysis pipelines"
+      - "Use FastAPI and Structlog for service applications such as a Static Quarto Application"
+    verify:
+      - "Confirm pyproject.toml and uv.lock are committed for Python applications"
+      - "Confirm every non-guardrail dependency is exercised by source code or a documented workflow"

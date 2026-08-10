@@ -21,6 +21,19 @@ from repo_familiar.upgrade import apply_upgrade, preview_upgrade
 
 
 class UpgradePreviewTests(unittest.TestCase):
+    def test_python_and_application_seeds_remain_manual_review(self) -> None:
+        for path in (
+            "pyproject.toml",
+            "uv.lock",
+            "src/demo/analysis.py",
+            "tests/test_analysis.py",
+            "data/example/input.csv",
+            "app/index.qmd",
+            "REPRODUCIBILITY.md",
+            "STATIC_QUARTO_APPLICATION.md",
+        ):
+            self.assertEqual(upgrade_module._strategy(path), "manual_review", path)
+
     def test_clean_snapshot_has_no_auto_apply_yet(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             repo = Path(tmpdir) / "generated"

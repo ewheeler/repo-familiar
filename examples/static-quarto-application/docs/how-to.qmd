@@ -1,0 +1,15 @@
+---
+title: "How-to Guides"
+---
+
+How-to guides are goal-oriented recipes. They answer a specific question that an existing user can already formulate.
+
+## Add How-to Guides Here
+
+Use this section for task-focused guides such as:
+
+- How to set up local development.
+- How to run tests and quality checks.
+- How to add, deploy, migrate, inspect, or troubleshoot a project capability.
+
+Keep each guide focused on the practical outcome. Link to [Explanation](./explanation.qmd) when background context would interrupt the recipe.

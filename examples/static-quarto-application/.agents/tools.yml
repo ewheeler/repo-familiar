@@ -1,0 +1,77 @@
+profiles:
+  cq:
+    purpose: "query shared agent knowledge before implementation and before fixing errors"
+    config: "MCP/server setup remains machine-specific and is not generated as a secret"
+    notes:
+      - "Use before implementation tasks where tool, version, or integration gotchas may matter"
+      - "Record useful discoveries back into the knowledge commons"
+    setup:
+      - "Install and configure the cq MCP/server outside the repository following https://github.com/mozilla-ai/cq"
+      - "Enable cq tools in the agent harness before relying on the cq skill"
+    verify:
+      - "Confirm cq MCP tools are available in the agent harness"
+      - "Run cq status when the local setup exposes a cq CLI/server status command"
+  python-guardrails:
+    purpose: "document deterministic guardrails for Python projects using pre-commit, ruff, and mypy with opt-in deep coverage"
+    config: "Select the `setup-python-guardrails` skill to install the pre-commit framework with ruff and mypy; add deep-coverage hooks (bandit, pip-audit, vulture, import-linter, jscpd, radon) when the project needs them"
+    notes:
+      - "Ruff covers linting, import sorting, unused imports/variables, line length, and mccabe complexity in one tool"
+      - "Standardize on the Python pre-commit framework so hooks run in CI and locally with the same config"
+      - "The security-audit skill references bandit and pip-audit hooks configured by this guardrail setup"
+      - "Deep-coverage tools are opt-in; start with ruff alone and add tools when the project demonstrates the need"
+      - "Mandate `pre-commit run --all-files` in agent rules so agents run guardrails before task completion"
+    setup:
+      - "Run the `setup-python-guardrails` skill to create .pre-commit-config.yaml with ruff and mypy as defaults"
+      - "Add bandit and pip-audit hooks when the security-audit skill needs deterministic security checks"
+      - "Add import-linter when the project has feature folders that must not import across boundaries"
+      - "Add jscpd (npm i -g jscpd) when copy-paste detection is needed across files"
+      - "Add vulture when ruff's F-rules are not catching enough dead code"
+      - "Add radon when maintainability index scoring is needed beyond mccabe complexity"
+    verify:
+      - "pre-commit run --all-files"
+      - "Confirm .pre-commit-config.yaml exists with ruff and mypy hooks"
+      - "Confirm [tool.ruff] and [tool.mypy] sections exist in pyproject.toml"
+  preferred-python-stack:
+    purpose: "guide agents toward the preferred Python stack without adding unused dependencies"
+    config: "Use uv by default; choose Pydantic, Polars, Hamilton, FastAPI, Structlog, Hydra/OmegaConf, fsspec/universal-pathlib, and Banks only at their documented thresholds"
+    notes:
+      - "Use Hydra/OmegaConf for composed configuration or experiment matrices, not a single static config"
+      - "Use fsspec/universal-pathlib only when storage backends must be remote or interchangeable"
+      - "Use Banks when prompt-heavy applications outgrow simple templates"
+      - "Do not replace an existing repository's dependency choices merely to match this preference"
+    setup:
+      - "Use uv for project environments, dependency resolution, lockfiles, and commands"
+      - "Use Pydantic at configuration, API, and external-data boundaries"
+      - "Use Polars for tabular transformations and Hamilton for graph-shaped analysis pipelines"
+      - "Use FastAPI and Structlog for service applications such as a Static Quarto Application"
+    verify:
+      - "Confirm pyproject.toml and uv.lock are committed for Python applications"
+      - "Confirm every non-guardrail dependency is exercised by source code or a documented workflow"
+  browser-automation:
+    purpose: "let agents inspect rendered pages, interact with web apps, capture screenshots, check console errors, and run browser smoke checks"
+    config: "Use the project-appropriate browser driver: Playwright CLI for agent-friendly snapshots and screenshots, or Rodney for persistent Chrome sessions and shell-scriptable checks"
+    notes:
+      - "Prefer rendered pages or local preview servers over static source inspection for layout and interaction checks"
+      - "Use Playwright CLI when the agent needs snapshots, screenshots, console inspection, and interactive page exploration"
+      - "Use Rodney when persistent Chrome state, shell scripting, JavaScript assertions, accessibility tree queries, or directory-scoped sessions are useful"
+      - "Keep browser session directories such as .rodney/ out of version control"
+      - "Record tested URLs, viewport sizes, screenshots, console errors, and remaining manual-review items in the task summary"
+    setup:
+      - "Install Playwright CLI with npm install -g @playwright/cli@latest, or use npx playwright cli when Playwright is available project-locally"
+      - "Install or build Rodney from https://github.com/simonw/rodney when persistent Chrome sessions or accessibility tree queries are needed"
+    verify:
+      - "playwright-cli --help or npx --no-install playwright --version"
+      - "rodney --help"
+  a11y-scanner:
+    purpose: "scan user-facing web outputs for automatically detectable accessibility issues"
+    config: "Use project-appropriate tools such as pa11y, axe-core, @axe-core/playwright, Lighthouse, or Playwright MCP/browser automation"
+    notes:
+      - "Run automated scans during design iteration and before production handoff"
+      - "Treat automated results as a floor, not a complete accessibility review"
+      - "Pair scans with keyboard navigation, screen reader, focus management, and responsive checks"
+    setup:
+      - "Use existing project accessibility tooling when present"
+      - "For Node projects, prefer project-local dev dependencies such as pa11y, @axe-core/playwright, or Lighthouse"
+    verify:
+      - "npx pa11y --help"
+      - "npx lighthouse --help"

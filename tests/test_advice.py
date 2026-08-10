@@ -33,6 +33,60 @@ class AdviceTests(unittest.TestCase):
         self.assertIn("browser-automation", report.recommended_tool_profiles)
         self.assertIn("playwright-cli", report.recommended_skills)
 
+    def test_quarto_docs_are_not_static_quarto_application(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            (repo / "docs").mkdir()
+            (repo / "docs/_quarto.yml").write_text("project:\n  type: website\n")
+            (repo / "pyproject.toml").write_text("[project]\nname = 'docs-only'\n")
+
+            report = advise_existing_repository(repo)
+
+        self.assertTrue(report.signals.has_quarto)
+        self.assertFalse(report.signals.has_static_quarto_application)
+        self.assertNotIn("static-quarto-application", report.recommended_skills)
+
+    def test_recommends_guidance_for_existing_static_quarto_application(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            (repo / "app").mkdir()
+            (repo / "app/_quarto.yml").write_text("project:\n  type: website\n")
+            (repo / "app/app.js").write_text("fetch('/api/v1/analyze')\n")
+            (repo / "pyproject.toml").write_text(
+                "[project]\nname = 'demo'\ndependencies = ['fastapi']\n"
+            )
+
+            report = advise_existing_repository(repo)
+
+        self.assertTrue(report.signals.has_fastapi)
+        self.assertTrue(report.signals.has_browser_api_client)
+        self.assertTrue(report.signals.has_static_quarto_application)
+        self.assertIn("preferred-python-stack", report.recommended_tool_profiles)
+        self.assertIn("reproducible-data-science", report.recommended_skills)
+        self.assertIn("static-quarto-application", report.recommended_skills)
+        self.assertTrue(
+            any(
+                "add-skill" in command and "static-quarto-application" in command
+                for command in report.next_commands
+            )
+        )
+
+    def test_python_repository_gets_preferred_stack_guidance(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir)
+            (repo / "pyproject.toml").write_text("[project]\nname = 'demo'\n")
+
+            report = advise_existing_repository(repo)
+
+        self.assertIn("preferred-python-stack", report.recommended_tool_profiles)
+        self.assertIn("reproducible-data-science", report.recommended_skills)
+        self.assertTrue(
+            any(
+                "add-tool" in command and "preferred-python-stack" in command
+                for command in report.next_commands
+            )
+        )
+
     def test_intended_refactor_adjusts_stage_and_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             repo = Path(tmpdir)

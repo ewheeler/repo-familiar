@@ -13,6 +13,8 @@
 - Python package management and documented CLI invocation are uv-first: run `uv sync` and `uv run python -m repo_familiar ...`.
 - The generator supports list commands for templates, profiles, and skills; `generate --dry-run`; `generate --interactive`; non-empty output directory protection; `advise`; `audit`; `check`; `bootstrap-existing --interactive`; and targeted existing-repo add commands.
 - The `basic` template generates `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/*.yml` advisory/runtime files, selected skills, Quarto docs, `plan.md`, and `.repo-familiar/bootstrap.yml`.
+- The default `python-reproducible` template composes `basic` with a uv-managed Python project, canonical lock, guardrails, deterministic Hamilton/Polars exemplar, provenance, tests, CI, and executable Divio documentation.
+- The opt-in `static-quarto-application` template adds a Quarto-rendered product client, FastAPI/Pydantic request boundary, Structlog events, API tests, and a Playwright tutorial flow.
 - When `opencode` is selected as an agent harness, the `basic` template generates `opencode.json` with `.agents/skills` registered as a skill path.
 - `paseo` is available as an agent harness selection; it records compatibility without writing machine-level Paseo daemon config.
 - Existing repository bootstrap can audit, dry-run, and apply missing selected assets without overwriting conflicts by default.
@@ -51,7 +53,7 @@
 - Root `.agents/` consistency coverage checks dogfood profile files and registered selectable skill files against generated registry/template output.
 - Quarto render outputs are ignored through `docs/_site/` and `docs/.quarto/` in `.gitignore`.
 - Existing repository bootstrap is implemented as a second bootstrap mode: advise/audit first, dry-run by default, and additive unless explicit replacement is selected.
-- The accepted Python-first direction is documented but not implemented: new generation will default to `python-reproducible`, `static-quarto-application` will be opt-in, and existing repositories may adopt guidance additively while application-source adoption and template promotion wait for Metadata v2.
+- New generation defaults to `python-reproducible`; `static-quarto-application` is opt-in, and existing repositories may adopt guidance additively while application-source adoption and template promotion wait for Metadata v2.
 
 ## Goals
 
@@ -81,7 +83,7 @@
 - Metadata path: `.repo-familiar/bootstrap.yml`.
 - Bootstrap schema: `schema_version`, `reference_source`, `generated_at`, `generator`, `selected_options`, and structured `generated_assets`.
 - Generated asset records: `path`, `kind`, and `source`.
-- Initial generated asset kinds: `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
+- Generated asset kinds: `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, `metadata`, `dependency_manifest`, `dependency_lock`, `source_code`, `test_code`, and `data_fixture`.
 - Model profiles: `.agents/models.yml` contains non-secret runtime defaults; `.repo-familiar/bootstrap.yml` records selected profile names.
 - Tool profiles: `.agents/tools.yml` contains non-secret tool guidance; `.repo-familiar/bootstrap.yml` records selected tool profile names.
 - OpenCode/Homebrew setup remains Tool Profile guidance for agent shells only; it must not become workstation mutation or an installer.
@@ -109,7 +111,7 @@
 - Interaction: use `questionary` first for prompt-based flows; keep CLI flags fully supported.
 - Template rendering: keep `string.Template` for now and introduce Banks later only when prompt or project templates outgrow it.
 - Advice architecture: keep Hamilton DAG node logic separate from non-DAG helpers to protect future graph fingerprints.
-- Python-first default boundary: change the planned default for new repository generation only; preserve `basic` as the generic template and conservative existing-repository fallback.
+- Python-first default boundary: use `python-reproducible` for new repository generation only; preserve `basic` as the generic template and conservative existing-repository fallback.
 - Static Quarto Application boundary: use a static Quarto browser client with ordinary FastAPI request/response calls, while keeping `app/` separate from Divio documentation under `docs/`.
 - Existing-repository propagation boundary: ship additive guidance before source adoption; Metadata v1 may preview promotion candidacy but cannot apply template promotion.
 - Metadata v2 surface boundary: require explicit Managed Surface state, render basis, history, comparison method, and strategy before attach, adoption, promotion, or broad refresh apply.
@@ -342,7 +344,7 @@ Acceptance criteria:
 Status: done for current generated metadata, registry-backed profile output, and root `.agents/` dogfood consistency.
 
 - Add `content_sha256` to non-metadata generated asset records.
-- Add `check` command to report `ok`, `modified`, `missing`, and `unchecked` assets.
+- Add `check` command to report `ok`, `modified`, `downstream-managed`, `missing`, and `unchecked` assets. Dependency-lock drift is downstream-managed and non-failing.
 - Add JSON output for scripted checks.
 - Add a regression check that generated profile files match the registry-backed renderers for selected profiles. Done.
 - Add a regression check that root `.agents/` dogfood profile and registered skill assets match generated registry/template output. Done.
@@ -505,17 +507,17 @@ Acceptance criteria:
 
 ### 15. Add Python-First Greenfield Templates And Safe Propagation
 
-Status: accepted plan; implementation not started.
+Status: greenfield templates, guidance, split defaults, examples, and Metadata v1 safety boundaries implemented; Metadata v2 Managed Surfaces remain planned.
 
 The complete contract is in [Python-First Project Plan](docs/python-first-project-plan.qmd) and [ADR 0012](docs/adr/0012-python-first-greenfield-existing-repository-boundary.md).
 
 Implementation sequence:
 
-1. Add preferred-stack, reproducibility, and Static Quarto Application guidance plus precise advice detection for existing repositories.
-2. Separate new-repository default resolution from the existing-repository fallback without activating the new default yet; preserve recorded templates and fail closed for unknown ones.
-3. Add explicit internal composition for concrete `basic`, `python-reproducible`, and `static-quarto-application` templates.
-4. Add and validate the Python reproducibility exemplar with uv, guardrails, deterministic data/provenance, tests, CI, and executable Divio docs, then activate it as the new-repository default.
-5. Add the Static Quarto Application exemplar with separate `app/` and `docs/`, a FastAPI/Pydantic boundary, shared deterministic analysis, and a browser test matching the tutorial.
+1. Add preferred-stack, reproducibility, and Static Quarto Application guidance plus precise advice detection for existing repositories. Done.
+2. Separate new-repository default resolution from the existing-repository fallback; preserve recorded templates and fail closed for unknown ones. Done.
+3. Add explicit internal composition for concrete `basic`, `python-reproducible`, and `static-quarto-application` templates. Done.
+4. Add and validate the Python reproducibility exemplar with uv, guardrails, deterministic data/provenance, tests, CI, and executable Divio docs, then activate it as the new-repository default. Done.
+5. Add the Static Quarto Application exemplar with separate `app/` and `docs/`, a FastAPI/Pydantic boundary, shared deterministic analysis, and a browser test matching the tutorial. Done.
 6. Add Metadata v2 Managed Surface previews before any attach, adoption, or template-promotion apply.
 7. Add only narrow apply strategies for checksum-clean, repo-familiar-owned, low-ambiguity assets.
 
@@ -533,23 +535,23 @@ Acceptance criteria:
 
 ## Next Highest Priority Slices
 
-Priority 1: Add guidance-only preferred Python stack, reproducible data science, and Static Quarto Application support for existing repositories; keep application files user-owned.
+Priority 1: Dogfood preferred Python stack, reproducible data science, and Static Quarto Application guidance on representative existing repositories.
 
-Priority 2: Extend `advise` detection so Quarto documentation alone does not imply a Static Quarto Application, while existing FastAPI plus Quarto applications receive useful recommendations.
+Priority 2: Tune implemented advice detection from real Quarto documentation and Static Quarto Application repositories.
 
-Priority 3: Separate new-generation and existing-repository template-default resolution across CLI, interactive, targeted-add, and reference-plan paths without activating the new default.
+Priority 3: Keep the three generated examples current as the preferred-stack dependencies and executable contracts evolve.
 
-Priority 4: Add explicit concrete-template composition with collision, provenance, ordering, and package-data tests.
+Priority 4: Specify Metadata v2 Managed Surface records and v1 migration using the implemented Python and application assets as concrete cases.
 
-Priority 5: Build and validate the `python-reproducible` greenfield exemplar, then activate it as the new-generation default.
+Priority 5: Add read-only attach and promotion previews without inferring ownership of existing files.
 
-Priority 6: Build and validate the opt-in `static-quarto-application` exemplar, including served-artifact and browser checks that match its tutorial.
+Priority 6: Dogfood read-only attach and promotion previews on untouched, edited, and independently implemented Downstream Repositories.
 
-Priority 7: Specify and implement Metadata v2 Managed Surface previews and v1 migration without inferring ownership of unrecorded files.
+Priority 7: Add narrow write strategies only after preview evidence shows they preserve downstream ownership.
 
-Priority 8: Dogfood guidance and read-only promotion/attach previews on untouched, edited, and independently implemented Downstream Repositories before adding apply.
+Priority 8: Keep dependency pins and the generated lockfile current through executable example validation.
 
-Priority 9: Add narrow write strategies only after preview evidence shows they preserve downstream ownership.
+Priority 9: Revisit optional deployment guidance only after a real Static Quarto Application needs it.
 
 ## Verification Commands
 

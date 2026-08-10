@@ -7,10 +7,13 @@ import unittest
 from repo_familiar.asset_plan import (
     BOOTSTRAP_METADATA_PATH,
     PlannedAsset,
+    TemplateLayer,
     asset_kind,
     filter_planned_assets,
+    plan_composed_template_assets,
     plan_skill_assets,
     plan_template_assets,
+    validate_unique_assets,
 )
 
 
@@ -41,6 +44,101 @@ class AssetPlanTests(unittest.TestCase):
         self.assertEqual(assets[0].path, ".agents/skills/demo-skill/SKILL.md")
         self.assertEqual(assets[0].kind, "skill")
         self.assertEqual(assets[0].content, "# Demo\n")
+
+    def test_composes_declared_template_layers(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            templates_root = Path(tmpdir)
+            (templates_root / "base").mkdir()
+            (templates_root / "python").mkdir()
+            (templates_root / "base/README.md.tmpl").write_text("base\n")
+            (templates_root / "python/pyproject.toml.tmpl").write_text("[project]\n")
+
+            assets = plan_composed_template_assets(
+                templates_root,
+                "demo",
+                {},
+                {"demo": (TemplateLayer("base"), TemplateLayer("python"))},
+            )
+
+        self.assertEqual([asset.path for asset in assets], ["README.md", "pyproject.toml"])
+        self.assertEqual(assets[1].source, "templates/python/pyproject.toml.tmpl")
+
+    def test_rejects_undeclared_template_collision(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            templates_root = Path(tmpdir)
+            (templates_root / "base").mkdir()
+            (templates_root / "child").mkdir()
+            (templates_root / "base/README.md.tmpl").write_text("base\n")
+            (templates_root / "child/README.md.tmpl").write_text("child\n")
+
+            with self.assertRaisesRegex(ValueError, "without a declared override"):
+                plan_composed_template_assets(
+                    templates_root,
+                    "demo",
+                    {},
+                    {"demo": (TemplateLayer("base"), TemplateLayer("child"))},
+                )
+
+    def test_declared_override_replaces_parent_and_preserves_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            templates_root = Path(tmpdir)
+            (templates_root / "base").mkdir()
+            (templates_root / "child").mkdir()
+            (templates_root / "base/README.md.tmpl").write_text("base\n")
+            (templates_root / "child/README.md.tmpl").write_text("child\n")
+
+            assets = plan_composed_template_assets(
+                templates_root,
+                "demo",
+                {},
+                {
+                    "demo": (
+                        TemplateLayer("base"),
+                        TemplateLayer("child", frozenset({"README.md"})),
+                    )
+                },
+            )
+
+        self.assertEqual(assets[0].content, "child\n")
+        self.assertEqual(assets[0].source, "templates/child/README.md.tmpl")
+
+    def test_rejects_unused_override_and_duplicate_final_assets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            templates_root = Path(tmpdir)
+            (templates_root / "base").mkdir()
+            (templates_root / "child").mkdir()
+            (templates_root / "base/README.md.tmpl").write_text("base\n")
+            with self.assertRaisesRegex(ValueError, "declares unused overrides"):
+                plan_composed_template_assets(
+                    templates_root,
+                    "demo",
+                    {},
+                    {
+                        "demo": (
+                            TemplateLayer("base"),
+                            TemplateLayer("child", frozenset({"README.md"})),
+                        )
+                    },
+                )
+
+        duplicate = PlannedAsset("README.md", "documentation", "other", "")
+        with self.assertRaisesRegex(ValueError, "Duplicate generated asset path"):
+            validate_unique_assets([duplicate, duplicate])
+
+    def test_renders_safe_output_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            template_root = Path(tmpdir)
+            source = template_root / "src/$python_package"
+            source.mkdir(parents=True)
+            (source / "__init__.py.tmpl").write_text("")
+
+            assets = plan_template_assets(
+                template_root,
+                "python",
+                {"python_package": "demo_project"},
+            )
+
+        self.assertEqual(assets[0].path, "src/demo_project/__init__.py")
 
     def test_filters_asset_groups(self) -> None:
         assets = [
@@ -90,6 +188,18 @@ class AssetPlanTests(unittest.TestCase):
             [".gitignore", "AGENTS.md", "plan.md"],
         )
 
+    def test_application_group_surfaces_dependency_conflicts(self) -> None:
+        assets = [
+            PlannedAsset("pyproject.toml", "dependency_manifest", "test", ""),
+            PlannedAsset("uv.lock", "dependency_lock", "test", ""),
+            PlannedAsset("app/index.qmd", "source_code", "test", ""),
+        ]
+
+        self.assertEqual(
+            [asset.path for asset in filter_planned_assets(assets, ("application",))],
+            ["pyproject.toml", "uv.lock", "app/index.qmd"],
+        )
+
     def test_all_asset_group_returns_original_plan(self) -> None:
         assets = [
             PlannedAsset(path="README.md", kind="documentation", source="test", content=""),
@@ -105,3 +215,4 @@ class AssetPlanTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+    plan_composed_template_assets,

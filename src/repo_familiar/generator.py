@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 import hashlib
 from pathlib import Path
@@ -11,10 +11,12 @@ from .advice import AdviceReport, advise_existing_repository as _advise_existing
 from .asset_plan import (
     BOOTSTRAP_METADATA_PATH,
     PlannedAsset,
+    TEMPLATE_COMPOSITIONS,
     asset_kind,
     filter_planned_assets,
+    plan_composed_template_assets,
     plan_skill_assets,
-    plan_template_assets,
+    validate_unique_assets,
 )
 from .metadata import (
     BootstrapMetadata,
@@ -25,27 +27,32 @@ from .metadata import (
 from . import profiles as profile_registry
 
 
+NEW_REPOSITORY_DEFAULT_TEMPLATE = "python-reproducible"
+EXISTING_REPOSITORY_FALLBACK_TEMPLATE = "basic"
+TEMPLATE_DEFAULT_SELECTION = ("__template_default__",)
+
+
 @dataclass(frozen=True)
 class GenerationOptions:
     name: str
     description: str
     output_dir: Path
-    template: str = "basic"
+    template: str = NEW_REPOSITORY_DEFAULT_TEMPLATE
     docs: str = "quarto"
     agent_harnesses: tuple[str, ...] = ("opencode",)
     model_profiles: tuple[str, ...] = ("default-coding",)
-    tool_profiles: tuple[str, ...] = ("cq",)
+    tool_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
     memory_profiles: tuple[str, ...] = ("memory-local",)
     prompt_profiles: tuple[str, ...] = ()
     safety_profiles: tuple[str, ...] = ()
     privacy_profiles: tuple[str, ...] = ()
-    repomap_profiles: tuple[str, ...] = ()
+    repomap_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
     sandbox_profiles: tuple[str, ...] = ()
     secrets_profiles: tuple[str, ...] = ("dotenv-local", "kvenv-azure-keyvault")
-    design_profiles: tuple[str, ...] = ()
+    design_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
     worktree_profiles: tuple[str, ...] = ()
     public_interest_profiles: tuple[str, ...] = ()
-    skills: tuple[str, ...] = ("grill-with-docs",)
+    skills: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
     reference_type: str = "local"
     reference_url: str = "local"
     reference_ref: str = "unknown"
@@ -60,28 +67,28 @@ class GenerationOptions:
 class ExistingBootstrapOptions:
     path: Path
     name: str | None = None
-    description: str = "Bootstrapped with repo-familiar."
-    template: str = "basic"
+    description: str | None = None
+    template: str | None = None
     docs: str = "quarto"
-    agent_harnesses: tuple[str, ...] = ("opencode",)
-    model_profiles: tuple[str, ...] = ("default-coding",)
-    tool_profiles: tuple[str, ...] = ("cq",)
-    memory_profiles: tuple[str, ...] = ("memory-local",)
-    prompt_profiles: tuple[str, ...] = ()
-    safety_profiles: tuple[str, ...] = ()
-    privacy_profiles: tuple[str, ...] = ()
-    repomap_profiles: tuple[str, ...] = ()
-    sandbox_profiles: tuple[str, ...] = ()
-    secrets_profiles: tuple[str, ...] = ("dotenv-local", "kvenv-azure-keyvault")
-    design_profiles: tuple[str, ...] = ()
-    worktree_profiles: tuple[str, ...] = ()
-    public_interest_profiles: tuple[str, ...] = ()
-    skills: tuple[str, ...] = ("grill-with-docs",)
+    agent_harnesses: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    model_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    tool_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    memory_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    prompt_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    safety_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    privacy_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    repomap_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    sandbox_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    secrets_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    design_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    worktree_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    public_interest_profiles: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
+    skills: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
     reference_type: str = "local"
     reference_url: str = "local"
     reference_ref: str = "unknown"
     generated_at: str | None = None
-    sops_age_recipients: tuple[str, ...] = ()
+    sops_age_recipients: tuple[str, ...] = TEMPLATE_DEFAULT_SELECTION
     asset_groups: tuple[str, ...] = ("all",)
     force: bool = False
 
@@ -116,6 +123,7 @@ class CheckReport:
     path: Path
     ok: tuple[CheckedAsset, ...]
     modified: tuple[CheckedAsset, ...]
+    downstream_managed: tuple[CheckedAsset, ...]
     missing: tuple[CheckedAsset, ...]
     unchecked: tuple[CheckedAsset, ...]
 
@@ -134,14 +142,19 @@ def generate_project(options: GenerationOptions) -> list[GeneratedAsset]:
 
 
 def plan_project(options: GenerationOptions) -> list[PlannedAsset]:
+    options = resolve_generation_options(options)
     _validate_options(options)
-    template_root = _template_root(options.template)
     context = _template_context(options)
-    planned_assets = plan_template_assets(template_root, options.template, context)
+    planned_assets = plan_composed_template_assets(
+        Path(__file__).with_name("templates"),
+        options.template,
+        context,
+    )
     planned_assets = _filter_conditional_assets(planned_assets, options)
     planned_assets.extend(
         plan_skill_assets(Path(__file__).with_name("templates") / "skills", options.skills, context)
     )
+    validate_unique_assets(planned_assets)
 
     generated_assets = [asset.as_generated_asset() for asset in planned_assets]
     bootstrap_asset = PlannedAsset(
@@ -160,6 +173,60 @@ def plan_project(options: GenerationOptions) -> list[PlannedAsset]:
             content=_render_bootstrap(options, all_assets),
         ),
     ]
+
+
+def template_selection_defaults(template: str) -> dict[str, tuple[str, ...]]:
+    if template == "basic":
+        return {
+            "tool_profiles": ("cq",),
+            "repomap_profiles": (),
+            "design_profiles": (),
+            "skills": ("grill-with-docs",),
+        }
+    if template == "python-reproducible":
+        return {
+            "tool_profiles": ("cq", "python-guardrails", "preferred-python-stack"),
+            "repomap_profiles": ("hamilton-dag",),
+            "design_profiles": (),
+            "skills": (
+                "grill-with-docs",
+                "reproducible-data-science",
+                "setup-python-guardrails",
+            ),
+        }
+    if template == "static-quarto-application":
+        return {
+            "tool_profiles": (
+                "cq",
+                "python-guardrails",
+                "preferred-python-stack",
+                "browser-automation",
+                "a11y-scanner",
+            ),
+            "repomap_profiles": ("hamilton-dag",),
+            "design_profiles": ("design-a11y",),
+            "skills": (
+                "grill-with-docs",
+                "reproducible-data-science",
+                "setup-python-guardrails",
+                "static-quarto-application",
+                "playwright-cli",
+                "a11y-web-scan",
+            ),
+        }
+    known = ", ".join(list_templates())
+    raise ValueError(f"Unknown template: {template}. Known templates: {known}")
+
+
+def resolve_generation_options(options: GenerationOptions) -> GenerationOptions:
+    defaults = template_selection_defaults(options.template)
+    return replace(
+        options,
+        tool_profiles=defaults["tool_profiles"] if options.tool_profiles == TEMPLATE_DEFAULT_SELECTION else options.tool_profiles,
+        repomap_profiles=defaults["repomap_profiles"] if options.repomap_profiles == TEMPLATE_DEFAULT_SELECTION else options.repomap_profiles,
+        design_profiles=defaults["design_profiles"] if options.design_profiles == TEMPLATE_DEFAULT_SELECTION else options.design_profiles,
+        skills=defaults["skills"] if options.skills == TEMPLATE_DEFAULT_SELECTION else options.skills,
+    )
 
 
 def audit_existing_repository(options: ExistingBootstrapOptions) -> AuditReport:
@@ -206,7 +273,7 @@ def _has_non_default_existing_selections(options: ExistingBootstrapOptions) -> b
     return any(
         getattr(options, attr) != getattr(defaults, attr)
         for attr in (
-            "agent_harnesses", "model_profiles", "tool_profiles", "memory_profiles",
+            "template", "agent_harnesses", "model_profiles", "tool_profiles", "memory_profiles",
             "prompt_profiles", "safety_profiles", "privacy_profiles", "repomap_profiles",
             "sandbox_profiles", "secrets_profiles", "design_profiles", "worktree_profiles", "public_interest_profiles", "skills", "sops_age_recipients",
         )
@@ -238,7 +305,26 @@ def _selected_options_summary(options: GenerationOptions) -> dict[str, tuple[str
 def bootstrap_existing_repository(options: ExistingBootstrapOptions) -> BootstrapExistingResult:
     report = audit_existing_repository(options)
     generation_options = _generation_options_from_existing(options)
+    if (
+        not (options.path / BOOTSTRAP_METADATA_PATH).is_file()
+        and generation_options.template != EXISTING_REPOSITORY_FALLBACK_TEMPLATE
+    ):
+        raise ValueError(
+            "Template promotion and scaffold adoption are preview-only under Metadata v1; "
+            "use audit and additive guidance instead"
+        )
     planned_assets = filter_planned_assets(plan_project(generation_options), options.asset_groups)
+    scaffold_assets = [
+        asset
+        for asset in planned_assets
+        if asset.kind
+        in {"dependency_manifest", "dependency_lock", "source_code", "test_code", "data_fixture"}
+    ]
+    if scaffold_assets:
+        raise ValueError(
+            "Python and application scaffold adoption is preview-only under Metadata v1; "
+            "use audit and additive guidance instead"
+        )
     planned_by_path = {asset.path: asset for asset in planned_assets}
     writable_planned_assets = [planned_by_path[asset.path] for asset in report.missing]
     skipped_conflicts = list(report.conflicts)
@@ -385,6 +471,7 @@ def check_generated_repository(path: Path) -> CheckReport:
     metadata = load_bootstrap_metadata(bootstrap_path)
     ok: list[CheckedAsset] = []
     modified: list[CheckedAsset] = []
+    downstream_managed: list[CheckedAsset] = []
     missing: list[CheckedAsset] = []
     unchecked: list[CheckedAsset] = []
     for asset in metadata.generated_assets:
@@ -395,13 +482,18 @@ def check_generated_repository(path: Path) -> CheckReport:
             unchecked.append(CheckedAsset(asset=asset, status="unchecked"))
         else:
             current_sha256 = _content_sha256(target.read_text())
+            status = "ok" if current_sha256 == asset.content_sha256 else "modified"
+            if status == "modified" and asset.kind == "dependency_lock":
+                status = "downstream-managed"
             checked = CheckedAsset(
                 asset=asset,
-                status="ok" if current_sha256 == asset.content_sha256 else "modified",
+                status=status,
                 current_sha256=current_sha256,
             )
             if checked.status == "ok":
                 ok.append(checked)
+            elif checked.status == "downstream-managed":
+                downstream_managed.append(checked)
             else:
                 modified.append(checked)
 
@@ -409,6 +501,7 @@ def check_generated_repository(path: Path) -> CheckReport:
         path=path,
         ok=tuple(ok),
         modified=tuple(modified),
+        downstream_managed=tuple(downstream_managed),
         missing=tuple(missing),
         unchecked=tuple(unchecked),
     )
@@ -419,12 +512,7 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
 
 
 def list_templates() -> list[str]:
-    templates_root = Path(__file__).with_name("templates")
-    return sorted(
-        path.name
-        for path in templates_root.iterdir()
-        if path.is_dir() and path.name != "skills"
-    )
+    return sorted(TEMPLATE_COMPOSITIONS)
 
 
 def list_agent_harnesses() -> list[str]:
@@ -509,13 +597,6 @@ def _validate_options(options: GenerationOptions) -> None:
         raise ValueError(f"Unknown template: {options.template}. Known templates: {known}")
 
 
-def _template_root(template: str) -> Path:
-    root = Path(__file__).with_name("templates") / template
-    if not root.exists():
-        raise ValueError(f"Unknown template: {template}")
-    return root
-
-
 def _validate_output_dir(output_dir: Path, *, force: bool) -> None:
     if force or not output_dir.exists():
         return
@@ -531,6 +612,7 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
     return {
         "project_name": options.name,
         "project_slug": _slugify(options.name),
+        "python_package": _python_package(options.name),
         "project_description": options.description,
         "agent_harnesses_list": _markdown_list(options.agent_harnesses),
         "model_profiles_yaml": profile_registry.render_model_profiles(options.model_profiles),
@@ -563,6 +645,9 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
         "selected_skills_list": _markdown_list(options.skills),
         "skill_sources_yaml": profile_registry.render_skill_sources(options.skills),
         "opencode_json": profile_registry.render_opencode_config(options.tool_profiles).rstrip(),
+        "application_sync_extra": "",
+        "application_precommit_hooks": _application_precommit_hooks(options.template),
+        "application_ci_steps": _application_ci_steps(options.template),
     }
 
 
@@ -628,32 +713,80 @@ def _slugify(value: str) -> str:
     return slug or "generated-project"
 
 
+def _python_package(value: str) -> str:
+    package = re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+    if not package:
+        return "generated_project"
+    if package[0].isdigit():
+        return f"project_{package}"
+    return package
+
+
+def _application_precommit_hooks(template: str) -> str:
+    if template != "static-quarto-application":
+        return ""
+    return """      - id: quarto-app
+        name: render static application
+        entry: quarto render app
+        language: system
+        pass_filenames: false
+"""
+
+
+def _application_ci_steps(template: str) -> str:
+    if template != "static-quarto-application":
+        return ""
+    return """      - run: quarto render app
+      - run: uv run playwright install --with-deps chromium
+      - run: uv run pytest -m browser tests/test_browser.py
+"""
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _generation_options_from_existing(options: ExistingBootstrapOptions) -> GenerationOptions:
+    metadata_path = options.path / BOOTSTRAP_METADATA_PATH
+    metadata = load_bootstrap_metadata(metadata_path) if metadata_path.is_file() else None
+    name, description = _existing_render_identity(options)
+
+    def selected(key: str, current: tuple[str, ...], fallback: tuple[str, ...]) -> tuple[str, ...]:
+        if current != TEMPLATE_DEFAULT_SELECTION:
+            return current
+        if metadata is not None:
+            return tuple(metadata.selected_options[key])
+        return fallback
+
     return GenerationOptions(
-        name=options.name or options.path.name,
-        description=options.description,
+        name=name,
+        description=description,
         output_dir=options.path,
-        template=options.template,
+        template=_resolve_existing_template(options),
         docs=options.docs,
-        agent_harnesses=options.agent_harnesses,
-        model_profiles=options.model_profiles,
-        tool_profiles=options.tool_profiles,
-        memory_profiles=options.memory_profiles,
-        prompt_profiles=options.prompt_profiles,
-        safety_profiles=options.safety_profiles,
-        privacy_profiles=options.privacy_profiles,
-        repomap_profiles=options.repomap_profiles,
-        sandbox_profiles=options.sandbox_profiles,
-        secrets_profiles=options.secrets_profiles,
-        design_profiles=options.design_profiles,
-        worktree_profiles=options.worktree_profiles,
-        public_interest_profiles=options.public_interest_profiles,
-        skills=options.skills,
-        sops_age_recipients=options.sops_age_recipients,
+        agent_harnesses=selected("agent_harnesses", options.agent_harnesses, ("opencode",)),
+        model_profiles=selected("model_profiles", options.model_profiles, ("default-coding",)),
+        tool_profiles=selected("tool_profiles", options.tool_profiles, ("cq",)),
+        memory_profiles=selected("memory_profiles", options.memory_profiles, ("memory-local",)),
+        prompt_profiles=selected("prompt_profiles", options.prompt_profiles, ()),
+        safety_profiles=selected("safety_profiles", options.safety_profiles, ()),
+        privacy_profiles=selected("privacy_profiles", options.privacy_profiles, ()),
+        repomap_profiles=selected("repomap_profiles", options.repomap_profiles, ()),
+        sandbox_profiles=selected("sandbox_profiles", options.sandbox_profiles, ()),
+        secrets_profiles=selected(
+            "secrets_profiles",
+            options.secrets_profiles,
+            ("dotenv-local", "kvenv-azure-keyvault"),
+        ),
+        design_profiles=selected("design_profiles", options.design_profiles, ()),
+        worktree_profiles=selected("worktree_profiles", options.worktree_profiles, ()),
+        public_interest_profiles=selected(
+            "public_interest_profiles", options.public_interest_profiles, ()
+        ),
+        skills=selected("skills", options.skills, ("grill-with-docs",)),
+        sops_age_recipients=selected(
+            "sops_age_recipients", options.sops_age_recipients, ()
+        ),
         reference_type=options.reference_type,
         reference_url=options.reference_url,
         reference_ref=options.reference_ref,
@@ -661,6 +794,48 @@ def _generation_options_from_existing(options: ExistingBootstrapOptions) -> Gene
         bootstrap_mode="existing_repository",
         force=options.force,
     )
+
+
+def _existing_render_identity(options: ExistingBootstrapOptions) -> tuple[str, str]:
+    name = options.name
+    description = options.description
+    readme = options.path / "README.md"
+    if readme.is_file() and (name is None or description is None):
+        lines = readme.read_text().splitlines()
+        if name is None and lines and lines[0].startswith("# "):
+            name = lines[0][2:].strip()
+        if description is None:
+            description = next(
+                (
+                    line.strip()
+                    for line in lines[1:]
+                    if line.strip() and not line.startswith("#")
+                ),
+                None,
+            )
+    return name or options.path.name, description or "Bootstrapped with repo-familiar."
+
+
+def plan_existing_project(options: ExistingBootstrapOptions) -> list[PlannedAsset]:
+    return plan_project(_generation_options_from_existing(options))
+
+
+def _resolve_existing_template(options: ExistingBootstrapOptions) -> str:
+    metadata_path = options.path / BOOTSTRAP_METADATA_PATH
+    if not metadata_path.is_file():
+        return options.template or EXISTING_REPOSITORY_FALLBACK_TEMPLATE
+
+    recorded = load_bootstrap_metadata(metadata_path).selected_template
+    if recorded not in list_templates():
+        raise ValueError(
+            f"Unknown or retired recorded template: {recorded}; refusing to fall back"
+        )
+    if options.template is not None and options.template != recorded:
+        raise ValueError(
+            f"Recorded template is {recorded}; template promotion to {options.template} "
+            "is preview-only until Metadata v2"
+        )
+    return recorded
 
 
 def _content_sha256(content: str) -> str:

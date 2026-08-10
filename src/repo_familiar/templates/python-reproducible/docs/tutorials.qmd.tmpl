@@ -1,0 +1,34 @@
+---
+title: "Tutorials"
+---
+
+## Reproduce The Exemplar
+
+This tutorial proves the smallest end-to-end workflow with a committed synthetic input.
+
+1. Synchronize the locked environment:
+
+   ```bash
+   uv sync --frozen
+   ```
+
+2. Run the deterministic reproduction check:
+
+   ```bash
+   uv run reproduce --check
+   ```
+
+3. Inspect `artifacts/analysis.json`.
+
+The known result has:
+
+- category: `all`
+- count: `4`
+- total: `82`
+- average: `20.5`
+
+4. Run the test that verifies the same behavior:
+
+   ```bash
+   uv run pytest tests/test_analysis.py
+   ```

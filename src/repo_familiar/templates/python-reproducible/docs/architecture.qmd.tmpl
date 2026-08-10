@@ -1,0 +1,20 @@
+---
+title: "Architecture"
+---
+
+## Execution Path
+
+```text
+config/default.toml + data/example/observations.csv
+  -> Pydantic configuration boundary
+  -> Hamilton nodes
+  -> Polars lazy transformation
+  -> AnalysisResult
+  -> deterministic JSON artifact
+```
+
+The CLI, tests, and any future API must call `analyze()` rather than duplicate transformation logic.
+
+## Ownership
+
+repo-familiar generated the initial scaffold. Source, manifests, locks, CI, and documentation become downstream-owned working files; future refresh remains explicit and manual by default.

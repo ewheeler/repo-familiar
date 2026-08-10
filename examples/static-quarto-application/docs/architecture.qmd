@@ -1,0 +1,29 @@
+---
+title: "Architecture"
+---
+
+## Request Path
+
+```text
+Quarto source -> app/_site static client
+                    |
+                    | POST /api/v1/analyze
+                    v
+              FastAPI + Pydantic
+                    |
+                    v
+            shared analyze() function
+                    |
+                    v
+             Hamilton + Polars
+```
+
+The browser initiates every interaction. The initial architecture has no server-push channel. FastAPI mounts the rendered client for same-origin operation after `quarto render app`.
+
+## Documentation Boundary
+
+`app/` is the product interface. `docs/` is the Divio project documentation site. Sharing Quarto as a renderer does not make them the same Managed Surface.
+
+## Ownership
+
+The generated scaffold becomes downstream-owned. Existing applications receive guidance without source adoption or template promotion under Bootstrap Metadata v1.

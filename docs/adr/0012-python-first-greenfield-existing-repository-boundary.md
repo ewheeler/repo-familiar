@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted as an implementation plan. The planned templates, defaults, and Metadata v2 adoption behavior are not yet implemented.
+Accepted and partially implemented. Greenfield templates, split defaults, guidance, examples, and Metadata v1 adoption blocks are implemented; Metadata v2 Managed Surfaces remain planned.
 
 ## Context
 

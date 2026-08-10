@@ -1,0 +1,8 @@
+[[sources]]
+id = "example-observations"
+path = "data/example/observations.csv"
+source = "committed synthetic fixture"
+license = "CC0-1.0"
+retrieved = "2026-08-10"
+media_type = "text/csv"
+sha256 = "237aca7845f7f6c4308266079b983f559905af72244ceafb0f3042fe890fb1f4"

@@ -3,8 +3,8 @@
 ## Repository Routing
 
 - Read `docs/agents/repository-map.md` before broad code search or architectural work.
-- Preserve the Project Generator, Reference Source, Downstream Repository, and Vendored Generated Assets language in `CONTEXT.md`.
-- Treat `src/repo_familiar/templates/` and `src/repo_familiar/profiles.py` as canonical inputs; root `.agents/` files and `examples/basic-agentic-project/` are dogfood or snapshot copies.
+- Preserve the Project Generator, Reference Source, Downstream Repository, Vendored Generated Assets, Python Reproducible Project, Static Quarto Application, and Managed Surface language in `CONTEXT.md`.
+- Treat `src/repo_familiar/templates/` and `src/repo_familiar/profiles.py` as canonical inputs; root `.agents/` files and `examples/` are dogfood or snapshot copies.
 - Keep the repository map selective and update it when ownership moves or a high-leverage interface is added.
 
 ## Change Locality
@@ -13,6 +13,13 @@
 - Asset kinds or grouping: start in `src/repo_familiar/asset_plan.py`.
 - Profiles or skills: update the registry, canonical template, dogfood copy, provenance, profile tests, and any recorded dogfood checksum together.
 - CLI contracts: keep `src/repo_familiar/cli.py`, lifecycle documentation, and CLI/documentation tests aligned.
+- Python/application template changes: keep manifests, canonical locks, agent rules, executable docs, generated examples, and focused validation aligned.
+
+## Product Evidence
+
+- Treat Divio documentation as evidence: tutorials use known inputs and results, how-to guides include verification, reference describes tested contracts, and explanation records rationale.
+- Keep batch reproduction, API behavior, tests, and tutorial claims on the same application path.
+- Existing repositories receive guidance without Python/application scaffold ownership under Metadata v1.
 
 ## Validation
 

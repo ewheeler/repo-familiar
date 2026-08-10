@@ -50,10 +50,13 @@ def recommended_model_profiles() -> tuple[str, ...]:
     return ("default-coding",)
 
 
-def recommended_tool_profiles(has_user_facing_web: bool) -> tuple[str, ...]:
+def recommended_tool_profiles(has_user_facing_web: bool, has_python: bool = False) -> tuple[str, ...]:
+    profiles = ["cq"]
+    if has_python:
+        profiles.append("preferred-python-stack")
     if has_user_facing_web:
-        return ("cq", "browser-automation", "a11y-scanner")
-    return ("cq",)
+        profiles.extend(["browser-automation", "a11y-scanner"])
+    return tuple(profiles)
 
 
 def recommended_memory_profiles() -> tuple[str, ...]:
@@ -111,8 +114,19 @@ def recommended_worktree_profiles(recommended_stage: str, signals) -> tuple[str,
     return ()
 
 
-def recommended_skills(has_user_facing_web: bool, has_prompt_dag: bool, recommended_safety_profiles: tuple[str, ...], recommended_privacy_profiles: tuple[str, ...]) -> tuple[str, ...]:
+def recommended_skills(
+    has_user_facing_web: bool,
+    has_prompt_dag: bool,
+    recommended_safety_profiles: tuple[str, ...],
+    recommended_privacy_profiles: tuple[str, ...],
+    has_python: bool = False,
+    has_static_quarto_application: bool = False,
+) -> tuple[str, ...]:
     skills = ["grill-with-docs"]
+    if has_python:
+        skills.append("reproducible-data-science")
+    if has_static_quarto_application:
+        skills.append("static-quarto-application")
     if has_user_facing_web:
         skills.extend(["playwright-cli", "a11y-web-scan"])
     if has_prompt_dag:

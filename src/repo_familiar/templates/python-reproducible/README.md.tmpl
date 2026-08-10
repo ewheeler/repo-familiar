@@ -1,0 +1,47 @@
+# $project_name
+
+$project_description
+
+This Python Reproducible Project was generated with `repo-familiar`.
+
+## Quick Start
+
+```bash
+uv sync --frozen
+uv run reproduce --check
+uv run pytest
+quarto render docs
+```
+
+The known exemplar result is four observations with a total of `82` and an average of `20.5`.
+
+## Project Shape
+
+- `src/$python_package/` contains importable analysis and reproduction code.
+- `config/default.toml` records deterministic analysis parameters.
+- `data/example/` contains a committed synthetic input.
+- `data/sources.toml` records input provenance.
+- `tests/` verifies the known result and two-run determinism.
+- `docs/` follows the Divio documentation system.
+- `REPRODUCIBILITY.md` records the reproducibility contract.
+- `.repo-familiar/bootstrap.yml` records generation provenance.
+
+## Required Gate
+
+```bash
+uv run pre-commit run --all-files
+```
+
+## Selected Defaults
+
+Agent harnesses:
+
+$agent_harnesses_list
+
+Tool profiles:
+
+$selected_tool_profiles_list
+
+Skills:
+
+$selected_skills_list

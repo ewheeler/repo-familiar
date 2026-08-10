@@ -1,0 +1,39 @@
+from pathlib import Path
+
+import structlog
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+
+from .analysis import analyze
+from .models import AnalysisResult
+
+
+class AnalyzeRequest(BaseModel):
+    category: str = Field(min_length=1)
+    minimum_value: int = Field(ge=0)
+
+
+def create_app(static_root: Path | None = Path("app/_site")) -> FastAPI:
+    application = FastAPI(title="$project_name API", version="1.0.0")
+    log = structlog.get_logger()
+
+    @application.get("/health")
+    def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @application.post("/api/v1/analyze", response_model=AnalysisResult)
+    def analyze_route(request: AnalyzeRequest) -> AnalysisResult:
+        result = analyze(
+            category=request.category,
+            minimum_value=request.minimum_value,
+        )
+        log.info("analysis_complete", category=result.category, count=result.count)
+        return result
+
+    if static_root is not None and static_root.is_dir():
+        application.mount("/", StaticFiles(directory=static_root, html=True), name="application")
+    return application
+
+
+app = create_app()

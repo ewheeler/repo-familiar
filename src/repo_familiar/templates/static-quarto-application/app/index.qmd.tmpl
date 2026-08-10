@@ -1,0 +1,33 @@
+---
+title: "$project_name"
+page-layout: full
+---
+
+<main class="app-shell">
+  <header class="hero">
+    <p class="eyebrow">Reproducible analysis</p>
+    <h1>Explore the committed exemplar</h1>
+    <p>Choose a category and threshold. The static page requests a deterministic result from FastAPI.</p>
+  </header>
+
+  <form id="analysis-form" class="analysis-card">
+    <label>Category
+      <select id="category" name="category">
+        <option value="all">All categories</option>
+        <option value="alpha">Alpha</option>
+        <option value="beta">Beta</option>
+        <option value="gamma">Gamma</option>
+      </select>
+    </label>
+    <label>Minimum value
+      <input id="minimum-value" name="minimum_value" type="number" min="0" value="10">
+    </label>
+    <button type="submit">Analyze</button>
+  </form>
+
+  <section id="result" class="result-card" aria-live="polite">
+    <p>Submit the form to run the exemplar.</p>
+  </section>
+</main>
+
+<script src="app.js"></script>

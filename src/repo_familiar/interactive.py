@@ -5,6 +5,7 @@ from pathlib import Path
 from .generator import (
     ExistingBootstrapOptions,
     GenerationOptions,
+    NEW_REPOSITORY_DEFAULT_TEMPLATE,
     list_agent_harnesses,
     list_design_profiles,
     list_memory_profiles,
@@ -20,7 +21,9 @@ from .generator import (
     list_templates,
     list_tool_profiles,
     list_worktree_profiles,
+    template_selection_defaults,
 )
+from .metadata import load_bootstrap_metadata
 
 
 class InteractiveUnavailable(RuntimeError):
@@ -35,10 +38,11 @@ def prompt_generation_options(args) -> GenerationOptions:
     questionary = _load_questionary()
     name = args.name or _ask_text(questionary, "Project name", default="Generated Project")
     output = args.output or Path(_ask_text(questionary, "Output directory", default=_default_output(name)))
-    template = args.template or "basic"
+    template = args.template or NEW_REPOSITORY_DEFAULT_TEMPLATE
     if len(list_templates()) > 1:
         template = _ask_select(questionary, "Template", choices=list_templates(), default=template)
     description = _ask_text(questionary, "Project description", default=args.description or "Generated with repo-familiar.")
+    selection_defaults = template_selection_defaults(template)
     options = GenerationOptions(
         name=name,
         description=description,
@@ -47,18 +51,18 @@ def prompt_generation_options(args) -> GenerationOptions:
         docs=args.docs or "quarto",
         agent_harnesses=_ask_many(questionary, "Agent harnesses", list_agent_harnesses(), _tuple_from_args(args.agent_harnesses, ("opencode",))),
         model_profiles=_ask_many(questionary, "Model profiles", list_model_profiles(), _tuple_from_args(args.model_profiles, ("default-coding",))),
-        tool_profiles=_ask_many(questionary, "Tool profiles", list_tool_profiles(), _tuple_from_args(args.tool_profiles, ("cq",))),
+        tool_profiles=_ask_many(questionary, "Tool profiles", list_tool_profiles(), _tuple_from_args(args.tool_profiles, selection_defaults["tool_profiles"])),
         memory_profiles=_ask_many(questionary, "Memory profiles", list_memory_profiles(), _tuple_from_args(args.memory_profiles, ("memory-local",))),
         prompt_profiles=_ask_many(questionary, "Prompt profiles", list_prompt_profiles(), _tuple_from_args(args.prompt_profiles, ())),
         safety_profiles=_ask_many(questionary, "Safety profiles", list_safety_profiles(), _tuple_from_args(args.safety_profiles, ())),
         privacy_profiles=_ask_many(questionary, "Privacy profiles", list_privacy_profiles(), _tuple_from_args(args.privacy_profiles, ())),
-        repomap_profiles=_ask_many(questionary, "Repo map profiles", list_repomap_profiles(), _tuple_from_args(args.repomap_profiles, ())),
+        repomap_profiles=_ask_many(questionary, "Repo map profiles", list_repomap_profiles(), _tuple_from_args(args.repomap_profiles, selection_defaults["repomap_profiles"])),
         sandbox_profiles=_ask_many(questionary, "Sandbox profiles", list_sandbox_profiles(), _tuple_from_args(args.sandbox_profiles, ())),
         secrets_profiles=_ask_many(questionary, "Secrets profiles", list_secrets_profiles(), _tuple_from_args(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault"))),
-        design_profiles=_ask_many(questionary, "Design profiles", list_design_profiles(), _tuple_from_args(args.design_profiles, ())),
+        design_profiles=_ask_many(questionary, "Design profiles", list_design_profiles(), _tuple_from_args(args.design_profiles, selection_defaults["design_profiles"])),
         worktree_profiles=_ask_many(questionary, "Worktree profiles", list_worktree_profiles(), _tuple_from_args(args.worktree_profiles, ())),
         public_interest_profiles=_ask_many(questionary, "Public interest profiles", list_public_interest_profiles(), _tuple_from_args(args.public_interest_profiles, ())),
-        skills=_ask_many(questionary, "Skills", list_skills(), _tuple_from_args(args.skills, ("grill-with-docs",))),
+        skills=_ask_many(questionary, "Skills", list_skills(), _tuple_from_args(args.skills, selection_defaults["skills"])),
         reference_type=args.reference_type,
         reference_url=args.reference_url,
         reference_ref=args.reference_ref,
@@ -73,11 +77,19 @@ def prompt_generation_options(args) -> GenerationOptions:
 def prompt_existing_options(args) -> tuple[ExistingBootstrapOptions, bool]:
     questionary = _load_questionary()
     path = args.path or Path(_ask_text(questionary, "Existing repository path", default="."))
+    metadata_path = Path(path) / ".repo-familiar/bootstrap.yml"
+    metadata = load_bootstrap_metadata(metadata_path) if metadata_path.is_file() else None
+
+    def recorded(key: str, fallback: tuple[str, ...]) -> tuple[str, ...]:
+        if metadata is None:
+            return fallback
+        return tuple(metadata.selected_options[key])
+
     name = args.name or _ask_text(questionary, "Project display name", default=Path(path).name)
     asset_groups = _ask_many(
         questionary,
         "Asset groups",
-        ["agent", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "public-interest", "prompts", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"],
+        ["agent", "application", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "public-interest", "prompts", "python", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"],
         _tuple_from_args(args.asset_groups, ("memory", "metadata", "skills")),
     )
     apply = args.apply or _ask_confirm(questionary, "Write missing assets now?", default=False)
@@ -85,28 +97,28 @@ def prompt_existing_options(args) -> tuple[ExistingBootstrapOptions, bool]:
     options = ExistingBootstrapOptions(
         path=Path(path),
         name=name,
-        description=args.description or "Bootstrapped with repo-familiar.",
-        template=args.template or "basic",
+        description=args.description,
+        template=args.template or (metadata.selected_template if metadata is not None else None),
         docs=args.docs or "quarto",
-        agent_harnesses=_ask_many(questionary, "Agent harnesses", list_agent_harnesses(), _tuple_from_args(args.agent_harnesses, ("opencode",))),
-        model_profiles=_ask_many(questionary, "Model profiles", list_model_profiles(), _tuple_from_args(args.model_profiles, ("default-coding",))),
-        tool_profiles=_ask_many(questionary, "Tool profiles", list_tool_profiles(), _tuple_from_args(args.tool_profiles, ("cq",))),
-        memory_profiles=_ask_many(questionary, "Memory profiles", list_memory_profiles(), _tuple_from_args(args.memory_profiles, ("memory-local",))),
-        prompt_profiles=_ask_many(questionary, "Prompt profiles", list_prompt_profiles(), _tuple_from_args(args.prompt_profiles, ())),
-        safety_profiles=_ask_many(questionary, "Safety profiles", list_safety_profiles(), _tuple_from_args(args.safety_profiles, ())),
-        privacy_profiles=_ask_many(questionary, "Privacy profiles", list_privacy_profiles(), _tuple_from_args(args.privacy_profiles, ())),
-        repomap_profiles=_ask_many(questionary, "Repo map profiles", list_repomap_profiles(), _tuple_from_args(args.repomap_profiles, ())),
-        sandbox_profiles=_ask_many(questionary, "Sandbox profiles", list_sandbox_profiles(), _tuple_from_args(args.sandbox_profiles, ())),
-        secrets_profiles=_ask_many(questionary, "Secrets profiles", list_secrets_profiles(), _tuple_from_args(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault"))),
-        design_profiles=_ask_many(questionary, "Design profiles", list_design_profiles(), _tuple_from_args(args.design_profiles, ())),
-        worktree_profiles=_ask_many(questionary, "Worktree profiles", list_worktree_profiles(), _tuple_from_args(args.worktree_profiles, ())),
-        public_interest_profiles=_ask_many(questionary, "Public interest profiles", list_public_interest_profiles(), _tuple_from_args(args.public_interest_profiles, ())),
-        skills=_ask_many(questionary, "Skills", list_skills(), _tuple_from_args(args.skills, ("grill-with-docs",))),
+        agent_harnesses=_ask_many(questionary, "Agent harnesses", list_agent_harnesses(), _tuple_from_args(args.agent_harnesses, recorded("agent_harnesses", ("opencode",)))),
+        model_profiles=_ask_many(questionary, "Model profiles", list_model_profiles(), _tuple_from_args(args.model_profiles, recorded("model_profiles", ("default-coding",)))),
+        tool_profiles=_ask_many(questionary, "Tool profiles", list_tool_profiles(), _tuple_from_args(args.tool_profiles, recorded("tool_profiles", ("cq",)))),
+        memory_profiles=_ask_many(questionary, "Memory profiles", list_memory_profiles(), _tuple_from_args(args.memory_profiles, recorded("memory_profiles", ("memory-local",)))),
+        prompt_profiles=_ask_many(questionary, "Prompt profiles", list_prompt_profiles(), _tuple_from_args(args.prompt_profiles, recorded("prompt_profiles", ()))),
+        safety_profiles=_ask_many(questionary, "Safety profiles", list_safety_profiles(), _tuple_from_args(args.safety_profiles, recorded("safety_profiles", ()))),
+        privacy_profiles=_ask_many(questionary, "Privacy profiles", list_privacy_profiles(), _tuple_from_args(args.privacy_profiles, recorded("privacy_profiles", ()))),
+        repomap_profiles=_ask_many(questionary, "Repo map profiles", list_repomap_profiles(), _tuple_from_args(args.repomap_profiles, recorded("repomap_profiles", ()))),
+        sandbox_profiles=_ask_many(questionary, "Sandbox profiles", list_sandbox_profiles(), _tuple_from_args(args.sandbox_profiles, recorded("sandbox_profiles", ()))),
+        secrets_profiles=_ask_many(questionary, "Secrets profiles", list_secrets_profiles(), _tuple_from_args(args.secrets_profiles, recorded("secrets_profiles", ("dotenv-local", "kvenv-azure-keyvault")))),
+        design_profiles=_ask_many(questionary, "Design profiles", list_design_profiles(), _tuple_from_args(args.design_profiles, recorded("design_profiles", ()))),
+        worktree_profiles=_ask_many(questionary, "Worktree profiles", list_worktree_profiles(), _tuple_from_args(args.worktree_profiles, recorded("worktree_profiles", ()))),
+        public_interest_profiles=_ask_many(questionary, "Public interest profiles", list_public_interest_profiles(), _tuple_from_args(args.public_interest_profiles, recorded("public_interest_profiles", ()))),
+        skills=_ask_many(questionary, "Skills", list_skills(), _tuple_from_args(args.skills, recorded("skills", ("grill-with-docs",)))),
         reference_type=args.reference_type,
         reference_url=args.reference_url,
         reference_ref=args.reference_ref,
         generated_at=args.generated_at,
-        sops_age_recipients=_tuple_from_args(args.sops_age_recipients, ()),
+        sops_age_recipients=_tuple_from_args(args.sops_age_recipients, recorded("sops_age_recipients", ())),
         asset_groups=asset_groups,
         force=force,
     )

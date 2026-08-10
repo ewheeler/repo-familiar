@@ -18,6 +18,9 @@ class RepositorySignals:
     has_tests: bool
     has_ci: bool
     has_python: bool
+    has_fastapi: bool
+    has_browser_api_client: bool
+    has_static_quarto_application: bool
     has_frontend: bool
     has_container_config: bool
     has_design_docs: bool
@@ -63,7 +66,7 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
     has_prompt_dag = advice_dag.has_prompt_dag(path)
     is_policy_or_education = advice_dag.is_policy_or_education(path)
     sandbox_profiles = _extend(advice_dag.recommended_sandbox_profiles(stage, signals), _intent_sandbox_profiles(intended_work))
-    tool_profiles = advice_dag.recommended_tool_profiles(has_user_facing_web)
+    tool_profiles = advice_dag.recommended_tool_profiles(has_user_facing_web, signals.has_python)
     design_profiles = advice_dag.recommended_design_profiles(has_user_facing_web)
     prompt_profiles = _extend(advice_dag.recommended_prompt_profiles(has_prompt_dag), _intent_prompt_profiles(intended_work))
     safety_profiles = _extend(advice_dag.recommended_safety_profiles(has_prompt_dag, has_user_facing_web, is_policy_or_education), _intent_safety_profiles(intended_work))
@@ -72,7 +75,17 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
     worktree_profiles = advice_dag.recommended_worktree_profiles(stage, signals)
     public_interest_profiles = _recommended_public_interest_profiles(is_policy_or_education)
     secrets_profiles = _extend(advice_dag.recommended_secrets_profiles(), _recommended_sops_profiles(signals))
-    skills = _extend(advice_dag.recommended_skills(has_user_facing_web, has_prompt_dag, safety_profiles, privacy_profiles), _intent_skills(intended_work))
+    skills = _extend(
+        advice_dag.recommended_skills(
+            has_user_facing_web,
+            has_prompt_dag,
+            safety_profiles,
+            privacy_profiles,
+            signals.has_python,
+            signals.has_static_quarto_application,
+        ),
+        _intent_skills(intended_work),
+    )
     if "semantic-routing-map" in repomap_profiles:
         skills = _extend(skills, ("repository-map",))
     model_profiles = advice_dag.recommended_model_profiles()
@@ -92,7 +105,25 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
         worktree_profiles,
         public_interest_profiles,
     )
-    next_commands = recommended_commands(path, asset_groups, skills, prompt_profiles, safety_profiles, privacy_profiles, repomap_profiles, sandbox_profiles, secrets_profiles, design_profiles, worktree_profiles, public_interest_profiles)
+    if signals.has_static_quarto_application:
+        rationale.append(
+            "Quarto, FastAPI, and browser request signals indicate a Static Quarto Application; recommend guidance without claiming existing source files."
+        )
+    next_commands = recommended_commands(
+        path,
+        asset_groups,
+        skills,
+        prompt_profiles,
+        safety_profiles,
+        privacy_profiles,
+        repomap_profiles,
+        sandbox_profiles,
+        secrets_profiles,
+        design_profiles,
+        worktree_profiles,
+        public_interest_profiles,
+        tool_profiles=tool_profiles,
+    )
     return AdviceReport(
         path=path,
         intended_work=intended_work,
@@ -217,21 +248,48 @@ def _asset_groups_for_recommendations(
 
 
 def detect_repository_signals(path: Path) -> RepositorySignals:
+    has_quarto = any(
+        candidate.exists()
+        for candidate in (path / "docs/_quarto.yml", path / "app/_quarto.yml", path / "_quarto.yml")
+    )
+    has_fastapi = _files_contain(
+        (path / "pyproject.toml", path / "requirements.txt"),
+        "fastapi",
+    )
+    has_browser_api_client = _glob_contains(path / "app", ("*.js", "*.qmd", "*.html"), "fetch(")
     return RepositorySignals(
         has_agent_instructions=(path / "AGENTS.md").exists() or (path / "CLAUDE.md").exists(),
         has_bootstrap_metadata=(path / ".repo-familiar/bootstrap.yml").exists(),
         has_context=(path / "CONTEXT.md").exists() or (path / "CONTEXT-MAP.md").exists(),
         has_docs=(path / "docs").exists() or (path / "README.md").exists(),
-        has_quarto=(path / "docs/_quarto.yml").exists() or (path / "_quarto.yml").exists(),
+        has_quarto=has_quarto,
         has_plan=(path / "plan.md").exists() or (path / "PLAN.md").exists(),
         has_tests=(path / "tests").exists() or any(path.glob("test_*.py")) or any(path.glob("**/*.test.*")),
         has_ci=(path / ".github/workflows").exists() or (path / ".gitlab-ci.yml").exists(),
         has_python=(path / "pyproject.toml").exists() or (path / "requirements.txt").exists(),
+        has_fastapi=has_fastapi,
+        has_browser_api_client=has_browser_api_client,
+        has_static_quarto_application=has_quarto and has_fastapi and has_browser_api_client,
         has_frontend=(path / "package.json").exists() or (path / "src").joinpath("components").exists(),
         has_container_config=(path / "docker-compose.yml").exists() or (path / "compose.yml").exists() or (path / "Dockerfile").exists() or (path / "Coastfile").exists(),
         has_design_docs=(path / "DESIGN.md").exists() or (path / "STYLE.md").exists(),
         has_dotenv=(path / ".env").exists() or (path / ".env.example").exists() or any(path.glob(".env.*")),
         has_sops_config=(path / ".sops.yaml").exists() or (path / ".sops.yml").exists(),
+    )
+
+
+def _files_contain(paths: tuple[Path, ...], needle: str) -> bool:
+    return any(path.is_file() and needle in path.read_text(errors="ignore").lower() for path in paths)
+
+
+def _glob_contains(root: Path, patterns: tuple[str, ...], needle: str) -> bool:
+    if not root.is_dir():
+        return False
+    return any(
+        needle in path.read_text(errors="ignore")
+        for pattern in patterns
+        for path in root.rglob(pattern)
+        if path.is_file()
     )
 
 
@@ -248,6 +306,7 @@ def recommended_commands(
     design_profiles: tuple[str, ...],
     worktree_profiles: tuple[str, ...],
     public_interest_profiles: tuple[str, ...],
+    tool_profiles: tuple[str, ...] = (),
 ) -> list[str]:
     quoted_path = json.dumps(str(path))
     group_args = " ".join(f"--asset-group {group}" for group in asset_groups)
@@ -258,6 +317,8 @@ def recommended_commands(
     ]
     for skill in skills:
         commands.append(f"uv run python -m repo_familiar add-skill --path {quoted_path} --skill {skill}")
+    for tool_profile in tool_profiles:
+        commands.append(f"uv run python -m repo_familiar add-tool --path {quoted_path} --tool {tool_profile}")
     for prompt_profile in prompt_profiles:
         commands.append(f"uv run python -m repo_familiar add-prompts --path {quoted_path} --prompt-profile {prompt_profile}")
     for safety_profile in safety_profiles:

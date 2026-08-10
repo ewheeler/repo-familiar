@@ -14,6 +14,8 @@ from . import profiles
 from .agent_plugins import AgentPluginExportOptions, export_agent_plugin
 from .generator import (
     ExistingBootstrapOptions,
+    NEW_REPOSITORY_DEFAULT_TEMPLATE,
+    TEMPLATE_DEFAULT_SELECTION,
     GenerationOptions,
     advise_existing_repository,
     audit_existing_repository,
@@ -36,6 +38,7 @@ from .generator import (
     list_tool_profiles,
     list_worktree_profiles,
     plan_project,
+    plan_existing_project,
 )
 from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset, asset_in_groups
 from .interactive import (
@@ -389,8 +392,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _add_selection_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--description", default="Generated with repo-familiar.")
-    parser.add_argument("--template", default="basic")
+    parser.add_argument("--description", default=None)
+    parser.add_argument("--template", default=None)
     parser.add_argument("--docs", default="quarto")
     parser.add_argument(
         "--agent-harness",
@@ -503,7 +506,7 @@ def _add_asset_group_argument(parser: argparse.ArgumentParser) -> None:
         "--asset-group",
         action="append",
         dest="asset_groups",
-        choices=("all", "agent", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "public-interest", "prompts", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"),
+        choices=("all", "agent", "application", "config", "design", "docs", "memory", "metadata", "models", "plan", "privacy", "public-interest", "prompts", "python", "repomap", "safety", "sandbox", "secrets", "skills", "tools", "worktrees"),
         default=None,
         help="asset group to audit/apply; may be passed multiple times",
     )
@@ -585,24 +588,24 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         options = GenerationOptions(
             name=args.name,
-            description=args.description,
+            description=args.description or "Generated with repo-familiar.",
             output_dir=args.output,
-            template=args.template,
+            template=args.template or NEW_REPOSITORY_DEFAULT_TEMPLATE,
             docs=args.docs,
             agent_harnesses=_tuple_or_default(args.agent_harnesses, ("opencode",)),
             model_profiles=_tuple_or_default(args.model_profiles, ("default-coding",)),
-            tool_profiles=_tuple_or_default(args.tool_profiles, ("cq",)),
+            tool_profiles=_tuple_or_default(args.tool_profiles, TEMPLATE_DEFAULT_SELECTION),
             memory_profiles=_tuple_or_default(args.memory_profiles, ("memory-local",)),
             prompt_profiles=_tuple_or_default(args.prompt_profiles, ()),
             safety_profiles=_tuple_or_default(args.safety_profiles, ()),
             privacy_profiles=_tuple_or_default(args.privacy_profiles, ()),
-            repomap_profiles=_tuple_or_default(args.repomap_profiles, ()),
+            repomap_profiles=_tuple_or_default(args.repomap_profiles, TEMPLATE_DEFAULT_SELECTION),
             sandbox_profiles=_tuple_or_default(args.sandbox_profiles, ()),
             secrets_profiles=_tuple_or_default(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault")),
-            design_profiles=_tuple_or_default(args.design_profiles, ()),
+            design_profiles=_tuple_or_default(args.design_profiles, TEMPLATE_DEFAULT_SELECTION),
             worktree_profiles=_tuple_or_default(args.worktree_profiles, ()),
             public_interest_profiles=_tuple_or_default(args.public_interest_profiles, ()),
-            skills=_tuple_or_default(args.skills, ("grill-with-docs",)),
+            skills=_tuple_or_default(args.skills, TEMPLATE_DEFAULT_SELECTION),
             reference_type=args.reference_type,
             reference_url=args.reference_url,
             reference_ref=args.reference_ref,
@@ -891,25 +894,25 @@ def _existing_options(args: argparse.Namespace) -> ExistingBootstrapOptions:
         description=args.description,
         template=args.template,
         docs=args.docs,
-        agent_harnesses=_tuple_or_default(args.agent_harnesses, ("opencode",)),
-        model_profiles=_tuple_or_default(args.model_profiles, ("default-coding",)),
-        tool_profiles=_tuple_or_default(args.tool_profiles, ("cq",)),
-        memory_profiles=_tuple_or_default(args.memory_profiles, ("memory-local",)),
-        prompt_profiles=_tuple_or_default(args.prompt_profiles, ()),
-        safety_profiles=_tuple_or_default(args.safety_profiles, ()),
-        privacy_profiles=_tuple_or_default(args.privacy_profiles, ()),
-        repomap_profiles=_tuple_or_default(args.repomap_profiles, ()),
-        sandbox_profiles=_tuple_or_default(args.sandbox_profiles, ()),
-        secrets_profiles=_tuple_or_default(args.secrets_profiles, ("dotenv-local", "kvenv-azure-keyvault")),
-        design_profiles=_tuple_or_default(args.design_profiles, ()),
-        worktree_profiles=_tuple_or_default(args.worktree_profiles, ()),
-        public_interest_profiles=_tuple_or_default(args.public_interest_profiles, ()),
-        skills=_tuple_or_default(args.skills, ("grill-with-docs",)),
+        agent_harnesses=_tuple_or_default(args.agent_harnesses, TEMPLATE_DEFAULT_SELECTION),
+        model_profiles=_tuple_or_default(args.model_profiles, TEMPLATE_DEFAULT_SELECTION),
+        tool_profiles=_tuple_or_default(args.tool_profiles, TEMPLATE_DEFAULT_SELECTION),
+        memory_profiles=_tuple_or_default(args.memory_profiles, TEMPLATE_DEFAULT_SELECTION),
+        prompt_profiles=_tuple_or_default(args.prompt_profiles, TEMPLATE_DEFAULT_SELECTION),
+        safety_profiles=_tuple_or_default(args.safety_profiles, TEMPLATE_DEFAULT_SELECTION),
+        privacy_profiles=_tuple_or_default(args.privacy_profiles, TEMPLATE_DEFAULT_SELECTION),
+        repomap_profiles=_tuple_or_default(args.repomap_profiles, TEMPLATE_DEFAULT_SELECTION),
+        sandbox_profiles=_tuple_or_default(args.sandbox_profiles, TEMPLATE_DEFAULT_SELECTION),
+        secrets_profiles=_tuple_or_default(args.secrets_profiles, TEMPLATE_DEFAULT_SELECTION),
+        design_profiles=_tuple_or_default(args.design_profiles, TEMPLATE_DEFAULT_SELECTION),
+        worktree_profiles=_tuple_or_default(args.worktree_profiles, TEMPLATE_DEFAULT_SELECTION),
+        public_interest_profiles=_tuple_or_default(args.public_interest_profiles, TEMPLATE_DEFAULT_SELECTION),
+        skills=_tuple_or_default(args.skills, TEMPLATE_DEFAULT_SELECTION),
         reference_type=args.reference_type,
         reference_url=args.reference_url,
         reference_ref=args.reference_ref,
         generated_at=args.generated_at,
-        sops_age_recipients=_tuple_or_default(args.sops_age_recipients, ()),
+        sops_age_recipients=_tuple_or_default(args.sops_age_recipients, TEMPLATE_DEFAULT_SELECTION),
         asset_groups=_tuple_or_default(getattr(args, "asset_groups", None), ("all",)),
         force=getattr(args, "force", False),
     )
@@ -1008,10 +1011,12 @@ def _print_check_or_json(report, output_format: str) -> None:
         "Summary: "
         f"{len(report.ok)} ok, "
         f"{len(report.modified)} modified, "
+        f"{len(report.downstream_managed)} downstream-managed, "
         f"{len(report.missing)} missing, "
         f"{len(report.unchecked)} unchecked"
     )
     _print_checked_assets("Modified", report.modified)
+    _print_checked_assets("Downstream-managed", report.downstream_managed)
     _print_checked_assets("Missing", report.missing)
     _print_checked_assets("Unchecked", report.unchecked)
 
@@ -1028,11 +1033,15 @@ def _check_report_to_dict(report) -> dict:
         "summary": {
             "ok": len(report.ok),
             "modified": len(report.modified),
+            "downstream_managed": len(report.downstream_managed),
             "missing": len(report.missing),
             "unchecked": len(report.unchecked),
         },
         "ok": [_checked_asset_to_dict(checked) for checked in report.ok],
         "modified": [_checked_asset_to_dict(checked) for checked in report.modified],
+        "downstream_managed": [
+            _checked_asset_to_dict(checked) for checked in report.downstream_managed
+        ],
         "missing": [_checked_asset_to_dict(checked) for checked in report.missing],
         "unchecked": [_checked_asset_to_dict(checked) for checked in report.unchecked],
     }
@@ -1272,35 +1281,7 @@ def _advice_to_dict(report) -> dict:
 
 
 def _planned_assets_by_path(options: ExistingBootstrapOptions) -> dict[str, PlannedAsset]:
-    generation_options = GenerationOptions(
-        name=options.name or options.path.name,
-        description=options.description,
-        output_dir=options.path,
-        template=options.template,
-        docs=options.docs,
-        agent_harnesses=options.agent_harnesses,
-        model_profiles=options.model_profiles,
-        tool_profiles=options.tool_profiles,
-        memory_profiles=options.memory_profiles,
-        prompt_profiles=options.prompt_profiles,
-        safety_profiles=options.safety_profiles,
-        privacy_profiles=options.privacy_profiles,
-        repomap_profiles=options.repomap_profiles,
-        sandbox_profiles=options.sandbox_profiles,
-        secrets_profiles=options.secrets_profiles,
-        design_profiles=options.design_profiles,
-        worktree_profiles=options.worktree_profiles,
-        public_interest_profiles=options.public_interest_profiles,
-        skills=options.skills,
-        reference_type=options.reference_type,
-        reference_url=options.reference_url,
-        reference_ref=options.reference_ref,
-        generated_at=options.generated_at,
-        sops_age_recipients=options.sops_age_recipients,
-        bootstrap_mode="existing_repository",
-        dry_run=True,
-    )
-    return {asset.path: asset for asset in plan_project(generation_options)}
+    return {asset.path: asset for asset in plan_existing_project(options)}
 
 
 def _conflict_suggestions(path: Path, conflicts, planned_by_path: dict[str, PlannedAsset]) -> list[dict]:
@@ -1458,6 +1439,7 @@ def _targeted_add_dependency_preview(options: ExistingBootstrapOptions) -> str |
 def _asset_groups_for_path(path: str) -> tuple[str, ...]:
     groups = (
         "agent",
+        "application",
         "config",
         "design",
         "docs",
@@ -1468,6 +1450,7 @@ def _asset_groups_for_path(path: str) -> tuple[str, ...]:
         "privacy",
         "public-interest",
         "prompts",
+        "python",
         "repomap",
         "safety",
         "sandbox",

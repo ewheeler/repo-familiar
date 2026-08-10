@@ -1,0 +1,42 @@
+# $project_name
+
+$project_description
+
+This Static Quarto Application was generated with `repo-familiar`.
+
+## Run The Exemplar
+
+```bash
+uv sync --frozen
+uv run reproduce --check
+quarto render app
+uv run uvicorn $python_package.api:app --reload
+```
+
+Open `http://127.0.0.1:8000`, choose category `beta`, keep the threshold at `10`, and select **Analyze**. The visible result is count `2`, total `36`, and average `18.0`.
+
+## Verify
+
+```bash
+quarto render app
+uv run pytest
+uv run playwright install chromium
+uv run pytest -m browser tests/test_browser.py
+quarto render docs
+```
+
+The batch command and API call the same deterministic analysis. See `REPRODUCIBILITY.md` and `STATIC_QUARTO_APPLICATION.md` for the contracts.
+
+## Selected Defaults
+
+Agent harnesses:
+
+$agent_harnesses_list
+
+Tool profiles:
+
+$selected_tool_profiles_list
+
+Skills:
+
+$selected_skills_list

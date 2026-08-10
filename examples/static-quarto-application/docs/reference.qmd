@@ -1,0 +1,31 @@
+---
+title: "Reference"
+---
+
+## API
+
+`POST /api/v1/analyze`
+
+Request fields:
+
+- `category`: non-empty category or `all`
+- `minimum_value`: integer greater than or equal to zero
+
+Response fields:
+
+- category, count, total, and average
+- input and configuration SHA-256 provenance
+
+`GET /health` returns `{"status": "ok"}`.
+
+The development dependency `httpx2` supplies the transport used by the current Starlette/FastAPI `TestClient` in `tests/test_api.py`.
+
+## Commands
+
+| Command | Contract |
+|---|---|
+| `uv run reproduce --check` | Verify deterministic batch output. |
+| `quarto render app` | Build the static product client. |
+| `uv run uvicorn static_quarto_application.api:app` | Serve the API and rendered app on one origin. |
+| `uv run pytest tests/test_api.py` | Verify API validation and known results. |
+| `uv run pytest -m browser tests/test_browser.py` | Verify the tutorial interaction against the served artifact after rendering `app/` and installing Chromium. |
