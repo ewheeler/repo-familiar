@@ -19,6 +19,10 @@ title: "Research"
 - [unicef/design.md](https://github.com/unicef/design.md)
 - [impeccable.style](https://impeccable.style/)
 
+## Tools Under Consideration
+
+- [Diagram Design Assessment](./diagram-design-assessment.qmd): recommends retaining `cathrynlavery/diagram-design` as an opt-in external Design Profile candidate while license, lifecycle, security, offline, and bundle-size concerns block direct vendoring.
+
 ## Assessments
 
 - [Writing Style Skill Assessment](./writing-style-skills-assessment.qmd): evaluates SimpleEnglish and Economist Style as optional skills for downstream repositories.
