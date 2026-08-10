@@ -78,10 +78,10 @@ The planned refresh model is preview-first and selected-asset based. It should c
 
 The `.repo-familiar/` namespace is reserved for generator-owned metadata. It is separate from `.agents/`, which should remain focused on agent runtime instructions and skills.
 
-The first `.repo-familiar/bootstrap.yml` schema should include only provenance and generation choices:
+`.repo-familiar/bootstrap.yml` schema v2 includes provenance, generation choices, and explicit Managed Surface state:
 
 ```yaml
-schema_version: 1
+schema_version: 2
 bootstrap_mode: new_repository
 reference_source:
   type: git
@@ -128,6 +128,16 @@ generated_assets:
     kind: documentation
     source: templates/basic/docs/_quarto.yml.tmpl
     content_sha256: <sha256>
+render_context:
+  project_name: <project-name>
+  project_description: <project-description>
+  template: <template-name>
+  docs: quarto
+  selected_options_sha256: <sha256>
+  source: generation_inputs
+managed_surfaces: []
+managed_surface_assets: []
+history: []
 ```
 
 `generated_assets` should use structured records immediately. Non-metadata assets include `content_sha256` so generated repositories can be checked for drift. `.repo-familiar/bootstrap.yml` is not self-hashed.
@@ -156,7 +166,9 @@ The product separates new repository generation from existing-repository adoptio
 - Internal template composition reuses known linear layers, while Bootstrap Metadata v1 records only the concrete effective template and each generated file's source.
 - Existing repositories receive detection and additive guidance; Python/application scaffold application is blocked under Metadata v1.
 
-The architecture has three product planes: guidance, greenfield scaffolds, and propagation. Metadata v1 remains sufficient for concrete greenfield provenance and advisory comparisons. Metadata v2 will introduce Managed Surfaces before attach, adoption, promotion, or broad refresh apply.
+The architecture has three product planes: guidance, greenfield scaffolds, and propagation. New generation writes Metadata v2 and groups every non-metadata generated asset into exactly one Managed Surface. Metadata v1 remains readable and migrates losslessly. Attach is metadata-only; template promotion remains read-only and broad refresh apply remains unavailable.
+
+Managed Surfaces currently include repository foundation, agent runtime, Divio documentation, Python runtime, quality and CI, reproducible analysis, Quarto static client, and FastAPI API. Each surface records a render-context fingerprint, state, comparison basis, strategy, per-file checksums, and operation history.
 
 See [Python-First Project Plan](./python-first-project-plan.qmd) and [ADR 0012](./adr/0012-python-first-greenfield-existing-repository-boundary.md) for the complete lifecycle and implementation sequence.
 

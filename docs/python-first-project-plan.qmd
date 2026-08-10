@@ -4,7 +4,7 @@ title: "Python-First Project Plan"
 
 ## Status
 
-Accepted and partially implemented. Guidance, split defaults, template composition, both greenfield exemplars, package-data validation, and Metadata v1 adoption blocks are complete. Metadata v2 Managed Surfaces and narrow apply remain planned.
+Accepted and implemented through the safe propagation boundary. Guidance, split defaults, template composition, both greenfield exemplars, package-data validation, Metadata v2 Managed Surfaces, v1 migration, metadata-only attach, and template-promotion preview are complete. Broad content apply remains planned.
 
 This plan makes new repository generation more opinionated while preserving the preview-first, non-destructive contract for existing Downstream Repositories.
 
@@ -16,7 +16,7 @@ This plan makes new repository generation more opinionated while preserving the 
 - Encode preferred Python tools through manifests, tests, CI, agent instructions, and clear selection thresholds rather than advisory prose alone.
 - Treat Divio documentation and executable exemplars as evidence for observable product claims.
 - Define reproducible data science as a concrete environment, input, configuration, execution, and validation contract.
-- Give existing repositories useful guidance now without claiming ownership that Bootstrap Metadata v1 cannot represent.
+- Let existing repositories adopt coherent surfaces explicitly through Metadata v2 without rewriting their files.
 
 ## Product Planes
 
@@ -42,7 +42,7 @@ basic
     -> static-quarto-application
 ```
 
-Linear composition is an internal implementation detail. Bootstrap Metadata v1 records one concrete effective template ID and the source of each generated file; it does not expose a public template-layer stack.
+Linear composition is an internal implementation detail. Bootstrap Metadata v2 records one concrete effective template ID, each generated file's source, and its Managed Surface; it does not expose a public template-layer stack.
 
 ### Propagation
 
@@ -173,7 +173,7 @@ Existing repositories receive these checks only through explicit additive adopti
 | Repository state | Near-term behavior |
 |---|---|
 | Unbootstrapped existing repository | Detect and recommend; default comparison remains `basic`; add guidance only unless the user selects a narrower current capability explicitly |
-| Bootstrapped `basic`, generated assets untouched | Show advisory promotion readiness; no template-promotion apply under Metadata v1 |
+| Bootstrapped `basic`, generated assets untouched | Migrate losslessly to v2 and preview target surfaces; no template-promotion content apply |
 | Bootstrapped repository with edited generated assets | Preserve edits; provide guidance and manual conflict review only |
 | Independently implemented FastAPI plus static Quarto | Detect the pattern and recommend guidance; do not generate `app/` or claim ownership of existing source, docs, CI, manifests, or locks |
 | Guidance-only adopter | Use targeted Tool Profile and skill additions without generated application code |
@@ -181,9 +181,9 @@ Existing repositories receive these checks only through explicit additive adopti
 
 Plain Quarto documentation must not trigger Static Quarto Application advice. Detection should require evidence of Quarto, FastAPI, and a browser/API interaction boundary.
 
-## Metadata V1 Boundaries
+## Metadata V1 Compatibility Boundaries
 
-Metadata v1 may support concrete greenfield template IDs, per-file provenance, selected guidance, and read-only comparisons against another template. Any promotion result is only a candidate for future Metadata v2 attach or adoption.
+Metadata v1 supports historical template IDs, per-file provenance, selected guidance, and read-only checks. `migrate-metadata` converts only its recorded generated assets to `written` Managed Surface assets.
 
 Metadata v1 must not:
 
@@ -290,6 +290,8 @@ Status: implemented as an opt-in template.
 - Add Managed Surfaces, v1 migration, and read-only attach/promotion classification.
 - Do not add broad apply in the same slice.
 
+Status: implemented. Attach writes metadata only; template promotion remains read-only.
+
 ### 8. Narrow apply
 
 - Add apply only for checksum-clean, repo-familiar-owned, low-ambiguity assets.
@@ -313,7 +315,7 @@ Status: implemented as an opt-in template.
 ## Deferred Work
 
 - General preset registry
-- Broad existing-repository application-code adoption under Metadata v1
+- Broad write-capable application-code refresh
 - Automatic refresh of manifests, locks, CI, prose, or application source
 - Authentication, databases, deployment platforms, workers, WebSockets, or server-sent events
 - Mandatory Hydra/OmegaConf, fsspec/universal-pathlib, or Banks dependencies without a concrete need

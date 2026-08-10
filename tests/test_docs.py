@@ -325,7 +325,7 @@ class DocsTests(unittest.TestCase):
         snippet = next(
             block
             for block in USAGE_DOC.read_text().split("```yaml\n")[1:]
-            if block.startswith("schema_version: 1\n")
+            if block.startswith("schema_version: 2\n")
         ).partition("```")[0]
 
         self.assertLess(snippet.index("  template: <template-name>"), snippet.index("  docs: quarto"))
@@ -337,6 +337,21 @@ class DocsTests(unittest.TestCase):
             self.assertGreater(current_index, last_index)
             last_index = current_index
         self.assertGreater(snippet.index("  docs: quarto"), last_index)
+        self.assertIn("render_context:", snippet)
+        self.assertIn("managed_surfaces:", snippet)
+        self.assertIn("managed_surface_assets:", snippet)
+        self.assertIn("history:", snippet)
+
+    def test_managed_surface_commands_are_documented(self) -> None:
+        generator_doc = GENERATOR_DOC.read_text()
+        lifecycle_doc = BOOTSTRAP_LIFECYCLE_DOC.read_text()
+        existing_doc = (DOCS_DIR / "existing-repos.qmd").read_text()
+
+        for command in ("migrate-metadata", "attach", "migrate-template"):
+            self.assertIn(command, _subcommand_parser(command).prog)
+            self.assertIn(f"repo_familiar {command}", generator_doc)
+            self.assertIn(f"`{command}`", lifecycle_doc)
+            self.assertIn(f"repo_familiar {command}", existing_doc)
 
     def test_catalog_and_describe_parser_cover_profile_families_and_formats(self) -> None:
         catalog_parser = _subcommand_parser("catalog")

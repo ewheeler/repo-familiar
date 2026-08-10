@@ -439,6 +439,18 @@ def _merge_bootstrap_metadata(
     options: GenerationOptions,
     new_assets: list[GeneratedAsset],
 ) -> BootstrapMetadata:
+    from .managed_surfaces import (
+        build_managed_surfaces,
+        build_render_context,
+        migrate_metadata_v2,
+    )
+
+    existing = migrate_metadata_v2(
+        existing,
+        project_name=options.name,
+        project_description=options.description,
+        at=_utc_now(),
+    )
     selected_options = dict(existing.selected_options)
     incoming_options = _selected_options_summary(options)
     for key, value in incoming_options.items():
@@ -447,8 +459,33 @@ def _merge_bootstrap_metadata(
     assets_by_path = {asset.path: asset for asset in existing.generated_assets}
     for asset in new_assets:
         assets_by_path[asset.path] = asset
+    render_context = build_render_context(
+        options.name,
+        options.description,
+        existing.selected_template,
+        existing.docs,
+        selected_options,
+    )
+    at = _utc_now()
+    incoming_surfaces, incoming_surface_assets, incoming_history = build_managed_surfaces(
+        options.template,
+        render_context,
+        tuple(new_assets),
+        state="written",
+        command="bootstrap-existing",
+        mode="apply",
+        at=at,
+    )
+    surfaces_by_id = {surface.id: surface for surface in existing.managed_surfaces}
+    surfaces_by_id.update({surface.id: surface for surface in incoming_surfaces})
+    surface_assets_by_key = {
+        (asset.surface_id, asset.path): asset for asset in existing.managed_surface_assets
+    }
+    surface_assets_by_key.update(
+        {(asset.surface_id, asset.path): asset for asset in incoming_surface_assets}
+    )
     return BootstrapMetadata(
-        schema_version=existing.schema_version,
+        schema_version=2,
         bootstrap_mode=existing.bootstrap_mode,
         reference_type=existing.reference_type,
         reference_url=existing.reference_url,
@@ -460,6 +497,12 @@ def _merge_bootstrap_metadata(
         selected_options=selected_options,
         docs=existing.docs,
         generated_assets=tuple(assets_by_path[path] for path in sorted(assets_by_path)),
+        render_context=render_context,
+        managed_surfaces=tuple(surfaces_by_id[key] for key in sorted(surfaces_by_id)),
+        managed_surface_assets=tuple(
+            surface_assets_by_key[key] for key in sorted(surface_assets_by_key)
+        ),
+        history=(*existing.history, *incoming_history),
     )
 
 
@@ -652,35 +695,59 @@ def _template_context(options: GenerationOptions) -> dict[str, str]:
 
 
 def _render_bootstrap(options: GenerationOptions, assets: list[GeneratedAsset]) -> str:
+    from .managed_surfaces import build_managed_surfaces, build_render_context
+
+    generated_at = options.generated_at or _utc_now()
+    selected_options = {
+        "agent_harnesses": options.agent_harnesses,
+        "model_profiles": options.model_profiles,
+        "tool_profiles": options.tool_profiles,
+        "memory_profiles": options.memory_profiles,
+        "prompt_profiles": options.prompt_profiles,
+        "safety_profiles": options.safety_profiles,
+        "privacy_profiles": options.privacy_profiles,
+        "repomap_profiles": options.repomap_profiles,
+        "sandbox_profiles": options.sandbox_profiles,
+        "secrets_profiles": options.secrets_profiles,
+        "design_profiles": options.design_profiles,
+        "worktree_profiles": options.worktree_profiles,
+        "public_interest_profiles": options.public_interest_profiles,
+        "sops_age_recipients": options.sops_age_recipients,
+        "skills": options.skills,
+    }
+    render_context = build_render_context(
+        options.name,
+        options.description,
+        options.template,
+        options.docs,
+        selected_options,
+    )
+    surfaces, surface_assets, history = build_managed_surfaces(
+        options.template,
+        render_context,
+        tuple(assets),
+        state="written",
+        command=("generate" if options.bootstrap_mode == "new_repository" else "bootstrap-existing"),
+        mode="apply",
+        at=generated_at,
+    )
     metadata = BootstrapMetadata(
-        schema_version=1,
+        schema_version=2,
         bootstrap_mode=options.bootstrap_mode,
         reference_type=options.reference_type,
         reference_url=options.reference_url,
         reference_ref=options.reference_ref,
-        generated_at=options.generated_at or _utc_now(),
+        generated_at=generated_at,
         generator_name="repo-familiar",
         generator_version=__version__,
         selected_template=options.template,
-        selected_options={
-            "agent_harnesses": options.agent_harnesses,
-            "model_profiles": options.model_profiles,
-            "tool_profiles": options.tool_profiles,
-            "memory_profiles": options.memory_profiles,
-            "prompt_profiles": options.prompt_profiles,
-            "safety_profiles": options.safety_profiles,
-            "privacy_profiles": options.privacy_profiles,
-            "repomap_profiles": options.repomap_profiles,
-            "sandbox_profiles": options.sandbox_profiles,
-            "secrets_profiles": options.secrets_profiles,
-            "design_profiles": options.design_profiles,
-            "worktree_profiles": options.worktree_profiles,
-            "public_interest_profiles": options.public_interest_profiles,
-            "sops_age_recipients": options.sops_age_recipients,
-            "skills": options.skills,
-        },
+        selected_options=selected_options,
         docs=options.docs,
         generated_assets=tuple(assets),
+        render_context=render_context,
+        managed_surfaces=surfaces,
+        managed_surface_assets=surface_assets,
+        history=history,
     )
     return render_bootstrap_metadata(metadata)
 

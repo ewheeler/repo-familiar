@@ -65,7 +65,7 @@ uv run python -m repo_familiar generate \
 Minimum metadata:
 
 ```yaml
-schema_version: 1
+schema_version: 2
 bootstrap_mode: new_repository
 reference_source:
   type: git
@@ -110,9 +110,42 @@ generated_assets:
     kind: documentation
     source: templates/basic/docs/_quarto.yml.tmpl
     content_sha256: <sha256>
+render_context:
+  project_name: <project-name>
+  project_description: <project-description>
+  template: <template-name>
+  docs: quarto
+  selected_options_sha256: <sha256>
+  source: generation_inputs
+managed_surfaces:
+  - id: repository-foundation
+    version: 1
+    template: <template-name>
+    state: written
+    comparison_basis: content_sha256
+    strategy: manual_review
+    render_context_sha256: <sha256>
+    project_name: <project-name>
+    project_description: <project-description>
+    docs: quarto
+    selected_options_sha256: <sha256>
+    render_context_source: generation_inputs
+managed_surface_assets:
+  - surface_id: repository-foundation
+    path: AGENTS.md
+    state: written
+    comparison_basis: content_sha256
+    strategy: manual_review
+    content_sha256: <sha256>
+history:
+  - id: <operation-id>
+    at: <iso-8601 timestamp>
+    command: generate
+    mode: apply
+    surface_id: repository-foundation
 ```
 
-Allowed `kind` values for the first schema are `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
+Allowed `kind` values are `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, `metadata`, `dependency_manifest`, `dependency_lock`, `source_code`, `test_code`, and `data_fixture`.
 
 ## Model Profiles
 
@@ -174,6 +207,48 @@ uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
 uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
+```
+
+Migrate existing Metadata v1 before attaching an independently implemented capability:
+
+```bash
+uv run python -m repo_familiar migrate-metadata --path /path/to/repo
+uv run python -m repo_familiar migrate-metadata --path /path/to/repo --apply
+```
+
+Preview a Managed Surface attachment. Exact matches can be attached metadata-only; differing current files require explicit acceptance and missing files block attachment:
+
+```bash
+uv run python -m repo_familiar attach \
+  --path /path/to/repo \
+  --surface fastapi-api \
+  --template static-quarto-application
+
+uv run python -m repo_familiar attach \
+  --path /path/to/repo \
+  --surface fastapi-api \
+  --template static-quarto-application \
+  --apply --accept-current
+```
+
+For independently implemented layouts, select the current files explicitly:
+
+```bash
+uv run python -m repo_familiar attach \
+  --path /path/to/repo \
+  --surface fastapi-api \
+  --template static-quarto-application \
+  --asset service/api.py \
+  --asset service/test_api.py \
+  --apply --accept-current
+```
+
+Preview template promotion without writing files or metadata:
+
+```bash
+uv run python -m repo_familiar migrate-template \
+  --path /path/to/repo \
+  --to python-reproducible
 ```
 
 Use the read-only profile registry ergonomics when you need the built-in summaries or full field details for a profile family:

@@ -70,6 +70,12 @@ class AdviceTests(unittest.TestCase):
                 for command in report.next_commands
             )
         )
+        self.assertTrue(
+            any(
+                "attach" in command and "quarto-static-client" in command
+                for command in report.next_commands
+            )
+        )
 
     def test_python_repository_gets_preferred_stack_guidance(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

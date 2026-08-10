@@ -1,22 +1,31 @@
 from __future__ import annotations
 
-from contextlib import redirect_stderr, redirect_stdout
-from dataclasses import replace
 import hashlib
-from io import StringIO
 import json
-from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from dataclasses import replace
+from io import StringIO
+from pathlib import Path
 from unittest.mock import patch
 
-from repo_familiar.cli import main
 from repo_familiar import cli as cli_module
-from repo_familiar.asset_plan import PlannedAsset
-from repo_familiar.generator import GenerationOptions, check_generated_repository, generate_project, plan_project
-from repo_familiar.metadata import GeneratedAsset, load_bootstrap_metadata, render_bootstrap_metadata
 from repo_familiar import upgrade as upgrade_module
+from repo_familiar.asset_plan import PlannedAsset
+from repo_familiar.cli import main
+from repo_familiar.generator import (
+    GenerationOptions,
+    check_generated_repository,
+    generate_project,
+    plan_project,
+)
+from repo_familiar.metadata import (
+    GeneratedAsset,
+    load_bootstrap_metadata,
+    render_bootstrap_metadata,
+)
 from repo_familiar.upgrade import apply_upgrade, preview_upgrade
 
 
@@ -202,7 +211,24 @@ class UpgradePreviewTests(unittest.TestCase):
         written = set(result.written_paths)
         self.assertIn(".agents/skill-sources.yml", written)
         self.assertIn(".repo-familiar/bootstrap.yml", written)
+        self.assertEqual(metadata.schema_version, 2)
+        self.assertEqual(metadata.history[-1].command, "upgrade")
         self.assertIn(".agents/skills/ponytail/REFERENCE.md", {asset.path for asset in metadata.generated_assets})
+        ponytail_generated = next(
+            asset
+            for asset in metadata.generated_assets
+            if asset.path == ".agents/skills/ponytail/SKILL.md"
+        )
+        ponytail_managed = next(
+            asset
+            for asset in metadata.managed_surface_assets
+            if asset.path == ".agents/skills/ponytail/SKILL.md"
+        )
+        self.assertEqual(ponytail_managed.content_sha256, ponytail_generated.content_sha256)
+        self.assertIn(
+            ".agents/skills/ponytail/REFERENCE.md",
+            {asset.path for asset in metadata.managed_surface_assets},
+        )
         self.assertEqual({item.asset.path for item in check.modified}, {".agents/skills/prototype/SKILL.md"})
         self.assertEqual(check.missing, ())
         self.assertEqual(second_result.written_paths, ())

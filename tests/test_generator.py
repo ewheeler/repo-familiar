@@ -18,6 +18,7 @@ from repo_familiar.generator import (
     check_generated_repository,
     generate_project,
 )
+from repo_familiar.metadata import load_bootstrap_metadata
 
 
 class GeneratorTests(unittest.TestCase):
@@ -35,6 +36,32 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(options.template, "python-reproducible")
         self.assertIn("pyproject.toml", {asset.path for asset in assets})
         self.assertIn("REPRODUCIBILITY.md", {asset.path for asset in assets})
+
+    def test_new_generation_records_complete_managed_surfaces(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "managed-static"
+            generate_project(
+                GenerationOptions(
+                    name="Managed Static",
+                    description="Managed surface generation.",
+                    output_dir=repo,
+                    template="static-quarto-application",
+                    generated_at="2026-08-10T00:00:00Z",
+                )
+            )
+
+            metadata = load_bootstrap_metadata(repo / ".repo-familiar/bootstrap.yml")
+
+        generated_paths = {
+            asset.path for asset in metadata.generated_assets if asset.kind != "metadata"
+        }
+        surface_paths = [asset.path for asset in metadata.managed_surface_assets]
+        self.assertEqual(metadata.schema_version, 2)
+        self.assertIsNotNone(metadata.render_context)
+        self.assertEqual(set(surface_paths), generated_paths)
+        self.assertEqual(len(surface_paths), len(set(surface_paths)))
+        self.assertIn("quarto-static-client", {surface.id for surface in metadata.managed_surfaces})
+        self.assertIn("fastapi-api", {surface.id for surface in metadata.managed_surfaces})
 
     def test_unbootstrapped_existing_repository_falls_back_to_basic(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -231,7 +258,7 @@ class GeneratorTests(unittest.TestCase):
             self.assertTrue((output_dir / ".repo-familiar/bootstrap.yml").exists())
 
             bootstrap = (output_dir / ".repo-familiar/bootstrap.yml").read_text()
-            self.assertIn('schema_version: 1', bootstrap)
+            self.assertIn('schema_version: 2', bootstrap)
             self.assertIn('bootstrap_mode: "new_repository"', bootstrap)
             self.assertIn('url: "https://example.invalid/repo-familiar.git"', bootstrap)
             self.assertIn('ref: "test-ref"', bootstrap)
@@ -253,6 +280,10 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('memory_profiles:', bootstrap)
             self.assertIn('- "memory-local"', bootstrap)
             self.assertIn("content_sha256:", bootstrap)
+            self.assertIn("render_context:", bootstrap)
+            self.assertIn("managed_surfaces:", bootstrap)
+            self.assertIn("managed_surface_assets:", bootstrap)
+            self.assertIn("history:", bootstrap)
             self.assertIn('kind: "skill"', bootstrap)
             self.assertIn('source: "generator:bootstrap"', bootstrap)
 

@@ -32,6 +32,10 @@ uv run python -m repo_familiar advise --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo
 uv run python -m repo_familiar audit --path /path/to/repo --format json
 uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
+uv run python -m repo_familiar migrate-metadata --path /path/to/repo
+uv run python -m repo_familiar migrate-metadata --path /path/to/repo --apply
+uv run python -m repo_familiar attach --path /path/to/repo --surface fastapi-api --template static-quarto-application
+uv run python -m repo_familiar migrate-template --path /path/to/repo --to python-reproducible
 uv run python -m repo_familiar resolve-conflicts --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --interactive
@@ -71,7 +75,7 @@ uv run python -m repo_familiar add-secrets --path /path/to/repo --secrets-profil
 
 `bootstrap-existing --interactive` uses `questionary` to prompt for repository path, asset groups, selected profiles, and whether to apply changes. It still defaults to dry-run behavior unless write confirmation is selected.
 
-Use `--asset-group` with `audit` or `bootstrap-existing` to scope work to selected groups: `agent`, `application`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `public-interest`, `python`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, or `worktrees`. The `python` and `application` scaffold groups are audit-only under Metadata v1.
+Use `--asset-group` with `audit` or `bootstrap-existing` to scope work to selected groups: `agent`, `application`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `public-interest`, `python`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, or `worktrees`. The `python` and `application` scaffold groups are audit-only in this command family; use Metadata v2 `attach` for metadata-only adoption.
 
 Audit output includes the comparison basis, selected option set, and asset groups. This is important when checking whether a full-adoption audit is using default selections or explicit selections.
 
@@ -139,36 +143,34 @@ Future refresh behavior remains explicit rather than live sync. Non-skill groups
 
 For Reference Source maintenance, use `check-skill-sources` before refreshing vendored skills. It compares recorded GitHub skill source URLs with local vendored skills and reports missing support files without writing changes.
 
-Potential future fields:
-
-```yaml
-bootstrap_mode: existing_repository
-adopted_assets: []
-conflicts: []
-```
-
-These fields should not be added to schema v1 until implementation needs them. The ADR above expands this into a broader Metadata v2 design that also covers render inputs, bootstrap history, comparison basis, and asset-specific refresh strategies.
+Metadata v2 now records render context, Managed Surfaces, per-surface asset state, comparison basis, strategy, and append-only operation history. It deliberately does not turn metadata ownership into permission for broad writes.
 
 ## Python-First Adoption Boundary
 
 The accepted [Python-First Project Plan](./python-first-project-plan.qmd) changes the default for new repository generation, not existing-repository bootstrap.
 
-| Existing repository state | Planned behavior |
+| Existing repository state | Current behavior |
 |---|---|
 | No Bootstrap Metadata | Compare against `basic` unless a template is explicitly selected; recommend Python or Static Quarto guidance without adding application source by default. |
-| Recorded `basic`, generated assets untouched | Report advisory promotion readiness only; Metadata v1 does not permit template-promotion apply. |
+| Recorded `basic`, generated assets untouched | Migrate to v2 and preview target template surfaces; content promotion remains read-only. |
 | Recorded assets edited | Preserve edits and keep promotion or refresh manual. |
-| Existing FastAPI plus static Quarto | Detect and recommend the architecture skill; do not claim ownership of app source, docs, CI, manifests, or lockfiles. |
+| Existing FastAPI plus static Quarto | Detect and recommend guidance; attach selected surfaces explicitly without rewriting app source, docs, CI, manifests, or lockfiles. |
 | Guidance-only adoption | Use targeted Tool Profile and skill additions without changing the selected template. |
 | Unknown recorded template | Fail closed rather than falling back to the new greenfield default. |
 
 Plain Quarto documentation is not enough to infer a Static Quarto Application. Advice should require evidence of Quarto, FastAPI, and a browser/API interaction boundary.
 
-Metadata v2 Managed Surfaces will be the prerequisite for future attach, adoption, or promotion workflows. Until then, skills remain the only write-capable upgrade slice and any cross-template comparison is advisory only.
+Metadata v2 Managed Surfaces are now implemented. Existing v1 metadata can be migrated preview-first with `migrate-metadata`; only recorded generated assets become `written`, and unrecorded files remain user-owned.
+
+`attach` compares one template-defined surface against current files. Preview reports states such as `missing`, `adoptable`, `conflict`, `written`, `adopted`, `edited`, or `target-differs`; explicit `--asset` previews use `current`. Apply writes only `.repo-familiar/bootstrap.yml`; it never rewrites the attached files. `--accept-current` is required to adopt conflicts or target differences as the current manual-review baseline.
+
+When an independent implementation uses different paths, repeated `--asset` arguments define the explicit surface membership. This requires `--accept-current`; repo-familiar does not infer ownership from framework detection or matching filenames.
+
+`migrate-template` previews every surface in a target template without changing files or metadata. Content-writing template promotion remains unavailable.
 
 ## Current Status
 
-The first implementation can audit and add the same selected asset set used by new repository generation. It reports assets as missing, present, or conflicting and writes only missing assets unless `--force` is used.
+Existing bootstrap can audit and add selected guidance assets. It reports assets as missing, present, or conflicting and writes only missing assets unless `--force` is used. Python/application scaffold content remains blocked in this path; Managed Surface attach is the metadata-only adoption path.
 
 Targeted add commands reuse the same bootstrap engine with narrower asset groups, so adopting one class of defaults does not also create unrelated files.
 

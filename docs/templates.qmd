@@ -60,7 +60,7 @@ Templates currently use:
 
 ## Existing Repository Boundary
 
-Unbootstrapped existing repositories still resolve to `basic` unless a template is selected explicitly for an audit. Existing Bootstrap Metadata always controls reconstruction, and unknown recorded templates fail closed. Audits may preview `python` or `application` asset groups, but Metadata v1 blocks applying source, tests, dependency manifests, lockfiles, and data fixtures.
+Unbootstrapped existing repositories still resolve to `basic` unless a template is selected explicitly for an audit. Existing Bootstrap Metadata always controls reconstruction, and unknown recorded templates fail closed. Audits may preview `python` or `application` asset groups, but `bootstrap-existing` blocks applying source, tests, dependency manifests, lockfiles, and data fixtures. Metadata v2 `attach` records explicit ownership without writing those files.
 
 ## Future Template Work
 

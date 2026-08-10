@@ -98,6 +98,36 @@ uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills
 
 Skills apply replaces vendored skill files only when their downstream content still matches the checksum recorded at bootstrap. It also adds newly introduced support files for selected skills and refreshes `.agents/skill-sources.yml` plus `.repo-familiar/bootstrap.yml`. Locally modified skills are reported for review and left untouched.
 
+Migrate Bootstrap Metadata v1 to v2 without inferring ownership of unrecorded files:
+
+```bash
+uv run python -m repo_familiar migrate-metadata --path /path/to/repo
+uv run python -m repo_familiar migrate-metadata --path /path/to/repo --apply
+```
+
+Preview or record a metadata-only Managed Surface attachment:
+
+```bash
+uv run python -m repo_familiar attach \
+  --path /path/to/repo \
+  --surface quarto-static-client \
+  --template static-quarto-application
+```
+
+`attach --apply` never rewrites surface files. Exact files are adoptable; conflicting files require `--accept-current`, which records their current checksums as a manual-review baseline. Missing required files block attachment.
+
+For an independently implemented surface whose paths differ from the template, repeat `--asset <repository-relative-path>` and use `--accept-current` after reviewing the preview. Explicit paths must be relative, unique, present, and cannot include Bootstrap Metadata itself.
+
+Preview a template promotion:
+
+```bash
+uv run python -m repo_familiar migrate-template \
+  --path /path/to/repo \
+  --to python-reproducible
+```
+
+Template migration is read-only. It reports target surfaces and per-file states but has no apply mode.
+
 When the downstream path is in Git, apply refuses a dirty worktree by default. Commit or stash first; `--allow-dirty` is an explicit escape hatch. A clean Reference Source checkout contributes its current commit to bootstrap metadata automatically. Packaged installs use the repo-familiar version; use `--reference-ref <commit-or-tag>` to provide a specific source identity. Removed or renamed skill assets are blocked for manual review rather than deleted. The write batch is staged and rolls back completed replacements when an apply error occurs.
 
 Get recommendations for an existing repository before bootstrapping:
@@ -148,7 +178,7 @@ uv run python -m repo_familiar generate \
 
 When profile and skill flags are omitted, concrete templates select their own defaults. The Python template selects preferred-stack and guardrail guidance; the Static Quarto Application also selects browser and accessibility support.
 
-Preview Python or application assets in an existing repository with `audit --asset-group python` or `audit --asset-group application`. Applying those scaffold groups is blocked under Metadata v1; use additive profiles and skills instead.
+Preview Python or application assets in an existing repository with `audit --asset-group python` or `audit --asset-group application`. Applying those scaffold groups through `bootstrap-existing` is blocked; use additive profiles and skills or metadata-only Managed Surface attach instead.
 
 Generate a project interactively:
 
@@ -352,7 +382,7 @@ When bootstrapping an existing repository, `.repo-familiar/bootstrap.yml` record
 
 Audit output reports the comparison basis, selected options, and asset groups. Use this to distinguish a default full bootstrap audit from a scoped asset-group audit or an intended full-adoption audit with explicit selections.
 
-Use `--asset-group` with `audit` or `bootstrap-existing` for scoped work. Supported groups are `agent`, `application`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `public-interest`, `python`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, and `worktrees`. The `python` and `application` groups are audit-only under Metadata v1 when they include scaffold assets.
+Use `--asset-group` with `audit` or `bootstrap-existing` for scoped work. Supported groups are `agent`, `application`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `public-interest`, `python`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, and `worktrees`. The `python` and `application` groups are audit-only when they include scaffold assets; use `attach` for metadata-only adoption.
 
 Generated asset records include `content_sha256` for drift detection. The metadata file itself is presence-checked but not self-hashed.
 

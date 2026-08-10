@@ -124,6 +124,14 @@ def advise_existing_repository(path: Path, intended_work: tuple[str, ...] = ()) 
         public_interest_profiles,
         tool_profiles=tool_profiles,
     )
+    if signals.has_static_quarto_application:
+        quoted_path = json.dumps(str(path))
+        next_commands.extend(
+            [
+                f"uv run python -m repo_familiar attach --path {quoted_path} --surface quarto-static-client --template static-quarto-application",
+                f"uv run python -m repo_familiar attach --path {quoted_path} --surface fastapi-api --template static-quarto-application",
+            ]
+        )
     return AdviceReport(
         path=path,
         intended_work=intended_work,

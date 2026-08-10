@@ -144,10 +144,10 @@ Generated repositories should receive vendored copies of the selected assets by 
 
 When `opencode` is selected as an agent harness, the template also writes `opencode.json` so OpenCode discovers vendored skills under `.agents/skills`. Optional OpenCode MCP entries can be included by selecting tool profiles such as `opencode-playwright-mcp`, `opencode-flint-chart-mcp`, `opencode-cq-mcp`, or `opencode-context7-mcp`. These MCP profiles use non-secret defaults only; API keys and machine-specific executable paths should stay in environment variables or user-level config.
 
-The first bootstrap metadata schema should stay small:
+Bootstrap Metadata v2 preserves generated-asset provenance and adds explicit Managed Surface ownership:
 
 ```yaml
-schema_version: 1
+schema_version: 2
 reference_source:
   type: git
   url: https://github.com/<owner>/repo-familiar
@@ -200,9 +200,21 @@ generated_assets:
     kind: documentation
     source: templates/basic/docs/_quarto.yml.tmpl
     content_sha256: <sha256>
+render_context:
+  project_name: <project-name>
+  project_description: <project-description>
+  template: <template-name>
+  docs: quarto
+  selected_options_sha256: <sha256>
+  source: generation_inputs
+managed_surfaces: []
+managed_surface_assets: []
+history: []
 ```
 
 `content_sha256` is omitted for `.repo-familiar/bootstrap.yml` itself to avoid self-referential hashing.
+
+Metadata v1 remains readable. `migrate-metadata` previews a lossless migration in which only previously recorded generated assets become `written`; unrecorded files remain user-owned.
 
 The `generated_assets[].kind` vocabulary includes `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, `metadata`, `dependency_manifest`, `dependency_lock`, `source_code`, `test_code`, and `data_fixture`.
 
@@ -394,7 +406,7 @@ For Python-heavy projects, this repository prefers these tools when the project 
 
 Hamilton is especially important because DAG visualizations make abstraction boundaries, data dependencies, and execution flow inspectable without reading every line of code.
 
-The implemented [Python-First Project Plan](docs/python-first-project-plan.qmd) makes these preferences executable through the default `python-reproducible` template and the opt-in `static-quarto-application` template. Existing repositories can adopt current guidance and selected assets additively, while application-source adoption and template promotion wait for Metadata v2.
+The implemented [Python-First Project Plan](docs/python-first-project-plan.qmd) makes these preferences executable through the default `python-reproducible` template and the opt-in `static-quarto-application` template. Metadata v2 can record existing application surfaces without rewriting them and preview template promotion; broad content apply remains intentionally unavailable.
 
 ## Skill Sources
 

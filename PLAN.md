@@ -53,7 +53,7 @@
 - Root `.agents/` consistency coverage checks dogfood profile files and registered selectable skill files against generated registry/template output.
 - Quarto render outputs are ignored through `docs/_site/` and `docs/.quarto/` in `.gitignore`.
 - Existing repository bootstrap is implemented as a second bootstrap mode: advise/audit first, dry-run by default, and additive unless explicit replacement is selected.
-- New generation defaults to `python-reproducible`; `static-quarto-application` is opt-in, and existing repositories may adopt guidance additively while application-source adoption and template promotion wait for Metadata v2.
+- New generation defaults to `python-reproducible`; `static-quarto-application` is opt-in, and Metadata v2 records Managed Surfaces for new generation, lossless v1 migration, metadata-only attach, and template-promotion previews.
 
 ## Goals
 
@@ -114,7 +114,7 @@
 - Python-first default boundary: use `python-reproducible` for new repository generation only; preserve `basic` as the generic template and conservative existing-repository fallback.
 - Static Quarto Application boundary: use a static Quarto browser client with ordinary FastAPI request/response calls, while keeping `app/` separate from Divio documentation under `docs/`.
 - Existing-repository propagation boundary: ship additive guidance before source adoption; Metadata v1 may preview promotion candidacy but cannot apply template promotion.
-- Metadata v2 surface boundary: require explicit Managed Surface state, render basis, history, comparison method, and strategy before attach, adoption, promotion, or broad refresh apply.
+- Metadata v2 surface boundary: record explicit Managed Surface state, render basis, history, comparison method, and strategy; allow metadata-only attach while keeping template promotion and broad refresh write-disabled.
 - Lockfile ownership: vendor a greenfield `uv.lock` for reproducibility, then treat normal downstream lock changes as expected/manual rather than automatically repairable generator drift.
 
 ## Best-Fit Additions
@@ -507,7 +507,7 @@ Acceptance criteria:
 
 ### 15. Add Python-First Greenfield Templates And Safe Propagation
 
-Status: greenfield templates, guidance, split defaults, examples, and Metadata v1 safety boundaries implemented; Metadata v2 Managed Surfaces remain planned.
+Status: greenfield templates, guidance, split defaults, examples, Metadata v2 Managed Surfaces, v1 migration, attach, and template-promotion preview implemented; broad surface refresh remains planned.
 
 The complete contract is in [Python-First Project Plan](docs/python-first-project-plan.qmd) and [ADR 0012](docs/adr/0012-python-first-greenfield-existing-repository-boundary.md).
 
@@ -518,7 +518,7 @@ Implementation sequence:
 3. Add explicit internal composition for concrete `basic`, `python-reproducible`, and `static-quarto-application` templates. Done.
 4. Add and validate the Python reproducibility exemplar with uv, guardrails, deterministic data/provenance, tests, CI, and executable Divio docs, then activate it as the new-repository default. Done.
 5. Add the Static Quarto Application exemplar with separate `app/` and `docs/`, a FastAPI/Pydantic boundary, shared deterministic analysis, and a browser test matching the tutorial. Done.
-6. Add Metadata v2 Managed Surface previews before any attach, adoption, or template-promotion apply.
+6. Add Metadata v2 Managed Surfaces, lossless v1 migration, metadata-only attach, and template-promotion previews. Done.
 7. Add only narrow apply strategies for checksum-clean, repo-familiar-owned, low-ambiguity assets.
 
 Acceptance criteria:
@@ -541,9 +541,9 @@ Priority 2: Tune implemented advice detection from real Quarto documentation and
 
 Priority 3: Keep the three generated examples current as the preferred-stack dependencies and executable contracts evolve.
 
-Priority 4: Specify Metadata v2 Managed Surface records and v1 migration using the implemented Python and application assets as concrete cases.
+Priority 4: Dogfood Metadata v2 migration and attach on independently implemented Downstream Repositories.
 
-Priority 5: Add read-only attach and promotion previews without inferring ownership of existing files.
+Priority 5: Tune Managed Surface boundaries and comparison strategies from dogfood evidence.
 
 Priority 6: Dogfood read-only attach and promotion previews on untouched, edited, and independently implemented Downstream Repositories.
 

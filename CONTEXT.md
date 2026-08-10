@@ -69,7 +69,7 @@ Minimum fields: `schema_version`, `reference_source`, `generated_at`, `generator
 `kind` values are `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, `metadata`, `dependency_manifest`, `dependency_lock`, `source_code`, `test_code`, and `data_fixture`.
 
 **Managed Surface**:
-A planned Metadata v2 lifecycle record for a coherent multi-file capability, including its render basis, paths, comparison strategy, operation history, and ownership states such as `written`, `adopted`, `edited`, `skipped`, or `conflict`.
+A Metadata v2 lifecycle record for a coherent multi-file capability, including its render basis, paths, comparison strategy, operation history, and ownership states such as `written`, `adopted`, `edited`, `skipped`, or `conflict`.
 _Avoid_: Directory alias, inferred ownership, permission to overwrite
 
 **Repo Familiar Metadata Directory**:
@@ -101,7 +101,7 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - An **Agent Plugin Export** is an optional portable subset derived from the **Reference Source**; client-specific installation and activation remain outside the **Project Generator**.
 - **Bootstrap Metadata** lives in the **Repo Familiar Metadata Directory** and records which **Reference Source** produced a **Downstream Repository**.
 - An **Upgrade Command** may later refresh **Vendored Generated Assets**, but updates are explicit rather than live-synced.
-- A **Managed Surface** may support future attach, adoption, promotion, or refresh decisions only after Metadata v2 records explicit state; matching files alone do not establish ownership.
+- A **Managed Surface** supports explicit metadata-only attach and template-promotion previews. Matching files alone do not establish ownership, and attaching a surface never rewrites its files.
 - The **Dotfiles Metaphor** explains portability, not the product scope.
 
 ## Example Dialogue

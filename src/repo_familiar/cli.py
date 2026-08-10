@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable
-from dataclasses import dataclass
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import sys
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
 
-from . import __version__
-from . import profiles
+from . import __version__, profiles
 from .agent_plugins import AgentPluginExportOptions, export_agent_plugin
+from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset, asset_in_groups
 from .generator import (
-    ExistingBootstrapOptions,
     NEW_REPOSITORY_DEFAULT_TEMPLATE,
     TEMPLATE_DEFAULT_SELECTION,
+    ExistingBootstrapOptions,
     GenerationOptions,
     advise_existing_repository,
     audit_existing_repository,
@@ -27,8 +27,8 @@ from .generator import (
     list_memory_profiles,
     list_model_profiles,
     list_privacy_profiles,
-    list_public_interest_profiles,
     list_prompt_profiles,
+    list_public_interest_profiles,
     list_repomap_profiles,
     list_safety_profiles,
     list_sandbox_profiles,
@@ -37,20 +37,25 @@ from .generator import (
     list_templates,
     list_tool_profiles,
     list_worktree_profiles,
-    plan_project,
     plan_existing_project,
+    plan_project,
 )
-from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset, asset_in_groups
 from .interactive import (
     InteractiveCancelled,
     InteractiveUnavailable,
     prompt_existing_options,
     prompt_generation_options,
 )
+from .managed_surfaces import (
+    SURFACE_STRATEGIES,
+    attach_managed_surface,
+    migrate_metadata_file,
+    preview_template_migration,
+)
 from .metadata import GeneratedAsset, load_bootstrap_metadata
 from .skill_sources import check_skill_sources
-from .upstream import diff_upstream_candidate
 from .upgrade import apply_upgrade, preview_upgrade
+from .upstream import diff_upstream_candidate
 
 
 @dataclass(frozen=True)
@@ -330,6 +335,45 @@ def build_parser() -> argparse.ArgumentParser:
     upgrade.add_argument("--allow-dirty", action="store_true", help="allow apply in a dirty Git worktree")
     upgrade.add_argument("--format", choices=("text", "json"), default="text")
 
+    attach = subparsers.add_parser(
+        "attach", help="preview or record metadata-only adoption of one Managed Surface"
+    )
+    attach.add_argument("--path", required=True, type=Path, help="existing repository path")
+    attach.add_argument("--surface", required=True, choices=tuple(sorted(SURFACE_STRATEGIES)))
+    attach.add_argument("--template", required=True, choices=tuple(list_templates()))
+    attach.add_argument(
+        "--asset",
+        action="append",
+        dest="assets",
+        default=None,
+        help="explicit current repository path to attach; repeat for independently implemented surfaces",
+    )
+    attach_mode = attach.add_mutually_exclusive_group()
+    attach_mode.add_argument("--preview", action="store_true", help="preview attachment (default)")
+    attach_mode.add_argument("--apply", action="store_true", help="write Metadata v2 only")
+    attach.add_argument(
+        "--accept-current",
+        action="store_true",
+        help="adopt current conflicting file checksums without rewriting files",
+    )
+    attach.add_argument("--format", choices=("text", "json"), default="text")
+
+    migrate_template = subparsers.add_parser(
+        "migrate-template", help="preview Managed Surfaces for a template promotion"
+    )
+    migrate_template.add_argument("--path", required=True, type=Path)
+    migrate_template.add_argument("--to", required=True, choices=tuple(list_templates()))
+    migrate_template.add_argument("--format", choices=("text", "json"), default="text")
+
+    migrate_metadata = subparsers.add_parser(
+        "migrate-metadata", help="preview or apply a lossless Bootstrap Metadata v1 to v2 migration"
+    )
+    migrate_metadata.add_argument("--path", required=True, type=Path)
+    metadata_mode = migrate_metadata.add_mutually_exclusive_group()
+    metadata_mode.add_argument("--preview", action="store_true", help="preview migration (default)")
+    metadata_mode.add_argument("--apply", action="store_true", help="write Metadata v2")
+    migrate_metadata.add_argument("--format", choices=("text", "json"), default="text")
+
     skill_sources = subparsers.add_parser("check-skill-sources", help="compare vendored skills with recorded upstream sources")
     skill_sources.add_argument("--source-file", type=Path, default=Path(".agents/skill-sources.yml"), help="skill source provenance file")
     skill_sources.add_argument("--skills-root", type=Path, default=Path(".agents/skills"), help="vendored skills directory")
@@ -551,6 +595,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "upgrade":
         return _upgrade(args)
 
+    if args.command == "attach":
+        return _attach_surface(args)
+
+    if args.command == "migrate-template":
+        return _migrate_template(args)
+
+    if args.command == "migrate-metadata":
+        return _migrate_metadata(args)
+
     if args.command == "check-skill-sources":
         return _check_skill_sources(args)
 
@@ -642,6 +695,108 @@ def _export_plugin(args: argparse.Namespace) -> int:
     for asset in assets:
         print(f"- {asset.path}")
     return 0
+
+
+def _attach_surface(args: argparse.Namespace) -> int:
+    try:
+        result = attach_managed_surface(
+            args.path,
+            args.surface,
+            args.template,
+            apply=args.apply,
+            accept_current=args.accept_current,
+            asset_paths=_tuple_or_default(args.assets, ()),
+        )
+    except (FileNotFoundError, NotADirectoryError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    payload = _surface_preview_to_dict(result.preview)
+    payload["metadata_written"] = result.metadata_written
+    if args.format == "json":
+        print(json.dumps(payload, indent=2))
+        return 0
+    action = "Attached" if result.metadata_written else "Attach preview"
+    print(f"{action}: {args.surface} from {args.template}")
+    print(f"Path: {args.path}")
+    print(f"Can attach exact: {'yes' if result.preview.can_attach_exact else 'no'}")
+    print(f"Can attach current: {'yes' if result.preview.can_attach_current else 'no'}")
+    for asset in result.preview.assets:
+        print(f"- {asset.path}: {asset.status} ({asset.strategy})")
+    return 0
+
+
+def _migrate_template(args: argparse.Namespace) -> int:
+    try:
+        report = preview_template_migration(args.path, args.to)
+    except (FileNotFoundError, NotADirectoryError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    payload = {
+        "path": str(report.path),
+        "current_template": report.current_template,
+        "target_template": report.target_template,
+        "surfaces": [_surface_preview_to_dict(surface) for surface in report.surfaces],
+        "write_available": False,
+    }
+    if args.format == "json":
+        print(json.dumps(payload, indent=2))
+        return 0
+    print(f"Template migration preview: {report.current_template} -> {report.target_template}")
+    print("No files or metadata were changed.")
+    for surface in report.surfaces:
+        statuses = ", ".join(
+            f"{status}={sum(asset.status == status for asset in surface.assets)}"
+            for status in sorted({asset.status for asset in surface.assets})
+        )
+        print(f"- {surface.surface_id}: {statuses}")
+    return 0
+
+
+def _migrate_metadata(args: argparse.Namespace) -> int:
+    try:
+        result = migrate_metadata_file(args.path, apply=args.apply)
+    except (FileNotFoundError, NotADirectoryError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    payload = {
+        "path": str(result.path),
+        "previous_schema_version": result.previous_schema_version,
+        "schema_version": result.metadata.schema_version,
+        "surface_count": len(result.metadata.managed_surfaces),
+        "managed_asset_count": len(result.metadata.managed_surface_assets),
+        "metadata_written": result.metadata_written,
+    }
+    if args.format == "json":
+        print(json.dumps(payload, indent=2))
+        return 0
+    action = "Migrated" if result.metadata_written else "Metadata migration preview"
+    print(f"{action}: {args.path}")
+    print(
+        f"Schema: {result.previous_schema_version} -> {result.metadata.schema_version}; "
+        f"surfaces: {len(result.metadata.managed_surfaces)}; "
+        f"managed assets: {len(result.metadata.managed_surface_assets)}"
+    )
+    return 0
+
+
+def _surface_preview_to_dict(preview) -> dict:
+    return {
+        "path": str(preview.path),
+        "surface_id": preview.surface_id,
+        "template": preview.template,
+        "can_attach_exact": preview.can_attach_exact,
+        "can_attach_current": preview.can_attach_current,
+        "assets": [
+            {
+                "path": asset.path,
+                "status": asset.status,
+                "strategy": asset.strategy,
+                "current_sha256": asset.current_sha256,
+                "target_sha256": asset.target_sha256,
+            }
+            for asset in preview.assets
+        ],
+    }
 
 
 def _audit(args: argparse.Namespace) -> int:

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted and partially implemented. Greenfield templates, split defaults, guidance, examples, and Metadata v1 adoption blocks are implemented; Metadata v2 Managed Surfaces remain planned.
+Accepted and implemented for the current safe boundary. Greenfield templates, split defaults, guidance, examples, Metadata v2 Managed Surfaces, metadata-only attach, and promotion preview are implemented; broad content apply remains deferred.
 
 ## Context
 

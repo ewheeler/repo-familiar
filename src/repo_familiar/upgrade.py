@@ -1,15 +1,27 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
 import hashlib
 import os
-from pathlib import Path
 import subprocess
 import tempfile
+from dataclasses import dataclass, replace
+from pathlib import Path
 
 from . import __version__
 from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset, asset_in_groups
-from .metadata import GeneratedAsset, load_bootstrap_metadata, render_bootstrap_metadata
+from .managed_surfaces import (
+    SURFACE_STRATEGIES,
+    migrate_metadata_v2,
+    new_metadata_operation,
+    repository_identity,
+    surface_id_for_path,
+)
+from .metadata import (
+    GeneratedAsset,
+    ManagedSurfaceAsset,
+    load_bootstrap_metadata,
+    render_bootstrap_metadata,
+)
 from .upstream import UpstreamCandidateDiff
 
 
@@ -47,6 +59,7 @@ def preview_upgrade(
         for asset in metadata.generated_assets
         if _in_groups(asset.path, asset_groups)
     }
+    generated_paths = set(recorded)
     safe: list[UpstreamCandidateDiff] = []
     review: list[UpstreamCandidateDiff] = []
     blocked: list[UpstreamCandidateDiff] = []
@@ -54,6 +67,18 @@ def preview_upgrade(
 
     for asset in recorded.values():
         candidate = _recorded_candidate(path, asset, references.get(asset.path))
+        _classify(candidate, safe, review, blocked, unavailable)
+
+    for managed_asset in metadata.managed_surface_assets:
+        if managed_asset.path in generated_paths or not _in_groups(
+            managed_asset.path, asset_groups
+        ):
+            continue
+        candidate = _managed_surface_candidate(
+            path,
+            managed_asset,
+            references.get(managed_asset.path),
+        )
         _classify(candidate, safe, review, blocked, unavailable)
 
     for reference in references.values():
@@ -128,15 +153,64 @@ def apply_upgrade(
             content_sha256=_content_sha256(merged_sources),
         )
 
-    metadata = load_bootstrap_metadata(metadata_path)
+    project_name, project_description = repository_identity(path)
+    metadata = migrate_metadata_v2(
+        load_bootstrap_metadata(metadata_path),
+        project_name=project_name,
+        project_description=project_description,
+    )
     assets_by_path = {asset.path: asset for asset in metadata.generated_assets}
     assets_by_path.update(refreshed_assets)
+    managed_assets = []
+    affected_surfaces: set[str] = set()
+    for managed_asset in metadata.managed_surface_assets:
+        refreshed = refreshed_assets.get(managed_asset.path)
+        if refreshed is None:
+            managed_assets.append(managed_asset)
+            continue
+        affected_surfaces.add(managed_asset.surface_id)
+        managed_assets.append(
+            replace(
+                managed_asset,
+                state="written",
+                content_sha256=refreshed.content_sha256,
+            )
+        )
+    managed_paths = {asset.path for asset in managed_assets}
+    for path_key, refreshed in sorted(refreshed_assets.items()):
+        if path_key in managed_paths:
+            continue
+        surface_id = surface_id_for_path(path_key)
+        affected_surfaces.add(surface_id)
+        managed_assets.append(
+            ManagedSurfaceAsset(
+                surface_id=surface_id,
+                path=path_key,
+                state="written",
+                comparison_basis=(
+                    "content_sha256" if refreshed.content_sha256 else "presence_only"
+                ),
+                strategy=SURFACE_STRATEGIES[surface_id],
+                content_sha256=refreshed.content_sha256,
+            )
+        )
     updated_metadata = replace(
         metadata,
+        schema_version=2,
         reference_ref=reference_ref or f"repo-familiar@{__version__}",
         generator_version=__version__,
         generated_assets=tuple(assets_by_path[key] for key in sorted(assets_by_path)),
+        managed_surface_assets=tuple(managed_assets),
     )
+    if render_bootstrap_metadata(updated_metadata) != metadata_path.read_text():
+        operations = tuple(
+            new_metadata_operation("upgrade", "apply", surface_id)
+            for surface_id in sorted(affected_surfaces)
+        )
+        updated_metadata = replace(
+            updated_metadata,
+            history=(*metadata.history, *operations),
+        )
     rendered_metadata = render_bootstrap_metadata(updated_metadata)
     if metadata_path.read_text() != rendered_metadata:
         writes[BOOTSTRAP_METADATA_PATH] = rendered_metadata
@@ -197,6 +271,44 @@ def _recorded_candidate(
     )
 
 
+def _managed_surface_candidate(
+    root: Path,
+    managed_asset: ManagedSurfaceAsset,
+    reference: GeneratedAsset | None,
+) -> UpstreamCandidateDiff:
+    target = _safe_path(root, managed_asset.path)
+    current_sha = _content_sha256(target.read_text()) if target.is_file() else None
+    if current_sha is None:
+        status = "missing"
+    elif managed_asset.content_sha256 is None:
+        status = "unchecked"
+    elif current_sha == managed_asset.content_sha256:
+        status = "unchanged"
+    else:
+        status = "modified"
+    reference_sha = reference.content_sha256 if reference else None
+    if reference is None:
+        reference_status = "surface-reference-unavailable"
+    elif reference_sha == managed_asset.content_sha256:
+        reference_status = "reference-unchanged"
+    else:
+        reference_status = "reference-may-have-changed"
+    return UpstreamCandidateDiff(
+        asset=GeneratedAsset(
+            path=managed_asset.path,
+            kind="managed_surface",
+            source=f"managed-surface:{managed_asset.surface_id}",
+            content_sha256=managed_asset.content_sha256,
+        ),
+        status=status,
+        recommendation="manual-review-managed-surface",
+        current_sha256=current_sha,
+        current_reference_sha256=reference_sha,
+        current_reference_status=reference_status,
+        strategy="manual_review",
+    )
+
+
 def _new_reference_candidate(root: Path, reference: GeneratedAsset) -> UpstreamCandidateDiff:
     target = _safe_path(root, reference.path)
     if _is_skill_support(reference.path) and not target.exists():
@@ -234,6 +346,8 @@ def _classify(candidate, safe, review, blocked, unavailable) -> None:
         review.append(candidate)
     elif candidate.status in ("modified", "missing", "source-removed"):
         blocked.append(candidate)
+    elif candidate.asset.kind == "managed_surface":
+        review.append(candidate)
     elif candidate.current_reference_status == "reference-may-have-changed" or candidate.status == "unchecked":
         review.append(candidate)
     else:

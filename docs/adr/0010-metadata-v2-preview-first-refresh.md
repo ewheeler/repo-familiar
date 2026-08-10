@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted and partially implemented. `upgrade --asset-group skills --apply` implements the first conservative write slice; other asset groups remain preview-only.
+Accepted and partially implemented. Metadata v2, Managed Surfaces, lossless v1 migration, metadata-only attach, and template-promotion preview are implemented. `upgrade --asset-group skills --apply` remains the only content-writing refresh slice.
 
 ## Context
 
@@ -118,7 +118,7 @@ Possible strategies:
 
 Template promotion and application adoption need a boundary above individual paths. A Managed Surface groups a coherent capability such as `python-runtime`, `quality-and-ci`, `reproducible-analysis`, `divio-documentation`, `quarto-static-client`, or `fastapi-api` while preserving per-file provenance.
 
-A surface should record its identity, version, render-context fingerprint, associated paths, comparison basis, refresh strategy, operation history, and states such as `written`, `adopted`, `edited`, `skipped`, or `conflict`. Matching files alone must not establish adoption.
+A surface records its identity, version, template, render-context fingerprint, associated paths, comparison basis, refresh strategy, operation history, and states such as `written`, `adopted`, `edited`, `skipped`, or `conflict`. Matching files make a surface eligible for exact metadata-only attach but do not establish adoption until the user applies `attach` explicitly.
 
 A Metadata v1 migration may create records only from assets already recorded as generated. It must not infer ownership of unrecorded application source, docs, CI, manifests, or lockfiles.
 
@@ -126,7 +126,7 @@ A Metadata v1 migration may create records only from assets already recorded as 
 
 Future refresh stays a two-step workflow:
 
-1. `upgrade --preview` or an equivalent read-only command computes candidate changes, blockers, and per-asset strategies.
+1. `upgrade --preview`, `attach`, or `migrate-template` computes candidate changes, blockers, and per-asset strategies.
 2. A later explicit apply command may reuse that design, but only for assets that preview classified as eligible for a safe strategy.
 
 Preview output should show, for each asset:
@@ -150,14 +150,14 @@ Metadata v2 and future refresh work must preserve the existing product boundary:
 - No secret capture in metadata; record only non-secret render inputs and provenance.
 - No write-capable refresh shortcut that skips preview.
 - No broad repository takeover; user-owned files remain user-owned unless an explicit adoption or apply workflow records otherwise.
-- No template-promotion apply or application-source adoption under Metadata v1; read-only comparisons may describe only candidacy for a future Managed Surface workflow.
+- No template-promotion content apply. `attach --apply` writes Metadata v2 only and never rewrites application files; conflicts require explicit `--accept-current` and missing files block attachment.
 - README files, plans, documentation prose, application source, lockfiles, and edited files default to `manual_review` even when they belong to a Managed Surface.
 
 ## Consequences
 
 - `check` and `diff-upstream-candidate` stay read-only. `upgrade` may write only within an explicitly supported asset-group strategy; skills are the first supported group.
-- Future implementation should add Metadata v2 fields only when preview/apply behavior needs them, not preemptively.
-- Existing-repository guidance may ship before Metadata v2 because guidance does not claim source ownership; attach, adoption, and promotion remain gated on Metadata v2.
+- Metadata v2 records render context, Managed Surfaces, per-surface assets, and append-only operation history because implemented preview/attach behavior needs them.
+- Existing Metadata v1 repositories migrate losslessly: only recorded generated assets become `written`; unrecorded files remain user-owned.
 - Lifecycle and upgrade docs should point maintainers to this ADR instead of re-explaining the full design in every command page.
 
 ## Cross References

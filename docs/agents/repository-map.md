@@ -42,6 +42,7 @@ Maintenance flows reuse those contracts for advice, targeted additions, upstream
 | `src/repo_familiar/asset_plan.py` | Concrete template composition registry, declared overlay checks, planned asset model, output-path rendering, asset kinds, and asset-group filtering. |
 | `src/repo_familiar/profiles.py` | Canonical agent harness, profile, skill, and provenance registries plus YAML and harness-config rendering. |
 | `src/repo_familiar/metadata.py` | Bootstrap Metadata parsing, validation, and rendering. |
+| `src/repo_familiar/managed_surfaces.py` | Metadata v2 render context, Managed Surface grouping, v1 migration, attach classification, metadata-only adoption, and template-promotion preview. |
 | `src/repo_familiar/interactive.py` | `questionary` adapters for generation and existing-repository options. |
 | `src/repo_familiar/advice.py` | Repository signal detection and advice orchestration. |
 | `src/repo_familiar/advice_dag.py` | Pure Hamilton-compatible recommendation nodes; formatting and filesystem orchestration stay outside this module. |
@@ -60,6 +61,8 @@ Maintenance flows reuse those contracts for advice, targeted additions, upstream
 ### Existing repositories
 
 `ExistingBootstrapOptions` reuses the generation plan with a separate `basic` fallback or the repository's recorded template. Audit classifies assets as missing, present, or conflicting; unknown recorded templates fail closed. Apply remains additive for current asset families, while Python/application scaffold assets are preview-only under Metadata v1. Targeted add commands select one profile or skill family plus metadata rather than taking ownership of unrelated files.
+
+Metadata v2 generation and migration group recorded assets into Managed Surfaces. `attach` can record an exact or explicitly accepted current surface without rewriting source files. `migrate-template` compares every target surface but is read-only.
 
 ### Agent Plugin exports
 
@@ -116,7 +119,7 @@ Prefer focused tests at the owning seam. Run the full suite when shared planning
 
 - New generation, advice, audit, additive existing-repository bootstrap, targeted additions, checksums, profile catalogs, deterministic snapshots, skill-source checks, and the skills-only Agent Plugins export pilot are implemented.
 - Upgrade apply is intentionally limited to safe vendored-skill refreshes and missing skill support files. Other generated asset groups remain preview-only.
-- Metadata v2 is accepted in `docs/adr/0010-metadata-v2-preview-first-refresh.md`, while runtime Bootstrap Metadata remains schema version 1.
+- Runtime generation writes Metadata v2. Metadata v1 remains readable and migrates losslessly through the preview-first workflow in `docs/adr/0010-metadata-v2-preview-first-refresh.md`.
 - Advice rules are Hamilton-compatible but currently execute as direct Python calls; no Hamilton driver owns runtime advice execution.
 - Banks or Cookiecutter rendering and automated skill-security scanning remain proposed. Current templates use `string.Template`.
 
