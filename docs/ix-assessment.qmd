@@ -1,0 +1,175 @@
+---
+title: "Ix Code Map Assessment"
+description: "Assessment of ix-infrastructure/Ix as an optional structural code-map tool for downstream repositories."
+date: "2026-08-10"
+---
+
+This page assesses [ix-infrastructure/Ix](https://github.com/ix-infrastructure/Ix) for possible inclusion in the repo-familiar **Reference Source**. Ix is a command-line tool that parses repositories with tree-sitter, writes symbols and relationships to a persistent graph backend, and exposes structural queries such as `map`, `explain`, `trace`, and `impact`.
+
+## Recommendation
+
+| Potential value | Adoption readiness | Recommendation |
+|---:|---:|---|
+| 8/10 | 3/10 | Keep as a research candidate. Do not add it as a dependency, default profile, or vendored skill until the backend, installation, correctness, and reproducibility concerns are resolved. |
+
+Ix could be useful for large, unfamiliar, or multi-language repositories where repeated symbol, caller, import, flow, and impact questions justify a persistent code graph. Its strongest future representation would be an experimental, opt-in Tool Profile, followed later by a reviewed skill adaptation if field testing demonstrates reliable value.
+
+Ix should not become a `repo-familiar` Python dependency. It is an external Node.js CLI with a Docker-hosted backend, not part of project generation or bootstrap execution. It should also remain outside narrow first-pass adoption for existing repositories until `advise` can identify a concrete scale or navigation trigger.
+
+## Product Fit
+
+### Strengths
+
+- Provides graph-backed symbol, call, import, containment, flow, impact, hotspot, subsystem, and smell queries across 26 advertised programming languages.
+- Persists a reusable structural index between agent sessions instead of rediscovering every relationship from file search.
+- Offers `--format llm` output designed to reduce structural output overhead for agent use.
+- Keeps parsing in the open CLI and `core-ingestion` code, with extensive language fixtures and command tests.
+- Runs its public CLI test matrix on Linux, macOS, and Windows, including a real-backend write-to-read integration test.
+- Ships an Agent Skills-compatible subtree with progressive references for command routing, output formats, and troubleshooting.
+
+### Scope and routing
+
+Ix would complement, not replace, current repo-familiar guidance:
+
+- Use the project-owned `docs/agents/repository-map.md` for durable ownership, test routing, generated boundaries, and contributor entry points.
+- Consider Ix for live symbol relationships, call paths, change impact, cross-file navigation, and repeated structural queries in repositories large enough to justify its runtime.
+- Keep `CONTEXT.md`, ADRs, plans, and project documentation authoritative for domain language and decisions. The open Ix command set does not replace durable project memory.
+- Use Headroom when the requirement is reversible context compression. Ix may reduce repeated discovery, but it is not a compression layer.
+- Continue using ordinary repository search for small or direct questions where starting and maintaining a graph backend costs more than the query saves.
+
+The open CLI includes structural code commands, while session briefings, decisions, goals, plans, tasks, and related memory features are registered as Ix Pro commands. Evaluate the open graph tool on its own merits rather than treating the broader commercial memory claims as available in the Apache-licensed repository.
+
+## Maturity and Correctness
+
+Ix is active but explicitly alpha. The repository was created in March 2026 and reached v0.9.1 in August 2026. Its rapid release cadence and current passing CI are positive maintenance signals, but they do not yet establish a stable graph or installation contract.
+
+Open issues at review time included correctness failures in core structural behavior:
+
+- [#377](https://github.com/ix-infrastructure/Ix/issues/377): deleted and renamed symbols remain after remapping.
+- [#374](https://github.com/ix-infrastructure/Ix/issues/374): JavaScript and TypeScript calls disappear across 500-file parse batches.
+- [#379](https://github.com/ix-infrastructure/Ix/issues/379): duplicate same-kind symbols can be selected silently.
+- [#381](https://github.com/ix-infrastructure/Ix/issues/381): PHP member calls lose receiver types.
+- [#308](https://github.com/ix-infrastructure/Ix/issues/308): `ix map` can terminate with a segmentation fault.
+- [#383](https://github.com/ix-infrastructure/Ix/issues/383): native Windows Codex hooks and CLI subprocess calls fail.
+
+These issues affect the exact claims that would justify adoption: current maps, complete edges, reliable identity, cross-language behavior, and agent portability. A graph-backed answer can be more confidently wrong than a transparent search result, so confidence and stale-index handling need representative validation before recommendation.
+
+## Runtime and Operational Footprint
+
+The normal Ix setup requires:
+
+- Node.js 22 or newer, Git, and ripgrep.
+- Docker and Docker Compose.
+- ArangoDB 3.12 with a persistent Docker volume.
+- The Ix memory-layer container on port 8090 and ArangoDB on port 8529.
+- A roughly 55MB compressed platform-specific CLI archive for v0.9.1, plus Docker images and graph storage.
+
+Both services bind to loopback by default. ArangoDB nevertheless runs with authentication disabled, so any process on the same host can query it. The backend uses `restart: unless-stopped`, making it a persistent workstation service rather than a project-local library.
+
+The official installer can install or upgrade Homebrew, Git, ripgrep, Node.js, Docker, and Docker Compose; edit shell startup files; start Docker services; write under `~/.ix`; and remove a non-Docker process occupying port 8090. This is far beyond repo-familiar's Tool Profile boundary, where setup commands are explicit guidance and generation never mutates a workstation.
+
+## Privacy and Data Boundary
+
+The reviewed open ingestion payload does not send complete source bodies to the backend. It does send structural and provenance data derived from the repository, including:
+
+- workspace-relative file paths and a workspace identifier derived from the absolute root;
+- symbol and package names, kinds, relationships, roles, and inferred claims;
+- line and byte ranges, language, parser version, and content hashes;
+- source hashes, timestamps, and patch replacement history.
+
+This can still reveal architecture, naming, dependency, and change information from a private codebase. The default endpoint is local, but `IX_ENDPOINT` and configuration can redirect the client elsewhere. Any future profile must state what is indexed, keep remote endpoints explicit, and require project policy review before mapping confidential repositories.
+
+The required memory-layer backend is distributed as a container and JAR from a public distribution repository whose README states that the source repository is private. The Compass UI is also built from a private source repository. Their implementation, telemetry, retention, vulnerability handling, and exact processing behavior cannot be independently reviewed from the Ix repository.
+
+## Security and Supply Chain
+
+The public repository has several good controls:
+
+- CI includes linting, type checking, dead-code checks, unit tests, parser smoke tests, cross-platform builds, and a real-backend integration test.
+- GitHub Actions dependencies are pinned by commit.
+- CodeQL, Trivy, dependency review, secret scanning, configuration checks, and OpenSSF Scorecard workflows run successfully on current main.
+- Release archives include SHA-256 files, SPDX SBOMs, and GitHub build-provenance attestations.
+
+Important gaps remain:
+
+- The shell installer downloads release archives but does not verify the published SHA-256 value or provenance attestation before extraction.
+- The release workflow documents that its SBOM scans `ix-cli` while the separately bundled `core-ingestion` runtime tree is not catalogued.
+- The Docker Compose file uses mutable `arangodb:3.12` and `ix-memory-layer:latest` image tags rather than immutable digests.
+- The recommended `curl | sh` and PowerShell equivalents execute a moving installer from `main`.
+- Repository security scans cover the public tree; the workflow states that backend image scanning occurs in the private memory-layer repository.
+
+Checksums, attestations, and SBOMs are useful only when the installation path verifies them and the inventory covers the shipped runtime. Generated guidance should not repeat the current one-line installer until these gaps are addressed or a safer pinned installation procedure is defined.
+
+## License and Open-Source Boundary
+
+The public Ix repository uses Apache-2.0 and includes `LICENSE` and `NOTICE`. Vendoring or adapting the skill would require preserving those files, attribution notices, and prominent modification notices.
+
+The backend and Compass distribution repositories publish compiled artifacts without a detected repository license, and their source repositories are private. The Apache license on the CLI does not establish redistribution or modification rights for those components. An external Tool Profile would avoid redistributing them, but inclusion still requires clear terms for installation and use in **Downstream Repositories**.
+
+## Agent Skill Assessment
+
+The upstream skill is compact enough for explicit use: its main `SKILL.md` is about 4.6KB, and the full skill subtree is about 26KB. Its progressive disclosure and command-routing guidance are good foundations.
+
+It is not ready to vendor unchanged:
+
+- Its bootstrap script invokes the official machine-mutating installer and starts Docker services.
+- It tells agents to use Ix for broad structural questions and to remap immediately after every code modification, which can displace cheaper repository inspection and create repeated runtime cost.
+- Its first-run workflow assumes permission to install software, start persistent services, and index the repository.
+- The skill was added to `main` after v0.9.1, so no tagged release currently provides stable skill provenance.
+- The repository still has an open request for a native `ix mcp` command, so current integration depends on shell CLI access or separate harness plugins.
+
+A future adaptation should remove installer scripts, narrow activation to explicit large-repository or graph-query needs, require confirmation before mapping sensitive code, and treat remapping as a freshness decision rather than a mandatory after-every-edit hook.
+
+## Evidence and Claimed Savings
+
+The README claims 30-99.7% fewer tokens and at least 43% more daily LLM usage, but it does not link a reproducible benchmark, fixtures, model setup, workload definition, or comparison methodology for those figures.
+
+The narrower `docs/llm-format.md` claim is testable: `--format llm` typically reduces response bytes by two to four times compared with JSON for tree- and table-shaped outputs. Reduced serialized bytes are useful, but they are not equivalent to lower total task tokens after indexing, query selection, retries, stale results, and source verification are included.
+
+Before adoption, compare Ix against the existing `repository-map`, targeted search, and normal agent exploration on representative repositories. Measure answer correctness, missing and stale edges, ingest time, query latency, CPU, memory, disk use, output size, total task tokens, and cleanup behavior.
+
+## Adoption Conditions
+
+Reconsider Ix after all of the following:
+
+1. Pin the CLI release and backend images by immutable version or digest.
+2. Verify release checksums or provenance in the installation path before extraction.
+3. Generate an SBOM from the final packaged tree, including `core-ingestion` and shipped UI assets.
+4. Document backend licensing, privacy, retention, telemetry, vulnerability, and support boundaries.
+5. Resolve or explicitly bound the current stale-symbol, missing-edge, ambiguity, crash, and Windows integration issues.
+6. Run a time-boxed pilot on representative Python and mixed-language repositories and publish the measured results.
+7. Define explicit uninstall, data deletion, port-conflict, and persistent-service cleanup guidance.
+8. Wait for a tagged release containing the Agent Skill, then review and pin that exact subtree.
+9. Replace machine-mutating bootstrap behavior with non-installing, user-invoked setup and verification guidance.
+10. Add security and behavioral tests for the adapted skill before making it selectable.
+
+## Proposed Integration Path
+
+If the adoption conditions are met:
+
+1. Add an experimental `ix-code-map` Tool Profile in `src/repo_familiar/profiles.py`.
+2. Keep the profile explicit, non-default, and limited to setup, privacy boundaries, freshness guidance, and verification commands.
+3. Use pinned, checksum-verified installation instructions rather than `curl | sh`.
+4. Add a concrete `advise` trigger based on repository scale, language mix, and repeated structural-navigation needs only after pilot evidence exists.
+5. Test the Tool Profile on a disposable **Downstream Repository** before offering it for existing-repository adoption.
+6. Consider a separate vendored `ix` skill only after its tagged subtree is adapted to remove installers and broad mandatory activation.
+7. Preserve Apache-2.0 attribution and exact upstream provenance if the skill is eventually vendored.
+
+Until then, retain Ix in research documentation only.
+
+## Review Snapshot
+
+| Field | Reviewed state |
+|---|---|
+| Repository | `ix-infrastructure/Ix` |
+| Reviewed commit | `fc24655d33a541b544983c73bbdfbc2bf1b75060` |
+| Repository created | March 3, 2026 |
+| Stars and forks | 671 stars; 54 forks |
+| Latest release | v0.9.1, published August 9, 2026 |
+| Release history | 26 release records, including two v0.9.0 release candidates |
+| Open work | 12 open issues at review time |
+| License | Apache-2.0 for the public repository; no detected license for the backend or Compass distribution repositories |
+| Public/private boundary | CLI and parser source public; required memory-layer and bundled Compass source private; Pro commands supplied separately |
+| Skill release state | Added after v0.9.1; present on `main` but not in a tagged release |
+
+These values are point-in-time maturity signals. Recheck upstream releases, issues, licenses, installer behavior, image references, skill contents, and security evidence before implementation.

@@ -22,6 +22,7 @@ title: "Research"
 ## Tools Under Consideration
 
 - [Diagram Design Assessment](./diagram-design-assessment.qmd): recommends retaining `cathrynlavery/diagram-design` as an opt-in external Design Profile candidate while license, lifecycle, security, offline, and bundle-size concerns block direct vendoring.
+- [Ix Code Map Assessment](./ix-assessment.qmd): recommends retaining `ix-infrastructure/Ix` as a research candidate until its closed backend, machine-mutating installer, graph-correctness issues, and reproducibility gaps are resolved.
 
 ## Assessments
 

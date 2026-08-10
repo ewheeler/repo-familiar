@@ -21,6 +21,7 @@ project:
     - decisions.qmd
     - research.qmd
     - diagram-design-assessment.qmd
+    - ix-assessment.qmd
     - writing-style-skills-assessment.qmd
     - user-stories.qmd
     - adr/0001-project-generator-as-primary-product.md
@@ -99,6 +100,7 @@ website:
         contents:
           - research.qmd
           - diagram-design-assessment.qmd
+          - ix-assessment.qmd
           - writing-style-skills-assessment.qmd
       - user-stories.qmd
   page-footer:
