@@ -1,0 +1,309 @@
+---
+title: "Python-First Project Plan"
+---
+
+## Status
+
+Accepted implementation plan. The template, command, profile, skill, and Metadata v2 behavior described here remains planned until its corresponding implementation phase is complete.
+
+This plan makes new repository generation more opinionated while preserving the preview-first, non-destructive contract for existing Downstream Repositories.
+
+## Outcomes
+
+- Make `python-reproducible` the default template for new repository generation.
+- Keep `basic` as the explicit generic template and the conservative fallback for unbootstrapped existing repositories.
+- Add `static-quarto-application` as an opt-in executable specialization.
+- Encode preferred Python tools through manifests, tests, CI, agent instructions, and clear selection thresholds rather than advisory prose alone.
+- Treat Divio documentation and executable exemplars as evidence for observable product claims.
+- Define reproducible data science as a concrete environment, input, configuration, execution, and validation contract.
+- Give existing repositories useful guidance now without claiming ownership that Bootstrap Metadata v1 cannot represent.
+
+## Product Planes
+
+The work is divided into three planes with different ownership and safety contracts.
+
+### Guidance
+
+Advice, Tool Profiles, skills, and agent instructions can be added to an existing repository through the current additive bootstrap model. Guidance does not claim ownership of application source, dependency files, CI, or documentation that already exists.
+
+Planned guidance includes:
+
+- preferred Python stack
+- reproducible data science
+- Static Quarto Application architecture
+
+### Greenfield scaffolds
+
+Concrete templates create executable new projects:
+
+```text
+basic
+  -> python-reproducible
+    -> static-quarto-application
+```
+
+Linear composition is an internal implementation detail. Bootstrap Metadata v1 records one concrete effective template ID and the source of each generated file; it does not expose a public template-layer stack.
+
+### Propagation
+
+Long-lived adoption and refresh for existing repositories belongs to Metadata v2. It must represent render context, operation history, ownership state, comparison basis, and refresh strategy before repo-familiar offers template promotion or application-source adoption.
+
+## Command Defaults
+
+New repository generation and existing repository bootstrap must not share an implicit template default.
+
+| Command or repository state | Template resolution |
+|---|---|
+| `generate` without `--template` | `python-reproducible` |
+| `generate --template basic` | `basic` |
+| Unbootstrapped `audit` or `bootstrap-existing` | `basic` unless explicitly selected |
+| Already bootstrapped repository | The template and options recorded in Bootstrap Metadata |
+| Targeted `add-*` command | The recorded template, or the existing-repository fallback when no metadata exists |
+| Unknown or retired recorded template | Fail closed with diagnostics; never fall back silently |
+
+The implementation should use separate constants such as `NEW_REPOSITORY_DEFAULT_TEMPLATE` and `EXISTING_REPOSITORY_FALLBACK_TEMPLATE`. Parser defaults, interactive prompts, internal options, and reference-plan reconstruction must obey the same distinction.
+
+## Python Reproducible Project
+
+The planned `python-reproducible` template should generate:
+
+```text
+pyproject.toml
+uv.lock
+.python-version
+.pre-commit-config.yaml
+.github/workflows/ci.yml
+config/default.toml
+data/sources.toml
+data/example/observations.csv
+src/<python_package>/
+tests/
+docs/
+AGENTS.md
+```
+
+The generated project should include a small deterministic analysis, not empty placeholder modules. The example input, configuration, expected output, tests, and tutorial should describe the same workflow.
+
+## Static Quarto Application
+
+A **Static Quarto Application** has two distinct Quarto surfaces:
+
+- `app/` is the rendered product interface.
+- `docs/` is the Divio project documentation site.
+
+The browser client initiates ordinary request/response calls to versioned FastAPI endpoints. The default architecture excludes WebSockets, server-sent events, long polling, databases, authentication, workers, and server-side rendering.
+
+The initial executable exemplar should:
+
+1. render a static Quarto interface;
+2. submit a validated request to `POST /api/v1/analyze`;
+3. call the same deterministic application function used by batch reproduction;
+4. return a Pydantic response containing the result and input/configuration provenance;
+5. display the result in the browser; and
+6. verify the visible result with a browser test that mirrors the tutorial.
+
+FastAPI may mount the rendered `app/_site` for same-origin local and exemplar operation. Split hosting belongs in a separate how-to guide with an explicit allow-list; permissive CORS is not a default.
+
+## Preferred Python Stack
+
+Preferred does not mean mandatory everywhere. Generated agent instructions should state selection thresholds directly.
+
+| Tool | Default use |
+|---|---|
+| `uv` | Python environments, dependency resolution, lockfiles, and commands |
+| Pydantic | Configuration, API, and external-data boundaries |
+| Polars | Tabular transformations |
+| Hamilton | Graph-shaped analysis pipelines and architecture artifacts |
+| FastAPI | Static Quarto Application API only |
+| Structlog | Operational and request/run logging in service applications |
+| Ruff, mypy, pytest, pre-commit | Default Python quality gates |
+| Hydra/OmegaConf | Composed configurations, experiment matrices, or sweeps |
+| fsspec/universal-pathlib | Remote or interchangeable storage backends |
+| Banks | Prompt-heavy applications after simple templates stop being sufficient |
+
+The first template should install only what its executable exemplar uses. Agent instructions preserve the broader preference and its adoption thresholds without adding speculative dependencies.
+
+## Reproducibility Contract
+
+The generated project should be able to make this claim:
+
+> Given committed code, configuration, a locked environment, and checksum-identified inputs, one documented command reproduces validated derived artifacts without network access.
+
+Required conventions:
+
+- Commit the project manifest, lockfile, Python version, configuration, source records, and small exemplar inputs.
+- Separate networked acquisition from offline reproduction.
+- Record source, license, retrieval date, media type, local path, and expected SHA-256 for external inputs.
+- Treat raw inputs as immutable and identify them by checksum.
+- Keep generated artifacts and Quarto render outputs ignored unless deliberately promoted as fixtures.
+- Require explicit seeds, stable ordering, UTC handling, and injected clocks where relevant.
+- Keep wall-clock timestamps out of deterministic result payloads.
+- Validate schemas, nullability, uniqueness, ranges, categories, row counts, and output hashes.
+- Generate provenance that links input, configuration, environment-lock, and output hashes.
+- Run the exemplar twice in separate temporary directories and compare deterministic outputs.
+- Keep notebooks exploratory; production transformations and validation live in importable modules.
+
+## Documentation As Evidence
+
+Divio remains the information architecture. Evidence requirements strengthen each documentation type rather than introducing a fifth category.
+
+- Tutorials use known inputs and expected visible outputs.
+- How-to guides include an explicit verification step.
+- Reference pages describe tested commands, APIs, schemas, and limits.
+- Explanation connects architecture decisions to reproducibility and operational boundaries.
+- Observable behavior changes update the corresponding exemplar and regression test.
+- Agents must not describe a workflow as verified unless they ran its verification command.
+
+The first Static Quarto Application tutorial should synchronize the locked environment, reproduce the exemplar, render the application, start FastAPI, perform the browser interaction, observe the known result and provenance, and point to the test covering the same path.
+
+## Agent And CI Enforcement
+
+Generated `AGENTS.md` should place required validation near the top. New Python templates should provide one canonical local gate:
+
+```bash
+uv run pre-commit run --all-files
+```
+
+The configured checks should cover Ruff, formatting, mypy, pytest, deterministic reproduction, and the Quarto documentation render. Static Quarto Application CI additionally renders `app/`, starts the API against the rendered artifact, performs the browser interaction, checks the visible result, and reports browser-console or accessibility failures.
+
+Existing repositories receive these checks only through explicit additive adoption. repo-familiar must not retrofit CI, pre-commit, or application source into an existing repository by default.
+
+## Existing Repository Lifecycle
+
+| Repository state | Near-term behavior |
+|---|---|
+| Unbootstrapped existing repository | Detect and recommend; default comparison remains `basic`; add guidance only unless the user selects a narrower current capability explicitly |
+| Bootstrapped `basic`, generated assets untouched | Show advisory promotion readiness; no template-promotion apply under Metadata v1 |
+| Bootstrapped repository with edited generated assets | Preserve edits; provide guidance and manual conflict review only |
+| Independently implemented FastAPI plus static Quarto | Detect the pattern and recommend guidance; do not generate `app/` or claim ownership of existing source, docs, CI, manifests, or locks |
+| Guidance-only adopter | Use targeted Tool Profile and skill additions without generated application code |
+| Unknown recorded template | Fail closed and explain that the Reference Source cannot reconstruct the recorded template |
+
+Plain Quarto documentation must not trigger Static Quarto Application advice. Detection should require evidence of Quarto, FastAPI, and a browser/API interaction boundary.
+
+## Metadata V1 Boundaries
+
+Metadata v1 may support concrete greenfield template IDs, per-file provenance, selected guidance, and read-only comparisons against another template. Any promotion result is only a candidate for future Metadata v2 attach or adoption.
+
+Metadata v1 must not:
+
+- apply a template promotion;
+- attach ownership to independent application files;
+- record or infer layered template history;
+- infer adoption because a file happens to match;
+- broaden non-skill upgrade apply; or
+- claim that an edited repository is safely migratable.
+
+Skills remain the only write-capable upgrade slice under v1.
+
+## Managed Surfaces In Metadata V2
+
+A **Managed Surface** is a coherent multi-file capability with one lifecycle contract. Candidate surfaces include:
+
+- `python-runtime`
+- `quality-and-ci`
+- `reproducible-analysis`
+- `divio-documentation`
+- `quarto-static-client`
+- `fastapi-api`
+
+Each surface should record:
+
+- identity and version;
+- render-context fingerprint;
+- operation history;
+- owned or associated paths;
+- comparison basis;
+- refresh strategy; and
+- state such as `written`, `adopted`, `edited`, `skipped`, or `conflict`.
+
+A v1-to-v2 migration must preserve recorded assets without inferring adoption of unrecorded files. Preview and metadata-only attach come before any write-capable promotion. Even under v2, README files, plans, documentation prose, application source, lockfiles, and edited files default to `manual_review`.
+
+## Lockfile Lifecycle
+
+The Reference Source generates and vendors the greenfield `uv.lock`; downstream generation remains deterministic and offline. After generation, dependency changes are normal Downstream Repository work.
+
+- `check` may report lockfile divergence as expected/manual provenance drift, not as an automatically repairable failure.
+- Upgrade never replaces a changed lockfile automatically.
+- Existing lockfiles are conflict/manual-review assets and are never adopted implicitly.
+- Future Metadata v2 comparison strategies should represent this downstream-maintained lifecycle explicitly.
+
+## Asset Classification
+
+Do not introduce one catch-all `project_scaffold` kind. Add only kinds that support distinct lifecycle behavior:
+
+- `dependency_manifest`
+- `dependency_lock`
+- `source_code`
+- `test_code`
+- `data_fixture`
+
+Continue using `template_config` where it is accurate. Selection groups such as `python` and `application` remain broader than kinds.
+
+## Delivery Phases
+
+### 1. Contracts and decisions
+
+- Add domain language and ADRs for split defaults, greenfield template boundaries, lock ownership, and Managed Surfaces.
+- Keep implementation status explicit in all docs.
+
+### 2. Existing-repository guidance
+
+- Add preferred-stack, reproducibility, and Static Quarto Application guidance.
+- Extend advice detection without adding ownership claims.
+- Test that ordinary Quarto docs do not trigger application advice.
+
+### 3. Separate command defaults
+
+- Resolve new-generation and existing-repository defaults independently without activating the new default yet.
+- Fail closed for unknown recorded templates.
+- Cover parser, interactive, targeted-add, and reference-plan behavior.
+
+### 4. Template composition
+
+- Add an explicit concrete-template registry.
+- Compose known linear layers internally.
+- Fail on accidental collisions and test overlay provenance, deterministic order, and package data.
+
+### 5. Python reproducible exemplar
+
+- Add the manifest, lock, guardrails, CI, exemplar data, provenance, deterministic pipeline, tests, and completed Divio docs.
+- Activate the new-repository default only after the exemplar passes its full validation contract.
+
+### 6. Static Quarto Application exemplar
+
+- Add the static client, FastAPI boundary, shared analysis, API tests, rendered-artifact test, and browser flow.
+- Keep deployment, authentication, databases, and server push out of the initial template.
+
+### 7. Metadata v2 preview and attach
+
+- Add Managed Surfaces, v1 migration, and read-only attach/promotion classification.
+- Do not add broad apply in the same slice.
+
+### 8. Narrow apply
+
+- Add apply only for checksum-clean, repo-familiar-owned, low-ambiguity assets.
+- Keep prose, application code, lockfiles, and edits manual by default.
+
+## Acceptance Criteria
+
+- `generate` defaults to `python-reproducible`; existing-repository commands do not.
+- `--template basic` remains available and stable.
+- Recorded `basic` repositories continue to reconstruct `basic`.
+- Unknown recorded templates never fall back silently.
+- Plain Quarto documentation does not trigger Static Quarto Application advice.
+- Independent FastAPI plus Quarto repositories receive guidance without file writes or ownership claims.
+- Lockfile changes are expected/manual and never auto-refreshed.
+- Template collisions fail deterministically and preserve concrete source provenance.
+- The Python exemplar reproduces identical deterministic outputs in isolated runs.
+- The Static Quarto Application browser test and tutorial demonstrate the same behavior.
+- Divio navigation, render targets, index links, and documentation-type coverage remain synchronized.
+- No non-skill upgrade apply is enabled under Metadata v1.
+
+## Deferred Work
+
+- General preset registry
+- Broad existing-repository application-code adoption under Metadata v1
+- Automatic refresh of manifests, locks, CI, prose, or application source
+- Authentication, databases, deployment platforms, workers, WebSockets, or server-sent events
+- Mandatory Hydra/OmegaConf, fsspec/universal-pathlib, or Banks dependencies without a concrete need

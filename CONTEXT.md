@@ -16,6 +16,18 @@ _Avoid_: Backup copy, scratch notes
 Reusable preferences for agent instructions, skills, model/provider profiles, documentation, and implementation architecture.
 _Avoid_: Personal shell setup, machine configuration
 
+**Python Reproducible Project**:
+A planned opinionated **Downstream Repository** scaffold whose committed environment, configuration, checksum-identified inputs, executable analysis, tests, and documentation can reproduce validated outputs without network access after environment synchronization.
+_Avoid_: Empty Python skeleton, dependency bundle without an executable exemplar
+
+**Static Quarto Application**:
+A planned **Python Reproducible Project** specialization whose Quarto-rendered static browser client initiates ordinary request/response calls to a FastAPI backend. Product UI under `app/` remains distinct from Divio project documentation under `docs/`.
+_Avoid_: Quarto documentation site, server-rendered application, WebSocket application
+
+**Executable Exemplar Documentation**:
+Documentation whose observable claims use known inputs, expected outputs, explicit verification commands, and regression tests covering the same workflow.
+_Avoid_: Marketing claim, unverified walkthrough
+
 **Model Profile**:
 An agent-facing model/provider default recorded in `.agents/models.yml`, describing model IDs, intended uses, harness compatibility, and cost or latency notes.
 _Avoid_: Provider secret, API credential
@@ -56,6 +68,10 @@ Minimum fields: `schema_version`, `reference_source`, `generated_at`, `generator
 `generated_assets` uses structured records with `path`, `kind`, `source`, and optional `content_sha256` fields.
 Initial `kind` values are `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, and `metadata`.
 
+**Managed Surface**:
+A planned Metadata v2 lifecycle record for a coherent multi-file capability, including its render basis, paths, comparison strategy, operation history, and ownership states such as `written`, `adopted`, `edited`, `skipped`, or `conflict`.
+_Avoid_: Directory alias, inferred ownership, permission to overwrite
+
 **Repo Familiar Metadata Directory**:
 The `.repo-familiar/` namespace for generator-owned metadata in a **Downstream Repository**.
 _Avoid_: Root metadata files, hidden agent directory
@@ -73,6 +89,9 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - The **Reference Source** defines one or more **Project Generators**.
 - A **Project Generator** creates a **Downstream Repository**.
 - A **Downstream Repository** receives selected **Agentic Engineering Defaults**.
+- A **Python Reproducible Project** is the planned default scaffold for new repository generation; `basic` remains the generic template and conservative existing-repository fallback.
+- A **Static Quarto Application** specializes a **Python Reproducible Project** without collapsing its product interface into its Divio documentation site.
+- **Executable Exemplar Documentation** connects product claims to verification commands and regression tests.
 - **Existing Repository Bootstrap** applies selected **Agentic Engineering Defaults** to a **Downstream Repository** that already has user-owned files.
 - **Model Profiles** live in `.agents/models.yml`; **Bootstrap Metadata** records selected profile names only.
 - **Tool Profiles** may be selected like **Model Profiles**, but secrets and machine-specific installation remain out of scope.
@@ -82,6 +101,7 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - An **Agent Plugin Export** is an optional portable subset derived from the **Reference Source**; client-specific installation and activation remain outside the **Project Generator**.
 - **Bootstrap Metadata** lives in the **Repo Familiar Metadata Directory** and records which **Reference Source** produced a **Downstream Repository**.
 - An **Upgrade Command** may later refresh **Vendored Generated Assets**, but updates are explicit rather than live-synced.
+- A **Managed Surface** may support future attach, adoption, promotion, or refresh decisions only after Metadata v2 records explicit state; matching files alone do not establish ownership.
 - The **Dotfiles Metaphor** explains portability, not the product scope.
 
 ## Example Dialogue
@@ -97,6 +117,9 @@ _Avoid_: Dotfiles implementation, home-directory sync
 >
 > **Dev:** "Can we apply these defaults to a repository that already exists?"
 > **Domain expert:** "Yes, through **Existing Repository Bootstrap**: audit first, preview changes, then add selected assets without overwriting user-owned files unless explicitly requested."
+>
+> **Dev:** "Should an existing FastAPI and Quarto project be converted automatically?"
+> **Domain expert:** "No. Recommend the **Static Quarto Application** guidance, but do not claim ownership or promote its source until a Metadata v2 **Managed Surface** workflow records explicit adoption."
 
 ## Flagged Ambiguities
 
@@ -105,3 +128,5 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - "bootstrap metadata" could live at the root, under `.agents/`, or under a generator namespace. Resolved: use `.repo-familiar/bootstrap.yml` so generator metadata is namespaced and separate from agent runtime instructions.
 - "model profile" could mean runtime defaults or generation provenance. Resolved: `.agents/models.yml` stores agent-facing defaults; `.repo-familiar/bootstrap.yml` stores selected profile names.
 - "bootstrap existing repo" could mean force-migrating or taking ownership of current files. Resolved: **Existing Repository Bootstrap** is additive and non-destructive by default.
+- "Python-first default" could mean changing both new and existing repository behavior. Resolved: it applies to planned new repository generation only; existing workflows retain a separate conservative fallback or their recorded template.
+- "Quarto application" could mean a documentation site or a static product client. Resolved: a **Static Quarto Application** has an explicit browser-to-FastAPI interaction boundary and keeps `app/` separate from `docs/`.

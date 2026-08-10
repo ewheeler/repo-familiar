@@ -20,6 +20,7 @@ This page records important project decisions as the repository evolves.
 | 2026-05-10 | [Support existing repository bootstrap](./adr/0009-existing-repository-bootstrap.md) | Accepted | Existing repos should be audited and patched additively rather than force-migrated. |
 | 2026-06-09 | [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md) | Accepted, partially implemented | Skills now have a preview-first safe apply slice; other asset groups remain strategy-preview only. |
 | 2026-08-07 | [Pilot Agent Plugins as an optional export format](./adr/0011-agent-plugins-export-pilot.md) | Accepted, client validation pending | Export one canonical skill without replacing project bootstrap, provenance, or client-specific installation. |
+| 2026-08-10 | [Separate Python-first greenfield defaults from existing-repository adoption](./adr/0012-python-first-greenfield-existing-repository-boundary.md) | Accepted, implementation planned | New generation can become Python-first while existing repositories stay guidance-first and Metadata v2 gates adoption or promotion. |
 | 2026-05-10 | Implement a stdlib-first generator skeleton | Accepted | Proves the generation contract before choosing a heavier template engine. |
 | 2026-05-10 | Refuse non-empty output directories by default | Accepted | Prevents accidental overwrites while template behavior is still evolving. |
 | 2026-05-10 | Commit deterministic generated example snapshots | Accepted | Keeps examples useful as documentation and regression fixtures. |
@@ -49,3 +50,4 @@ This page records important project decisions as the repository evolves.
 - Decide whether later template growth needs Banks, Cookiecutter, or another renderer/generator.
 - Expand the interactive prompt set after real bootstraps reveal which defaults should be asked versus inferred.
 - Implement the Metadata v2 concepts needed to distinguish generated, adopted, skipped, and conflicted assets without weakening preview-first safety.
+- Implement the accepted [Python-First Project Plan](./python-first-project-plan.qmd) in preview-first slices, starting with existing-repository guidance.

@@ -14,6 +14,7 @@ project:
     - pre-bootstrap.qmd
     - examples.qmd
     - architecture.qmd
+    - python-first-project-plan.qmd
     - agents/repository-map.md
     - documentation.qmd
     - naming.qmd
@@ -32,6 +33,7 @@ project:
     - adr/0009-existing-repository-bootstrap.md
     - adr/0010-metadata-v2-preview-first-refresh.md
     - adr/0011-agent-plugins-export-pilot.md
+    - adr/0012-python-first-greenfield-existing-repository-boundary.md
 
 website:
   title: "repo-familiar"
@@ -73,6 +75,7 @@ website:
           - pre-bootstrap.qmd
           - examples.qmd
       - architecture.qmd
+      - python-first-project-plan.qmd
       - agents/repository-map.md
       - documentation.qmd
       - naming.qmd
@@ -90,6 +93,7 @@ website:
           - adr/0009-existing-repository-bootstrap.md
           - adr/0010-metadata-v2-preview-first-refresh.md
           - adr/0011-agent-plugins-export-pilot.md
+          - adr/0012-python-first-greenfield-existing-repository-boundary.md
       - section: Research
         contents:
           - research.qmd

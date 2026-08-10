@@ -149,6 +149,23 @@ conflicts: []
 
 These fields should not be added to schema v1 until implementation needs them. The ADR above expands this into a broader Metadata v2 design that also covers render inputs, bootstrap history, comparison basis, and asset-specific refresh strategies.
 
+## Planned Python-First Adoption Boundary
+
+The accepted [Python-First Project Plan](./python-first-project-plan.qmd) changes the planned default for new repository generation, not existing-repository bootstrap.
+
+| Existing repository state | Planned behavior |
+|---|---|
+| No Bootstrap Metadata | Compare against `basic` unless a template is explicitly selected; recommend Python or Static Quarto guidance without adding application source by default. |
+| Recorded `basic`, generated assets untouched | Report advisory promotion readiness only; Metadata v1 does not permit template-promotion apply. |
+| Recorded assets edited | Preserve edits and keep promotion or refresh manual. |
+| Existing FastAPI plus static Quarto | Detect and recommend the architecture skill; do not claim ownership of app source, docs, CI, manifests, or lockfiles. |
+| Guidance-only adoption | Use targeted Tool Profile and skill additions without changing the selected template. |
+| Unknown recorded template | Fail closed rather than falling back to the new greenfield default. |
+
+Plain Quarto documentation is not enough to infer a Static Quarto Application. Advice should require evidence of Quarto, FastAPI, and a browser/API interaction boundary.
+
+Metadata v2 Managed Surfaces will be the prerequisite for future attach, adoption, or promotion workflows. Until then, skills remain the only write-capable upgrade slice and any cross-template comparison is advisory only.
+
 ## Current Status
 
 The first implementation can audit and add the same selected asset set used by new repository generation. It reports assets as missing, present, or conflicting and writes only missing assets unless `--force` is used.

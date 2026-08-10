@@ -380,18 +380,21 @@ Quarto is the default documentation engine because it keeps prose, diagrams, exe
 
 ## Preferred Engineering Stack
 
-For Python-heavy projects, this repository will encode these defaults unless a project has a better reason not to use them:
+For Python-heavy projects, this repository prefers these tools when the project meets their adoption threshold:
 
 - `uv` for Python package and environment management.
-- Hamilton for explicit dataflow/DAG definitions and reviewable execution graphs.
-- Banks for prompt templating.
-- Hydra and OmegaConf for structured configuration.
-- Structlog for structured logs.
-- fsspec and universal-pathlib for flexible file I/O.
+- Hamilton for graph-shaped dataflows and reviewable execution graphs.
+- Banks when prompt-heavy applications outgrow simple templates.
+- Hydra and OmegaConf for composed configuration, experiment matrices, or sweeps.
+- Structlog for operational service and run logging.
+- fsspec and universal-pathlib for remote or interchangeable storage backends.
 - Polars for dataframe work.
 - Pydantic for typed data structures and validation.
+- FastAPI for the opt-in Static Quarto Application API boundary.
 
 Hamilton is especially important because DAG visualizations make abstraction boundaries, data dependencies, and execution flow inspectable without reading every line of code.
+
+The accepted [Python-First Project Plan](docs/python-first-project-plan.qmd) describes how new generation will make these preferences executable. Existing repositories can adopt current guidance and selected assets additively, while application-source adoption and template promotion wait for Metadata v2.
 
 ## Skill Sources
 

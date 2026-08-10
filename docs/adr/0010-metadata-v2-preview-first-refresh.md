@@ -114,6 +114,14 @@ Possible strategies:
 - `manual_review`: default for `README.md`, `plan.md`, and other intentionally user-edited surfaces
 - `unavailable`: preview can explain why an apply path does not exist yet
 
+### Managed surfaces
+
+Template promotion and application adoption need a boundary above individual paths. A Managed Surface groups a coherent capability such as `python-runtime`, `quality-and-ci`, `reproducible-analysis`, `divio-documentation`, `quarto-static-client`, or `fastapi-api` while preserving per-file provenance.
+
+A surface should record its identity, version, render-context fingerprint, associated paths, comparison basis, refresh strategy, operation history, and states such as `written`, `adopted`, `edited`, `skipped`, or `conflict`. Matching files alone must not establish adoption.
+
+A Metadata v1 migration may create records only from assets already recorded as generated. It must not infer ownership of unrecorded application source, docs, CI, manifests, or lockfiles.
+
 ## Preview First, Apply Later
 
 Future refresh stays a two-step workflow:
@@ -142,11 +150,14 @@ Metadata v2 and future refresh work must preserve the existing product boundary:
 - No secret capture in metadata; record only non-secret render inputs and provenance.
 - No write-capable refresh shortcut that skips preview.
 - No broad repository takeover; user-owned files remain user-owned unless an explicit adoption or apply workflow records otherwise.
+- No template-promotion apply or application-source adoption under Metadata v1; read-only comparisons may describe only candidacy for a future Managed Surface workflow.
+- README files, plans, documentation prose, application source, lockfiles, and edited files default to `manual_review` even when they belong to a Managed Surface.
 
 ## Consequences
 
 - `check` and `diff-upstream-candidate` stay read-only. `upgrade` may write only within an explicitly supported asset-group strategy; skills are the first supported group.
 - Future implementation should add Metadata v2 fields only when preview/apply behavior needs them, not preemptively.
+- Existing-repository guidance may ship before Metadata v2 because guidance does not claim source ownership; attach, adoption, and promotion remain gated on Metadata v2.
 - Lifecycle and upgrade docs should point maintainers to this ADR instead of re-explaining the full design in every command page.
 
 ## Cross References
@@ -156,3 +167,5 @@ Metadata v2 and future refresh work must preserve the existing product boundary:
 - [Existing Repositories](../existing-repos.qmd)
 - [Minimal bootstrap metadata schema](./0004-minimal-bootstrap-metadata-schema.md)
 - [Structured generated asset records](./0005-structured-generated-assets.md)
+- [Python-First Project Plan](../python-first-project-plan.qmd)
+- [Separate Python-first greenfield defaults from existing-repository adoption](./0012-python-first-greenfield-existing-repository-boundary.md)

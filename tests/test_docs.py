@@ -19,6 +19,8 @@ PRE_BOOTSTRAP_DOC = DOCS_DIR / "pre-bootstrap.qmd"
 DECISIONS_DOC = DOCS_DIR / "decisions.qmd"
 METADATA_V2_ADR = DOCS_DIR / "adr/0010-metadata-v2-preview-first-refresh.md"
 AGENT_PLUGIN_ADR = DOCS_DIR / "adr/0011-agent-plugins-export-pilot.md"
+PYTHON_FIRST_ADR = DOCS_DIR / "adr/0012-python-first-greenfield-existing-repository-boundary.md"
+PYTHON_FIRST_PLAN = DOCS_DIR / "python-first-project-plan.qmd"
 REPOSITORY_MAP_DOC = DOCS_DIR / "agents/repository-map.md"
 EXAMPLE_BOOTSTRAP_METADATA = (
     Path(__file__).resolve().parents[1]
@@ -124,6 +126,36 @@ class DocsTests(unittest.TestCase):
         adr = AGENT_PLUGIN_ADR.read_text()
         self.assertIn("optional derived export format", adr)
         self.assertIn("does not mutate a Downstream Repository", adr)
+
+    def test_python_first_plan_and_adr_are_documented_and_rendered(self) -> None:
+        quarto_config = QUARTO_CONFIG.read_text()
+        decisions = DECISIONS_DOC.read_text()
+
+        self.assertTrue(PYTHON_FIRST_PLAN.exists())
+        self.assertTrue(PYTHON_FIRST_ADR.exists())
+        self.assertGreaterEqual(quarto_config.count("- python-first-project-plan.qmd"), 2)
+        self.assertGreaterEqual(
+            quarto_config.count(
+                "- adr/0012-python-first-greenfield-existing-repository-boundary.md"
+            ),
+            2,
+        )
+        self.assertIn(
+            "[Separate Python-first greenfield defaults from existing-repository adoption]",
+            decisions,
+        )
+
+    def test_python_first_plan_preserves_existing_repository_boundary(self) -> None:
+        content = PYTHON_FIRST_PLAN.read_text()
+        adr = PYTHON_FIRST_ADR.read_text()
+
+        self.assertIn("NEW_REPOSITORY_DEFAULT_TEMPLATE", content)
+        self.assertIn("EXISTING_REPOSITORY_FALLBACK_TEMPLATE", content)
+        self.assertIn("Plain Quarto documentation must not trigger", content)
+        self.assertIn("No non-skill upgrade apply is enabled under Metadata v1", content)
+        self.assertIn("Unknown or retired recorded template", content)
+        self.assertIn("skills as the only write-capable upgrade slice", adr)
+        self.assertIn("python-first-project-plan.qmd", BOOTSTRAP_LIFECYCLE_DOC.read_text())
 
     def test_metadata_v2_adr_includes_preview_first_sections(self) -> None:
         content = METADATA_V2_ADR.read_text()

@@ -51,6 +51,7 @@
 - Root `.agents/` consistency coverage checks dogfood profile files and registered selectable skill files against generated registry/template output.
 - Quarto render outputs are ignored through `docs/_site/` and `docs/.quarto/` in `.gitignore`.
 - Existing repository bootstrap is implemented as a second bootstrap mode: advise/audit first, dry-run by default, and additive unless explicit replacement is selected.
+- The accepted Python-first direction is documented but not implemented: new generation will default to `python-reproducible`, `static-quarto-application` will be opt-in, and existing repositories may adopt guidance additively while application-source adoption and template promotion wait for Metadata v2.
 
 ## Goals
 
@@ -60,6 +61,8 @@
 - Preserve enough bootstrap metadata for future explicit upgrades without turning metadata into a dependency lockfile.
 - Keep agent runtime assets separate from generator-owned metadata.
 - Maintain documentation in parallel with implementation so humans and agents can inspect plans, decisions, research, and usage.
+- Make preferred Python and reproducible-data-science practices executable through manifests, tests, CI, provenance, and exemplar documentation.
+- Let Static Quarto Applications expose client-initiated FastAPI interactions without conflating the product interface with the Divio documentation site.
 
 ## Non-Goals
 
@@ -106,6 +109,11 @@
 - Interaction: use `questionary` first for prompt-based flows; keep CLI flags fully supported.
 - Template rendering: keep `string.Template` for now and introduce Banks later only when prompt or project templates outgrow it.
 - Advice architecture: keep Hamilton DAG node logic separate from non-DAG helpers to protect future graph fingerprints.
+- Python-first default boundary: change the planned default for new repository generation only; preserve `basic` as the generic template and conservative existing-repository fallback.
+- Static Quarto Application boundary: use a static Quarto browser client with ordinary FastAPI request/response calls, while keeping `app/` separate from Divio documentation under `docs/`.
+- Existing-repository propagation boundary: ship additive guidance before source adoption; Metadata v1 may preview promotion candidacy but cannot apply template promotion.
+- Metadata v2 surface boundary: require explicit Managed Surface state, render basis, history, comparison method, and strategy before attach, adoption, promotion, or broad refresh apply.
+- Lockfile ownership: vendor a greenfield `uv.lock` for reproducibility, then treat normal downstream lock changes as expected/manual rather than automatically repairable generator drift.
 
 ## Best-Fit Additions
 
@@ -495,25 +503,53 @@ Acceptance criteria:
 - Existing tests and generated snapshots continue to pass without user-facing CLI changes.
 - No new broad compatibility layer is added unless a real Downstream Repository requires it.
 
+### 15. Add Python-First Greenfield Templates And Safe Propagation
+
+Status: accepted plan; implementation not started.
+
+The complete contract is in [Python-First Project Plan](docs/python-first-project-plan.qmd) and [ADR 0012](docs/adr/0012-python-first-greenfield-existing-repository-boundary.md).
+
+Implementation sequence:
+
+1. Add preferred-stack, reproducibility, and Static Quarto Application guidance plus precise advice detection for existing repositories.
+2. Separate new-repository default resolution from the existing-repository fallback without activating the new default yet; preserve recorded templates and fail closed for unknown ones.
+3. Add explicit internal composition for concrete `basic`, `python-reproducible`, and `static-quarto-application` templates.
+4. Add and validate the Python reproducibility exemplar with uv, guardrails, deterministic data/provenance, tests, CI, and executable Divio docs, then activate it as the new-repository default.
+5. Add the Static Quarto Application exemplar with separate `app/` and `docs/`, a FastAPI/Pydantic boundary, shared deterministic analysis, and a browser test matching the tutorial.
+6. Add Metadata v2 Managed Surface previews before any attach, adoption, or template-promotion apply.
+7. Add only narrow apply strategies for checksum-clean, repo-familiar-owned, low-ambiguity assets.
+
+Acceptance criteria:
+
+- `generate` defaults to `python-reproducible`; existing-repository commands do not.
+- `--template basic` remains stable, and recorded `basic` repositories continue to reconstruct it.
+- Unknown recorded templates fail closed instead of falling back.
+- Plain Quarto documentation does not trigger Static Quarto Application advice.
+- Independent FastAPI plus Quarto repositories receive guidance without writes or ownership claims.
+- Changed lockfiles remain manual and are never auto-refreshed.
+- The Python exemplar reproduces identical outputs in isolated runs.
+- The Static Quarto Application browser test and tutorial prove the same interaction.
+- No non-skill upgrade apply is added under Metadata v1.
+
 ## Next Highest Priority Slices
 
-Priority 1: Dogfood on one low-risk existing repository using the narrow adoption set. Use `advise`, `audit`, then add only memory, `cq`, `session-focus`, `grill-with-docs`, `get-api-docs`, and `opencode-homebrew-path` unless the repo clearly triggers more.
+Priority 1: Add guidance-only preferred Python stack, reproducible data science, and Static Quarto Application support for existing repositories; keep application files user-owned.
 
-Priority 2: Continue dogfooding `advise --intent` and tune intent-to-stage/profile heuristics based on real downstream runs, especially significant refactors and prompt-heavy policy repos.
+Priority 2: Extend `advise` detection so Quarto documentation alone does not imply a Static Quarto Application, while existing FastAPI plus Quarto applications receive useful recommendations.
 
-Priority 3: Extend `resolve-conflicts` from preview-only suggestions to explicit interactive resolution for `AGENTS.md` and `.gitignore`, while keeping default bootstrap behavior non-destructive.
+Priority 3: Separate new-generation and existing-repository template-default resolution across CLI, interactive, targeted-add, and reference-plan paths without activating the new default.
 
-Priority 4: Decide metadata v2 shape for adopted assets, skipped conflicts, conflict-resolution strategies, bootstrap history, and user intent before adding write-capable conflict merges.
+Priority 4: Add explicit concrete-template composition with collision, provenance, ordering, and package-data tests.
 
-Priority 5: Dogfood `diff-upstream-candidate` plus `upstream-improvement` on this Reference Source and one generated/bootstrapped Downstream Repository before adding PR automation. Capture whether Bootstrap Metadata needs project name/description or rendered-context fields to make current Reference Source comparison exact.
+Priority 5: Build and validate the `python-reproducible` greenfield exemplar, then activate it as the new-generation default.
 
-Priority 6: Dogfood the read-only `upgrade` command on this Reference Source and one Downstream Repository. Capture which metadata fields are needed before a write-capable updater can safely exist.
+Priority 6: Build and validate the opt-in `static-quarto-application` exemplar, including served-artifact and browser checks that match its tutorial.
 
-Priority 7: Design the explicit selected-asset refresh workflow. Prefer evolving `upgrade` or adding `refresh-selected-assets --preview`; avoid any command named or behaving like automatic sync.
+Priority 7: Specify and implement Metadata v2 Managed Surface previews and v1 migration without inferring ownership of unrecorded files.
 
-Priority 8: Re-run `improve-codebase-architecture` after dogfooding `diff-upstream-candidate` and before implementing write-capable upgrade behavior.
+Priority 8: Dogfood guidance and read-only promotion/attach previews on untouched, edited, and independently implemented Downstream Repositories before adding apply.
 
-Priority 9: Consider `prepare-upstream-pr` only after two or three manual upstream improvement proposals expose repeated steps.
+Priority 9: Add narrow write strategies only after preview evidence shows they preserve downstream ownership.
 
 ## Verification Commands
 
@@ -546,7 +582,7 @@ uv run python -m repo_familiar generate \
 - Which external skill sources should get automated upstream drift checks first?
 - Which optional asset groups should the `basic` template split out first?
 - What concrete template complexity should trigger Banks adoption?
-- Should existing repository bootstrap update schema v1 or introduce schema v2 once adopted/conflicted assets are tracked?
+- What is the smallest executable dependency set for the first `python-reproducible` exemplar while preserving the documented adoption thresholds for the broader preferred stack?
 - Should future upgrade behavior use checksum drift, three-way merge, or explicit user prompts for each changed generated asset?
 - Should the explicit refresh command be an expanded `upgrade` command or a separate `refresh-selected-assets` command?
 - Should upstream-improvement start as a skill only, or should it also get a first-class CLI command once two or three real upstream PRs expose the repeated steps?

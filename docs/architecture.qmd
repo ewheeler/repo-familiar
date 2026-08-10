@@ -141,6 +141,20 @@ The initial closed `kind` vocabulary is:
 - `project_plan`
 - `metadata`
 
+## Planned Python-First Product Shape
+
+The accepted next product direction separates new repository generation from existing-repository adoption:
+
+- New `generate` calls will default to a concrete `python-reproducible` template.
+- `basic` will remain an explicit generic template and the conservative fallback for unbootstrapped existing repositories.
+- `static-quarto-application` will be an opt-in concrete template with separate `app/` and `docs/` Quarto surfaces.
+- Internal template composition may reuse known linear layers, but Bootstrap Metadata v1 will record only the concrete effective template and each generated file's source.
+- Existing repositories will receive detection and additive guidance before any template-adoption mechanism is introduced.
+
+The architecture has three product planes: guidance, greenfield scaffolds, and propagation. Metadata v1 remains sufficient for concrete greenfield provenance and advisory comparisons. Metadata v2 will introduce Managed Surfaces before attach, adoption, promotion, or broad refresh apply.
+
+See [Python-First Project Plan](./python-first-project-plan.qmd) and [ADR 0012](./adr/0012-python-first-greenfield-existing-repository-boundary.md) for the complete lifecycle and implementation sequence.
+
 ## Model Profiles
 
 Generated repositories should store model/provider defaults in `.agents/models.yml`. These profiles are agent-facing runtime configuration and should include only non-secret information such as provider names, model IDs, intended use cases, cost or latency notes, and harness compatibility.
@@ -190,6 +204,10 @@ The `semantic-routing-map` profile and `repository-map` skill standardize how a 
 ## Python Defaults
 
 Python-oriented templates should default to `uv`, Hamilton, Banks, Hydra/OmegaConf, Structlog, fsspec/universal-pathlib, Polars, and Pydantic when those choices fit the project.
+
+The planned `python-reproducible` template narrows that list to dependencies used by its executable exemplar. The broader list becomes an explicit selection policy in generated agent instructions: `uv`, Pydantic, Polars, Hamilton, and quality tools are used where the scaffold exercises them; FastAPI and Structlog belong to the Static Quarto Application; Hydra/OmegaConf, fsspec/universal-pathlib, and Banks remain thresholded rather than unconditional.
+
+A Static Quarto Application is not another documentation mode. Its static browser client initiates request/response calls to a FastAPI API, while the Divio project site remains under `docs/`. The batch command, API, tests, and tutorial should call or describe the same deterministic application behavior.
 
 Banks should be introduced after prompt or project templates outgrow `string.Template`, not before the template contract proves that it needs richer rendering.
 
