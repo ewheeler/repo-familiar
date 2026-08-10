@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+import hashlib
+import re
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
-import hashlib
 from pathlib import Path
-import re
 
 from . import __version__
-from .advice import AdviceReport, advise_existing_repository as _advise_existing_repository
+from . import profiles as profile_registry
+from .advice import AdviceReport
+from .advice import advise_existing_repository as _advise_existing_repository
 from .asset_plan import (
     BOOTSTRAP_METADATA_PATH,
-    PlannedAsset,
     TEMPLATE_COMPOSITIONS,
+    PlannedAsset,
     asset_kind,
     filter_planned_assets,
     plan_composed_template_assets,
@@ -24,8 +26,6 @@ from .metadata import (
     load_bootstrap_metadata,
     render_bootstrap_metadata,
 )
-from . import profiles as profile_registry
-
 
 NEW_REPOSITORY_DEFAULT_TEMPLATE = "python-reproducible"
 EXISTING_REPOSITORY_FALLBACK_TEMPLATE = "basic"
@@ -519,7 +519,9 @@ def check_generated_repository(path: Path) -> CheckReport:
     unchecked: list[CheckedAsset] = []
     for asset in metadata.generated_assets:
         target = path / asset.path
-        if not target.exists():
+        if target.is_symlink() or (target.exists() and not target.is_file()):
+            modified.append(CheckedAsset(asset=asset, status="modified"))
+        elif not target.exists():
             missing.append(CheckedAsset(asset=asset, status="missing"))
         elif not asset.content_sha256:
             unchecked.append(CheckedAsset(asset=asset, status="unchecked"))
@@ -537,6 +539,35 @@ def check_generated_repository(path: Path) -> CheckReport:
                 ok.append(checked)
             elif checked.status == "downstream-managed":
                 downstream_managed.append(checked)
+            else:
+                modified.append(checked)
+
+    generated_paths = {asset.path for asset in metadata.generated_assets}
+    for managed_asset in metadata.managed_surface_assets:
+        if managed_asset.state != "adopted" or managed_asset.path in generated_paths:
+            continue
+        asset = GeneratedAsset(
+            path=managed_asset.path,
+            kind="managed_surface",
+            source=f"managed-surface:{managed_asset.surface_id}",
+            content_sha256=managed_asset.content_sha256,
+        )
+        target = path / managed_asset.path
+        if target.is_symlink() or (target.exists() and not target.is_file()):
+            modified.append(CheckedAsset(asset=asset, status="modified"))
+        elif not target.exists():
+            missing.append(CheckedAsset(asset=asset, status="missing"))
+        elif not asset.content_sha256:
+            unchecked.append(CheckedAsset(asset=asset, status="unchecked"))
+        else:
+            current_sha256 = _content_sha256(target.read_text())
+            checked = CheckedAsset(
+                asset=asset,
+                status=("ok" if current_sha256 == asset.content_sha256 else "modified"),
+                current_sha256=current_sha256,
+            )
+            if checked.status == "ok":
+                ok.append(checked)
             else:
                 modified.append(checked)
 

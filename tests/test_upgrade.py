@@ -233,6 +233,56 @@ class UpgradePreviewTests(unittest.TestCase):
         self.assertEqual(check.missing, ())
         self.assertEqual(second_result.written_paths, ())
 
+    def test_sparse_v1_upgrade_creates_owning_surface_for_new_support_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "generated"
+            options = GenerationOptions(
+                name="Sparse Legacy",
+                description="Sparse legacy metadata.",
+                output_dir=repo,
+                skills=("ponytail",),
+                generated_at="2026-05-10T00:00:00Z",
+            )
+            generate_project(options)
+            metadata_path = repo / ".repo-familiar/bootstrap.yml"
+            metadata = load_bootstrap_metadata(metadata_path)
+            metadata_only = next(
+                asset for asset in metadata.generated_assets if asset.kind == "metadata"
+            )
+            legacy = replace(
+                metadata,
+                schema_version=1,
+                generated_assets=(metadata_only,),
+                render_context=None,
+                managed_surfaces=(),
+                managed_surface_assets=(),
+                history=(),
+            )
+            metadata_path.write_text(render_bootstrap_metadata(legacy))
+            current = plan_project(options)
+            current.append(
+                PlannedAsset(
+                    path=".agents/skills/ponytail/REFERENCE.md",
+                    kind="skill",
+                    source="templates/skills/ponytail/REFERENCE.md.tmpl",
+                    content="new support\n",
+                )
+            )
+
+            result = apply_upgrade(
+                repo,
+                {asset.path: asset for asset in current},
+                asset_groups=("skills",),
+            )
+            upgraded = load_bootstrap_metadata(metadata_path)
+
+        self.assertIn(".agents/skills/ponytail/REFERENCE.md", result.written_paths)
+        self.assertIn("agent-runtime", {surface.id for surface in upgraded.managed_surfaces})
+        self.assertIn(
+            ".agents/skills/ponytail/REFERENCE.md",
+            {asset.path for asset in upgraded.managed_surface_assets},
+        )
+
     def test_preview_reports_conservative_non_skill_merge_strategies(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             repo = Path(tmpdir) / "generated"

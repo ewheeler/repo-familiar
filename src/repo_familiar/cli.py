@@ -50,10 +50,13 @@ from .managed_surfaces import (
     SURFACE_STRATEGIES,
     attach_managed_surface,
     migrate_metadata_file,
+    plan_surface_target,
     preview_template_migration,
 )
 from .metadata import GeneratedAsset, load_bootstrap_metadata
 from .skill_sources import check_skill_sources
+from .surface_promotion import promote_surface
+from .template_promotion import promote_template
 from .upgrade import apply_upgrade, preview_upgrade
 from .upstream import diff_upstream_candidate
 
@@ -374,6 +377,57 @@ def build_parser() -> argparse.ArgumentParser:
     metadata_mode.add_argument("--apply", action="store_true", help="write Metadata v2")
     migrate_metadata.add_argument("--format", choices=("text", "json"), default="text")
 
+    promote_surface_parser = subparsers.add_parser(
+        "promote-surface",
+        help="preview or apply one checksum-safe Managed Surface promotion",
+    )
+    promote_surface_parser.add_argument("--path", required=True, type=Path)
+    promote_surface_parser.add_argument(
+        "--surface", required=True, choices=tuple(sorted(SURFACE_STRATEGIES))
+    )
+    promote_surface_parser.add_argument(
+        "--to", required=True, choices=tuple(list_templates())
+    )
+    promotion_mode = promote_surface_parser.add_mutually_exclusive_group()
+    promotion_mode.add_argument(
+        "--preview", action="store_true", help="preview promotion (default)"
+    )
+    promotion_mode.add_argument(
+        "--apply", action="store_true", help="write the safe surface transaction"
+    )
+    promote_surface_parser.add_argument(
+        "--reference-ref",
+        help="Reference Source commit or version to record for the promoted surface",
+    )
+    promote_surface_parser.add_argument("--allow-dirty", action="store_true")
+    promote_surface_parser.add_argument(
+        "--format", choices=("text", "json"), default="text"
+    )
+
+    promote_template_parser = subparsers.add_parser(
+        "promote-template",
+        help="preview or apply an all-or-nothing dependency-ordered template promotion",
+    )
+    promote_template_parser.add_argument("--path", required=True, type=Path)
+    promote_template_parser.add_argument(
+        "--to", required=True, choices=tuple(list_templates())
+    )
+    template_promotion_mode = promote_template_parser.add_mutually_exclusive_group()
+    template_promotion_mode.add_argument(
+        "--preview", action="store_true", help="preview promotion (default)"
+    )
+    template_promotion_mode.add_argument(
+        "--apply", action="store_true", help="write all eligible surfaces atomically"
+    )
+    promote_template_parser.add_argument("--allow-dirty", action="store_true")
+    promote_template_parser.add_argument(
+        "--reference-ref",
+        help="Reference Source commit or version to record for the promoted template",
+    )
+    promote_template_parser.add_argument(
+        "--format", choices=("text", "json"), default="text"
+    )
+
     skill_sources = subparsers.add_parser("check-skill-sources", help="compare vendored skills with recorded upstream sources")
     skill_sources.add_argument("--source-file", type=Path, default=Path(".agents/skill-sources.yml"), help="skill source provenance file")
     skill_sources.add_argument("--skills-root", type=Path, default=Path(".agents/skills"), help="vendored skills directory")
@@ -604,6 +658,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "migrate-metadata":
         return _migrate_metadata(args)
 
+    if args.command == "promote-surface":
+        return _promote_surface(args)
+
+    if args.command == "promote-template":
+        return _promote_template(args)
+
     if args.command == "check-skill-sources":
         return _check_skill_sources(args)
 
@@ -776,6 +836,116 @@ def _migrate_metadata(args: argparse.Namespace) -> int:
         f"surfaces: {len(result.metadata.managed_surfaces)}; "
         f"managed assets: {len(result.metadata.managed_surface_assets)}"
     )
+    return 0
+
+
+def _promote_surface(args: argparse.Namespace) -> int:
+    try:
+        result = promote_surface(
+            args.path,
+            args.surface,
+            args.to,
+            apply=args.apply,
+            allow_dirty=args.allow_dirty,
+            reference_ref=(
+                args.reference_ref or _current_reference_ref() if args.apply else args.reference_ref
+            ),
+        )
+    except (FileNotFoundError, NotADirectoryError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    preview = result.preview
+    payload = {
+        "path": str(preview.path),
+        "surface_id": preview.surface_id,
+        "target_template": preview.target_template,
+        "can_apply": preview.can_apply,
+        "extra_managed_paths": list(preview.extra_managed_paths),
+        "blockers": list(preview.blockers),
+        "assets": [
+            {
+                "path": asset.path,
+                "status": asset.status,
+                "action": asset.action,
+                "strategy": asset.strategy,
+            }
+            for asset in preview.assets
+        ],
+        "written_paths": list(result.written_paths),
+        "selected_template_changed": False,
+    }
+    if args.format == "json":
+        print(json.dumps(payload, indent=2))
+        return 0
+    action = "Promoted" if result.written_paths else "Surface promotion preview"
+    print(f"{action}: {preview.surface_id} -> {preview.target_template}")
+    print(f"Can apply: {'yes' if preview.can_apply else 'no'}")
+    print("Selected template remains unchanged.")
+    for asset in preview.assets:
+        print(f"- {asset.path}: {asset.status} -> {asset.action}")
+    for blocker in preview.blockers:
+        print(f"Blocked: {blocker}")
+    return 0
+
+
+def _promote_template(args: argparse.Namespace) -> int:
+    try:
+        result = promote_template(
+            args.path,
+            args.to,
+            apply=args.apply,
+            allow_dirty=args.allow_dirty,
+            reference_ref=(
+                args.reference_ref or _current_reference_ref()
+                if args.apply
+                else args.reference_ref
+            ),
+        )
+    except (FileNotFoundError, NotADirectoryError, ValueError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    preview = result.preview
+    payload = {
+        "path": str(preview.path),
+        "current_template": preview.current_template,
+        "target_template": preview.target_template,
+        "can_apply": preview.can_apply,
+        "removed_surface_ids": list(preview.removed_surface_ids),
+        "blockers": list(preview.blockers),
+        "surfaces": [
+            {
+                "surface_id": surface.surface_id,
+                "can_apply": surface.can_apply,
+                "blockers": list(surface.blockers),
+                "assets": [
+                    {
+                        "path": asset.path,
+                        "status": asset.status,
+                        "action": asset.action,
+                        "strategy": asset.strategy,
+                    }
+                    for asset in surface.assets
+                ],
+            }
+            for surface in preview.surfaces
+        ],
+        "written_paths": list(result.written_paths),
+        "selected_template_changed": result.selected_template_changed,
+    }
+    if args.format == "json":
+        print(json.dumps(payload, indent=2))
+        return 0
+    action = "Promoted template" if result.written_paths else "Template promotion preview"
+    print(f"{action}: {preview.current_template} -> {preview.target_template}")
+    print(f"Can apply: {'yes' if preview.can_apply else 'no'}")
+    for surface in preview.surfaces:
+        actions = ", ".join(
+            f"{name}={sum(asset.action == name for asset in surface.assets)}"
+            for name in sorted({asset.action for asset in surface.assets})
+        )
+        print(f"- {surface.surface_id}: {actions}")
+    for blocker in preview.blockers:
+        print(f"Blocked: {blocker}")
     return 0
 
 
@@ -959,7 +1129,20 @@ def _current_reference_plan(path: Path) -> list[PlannedAsset]:
         bootstrap_mode=metadata.bootstrap_mode,
         dry_run=True,
     )
-    return plan_project(options)
+    planned_by_path = {asset.path: asset for asset in plan_project(options)}
+    for surface in metadata.managed_surfaces:
+        if surface.template == metadata.selected_template:
+            continue
+        target = plan_surface_target(
+            path,
+            surface.id,
+            surface.template,
+            project_name=surface.project_name,
+            project_description=surface.project_description,
+        )
+        for asset in target.assets:
+            planned_by_path[asset.path] = asset
+    return [planned_by_path[path_key] for path_key in sorted(planned_by_path)]
 
 
 def _current_reference_ref() -> str:

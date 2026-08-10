@@ -4,11 +4,16 @@ import json
 import tempfile
 import unittest
 from contextlib import redirect_stdout
+from dataclasses import replace
 from io import StringIO
 from pathlib import Path
 
 from repo_familiar.cli import main
-from repo_familiar.generator import GenerationOptions, generate_project
+from repo_familiar.generator import (
+    GenerationOptions,
+    check_generated_repository,
+    generate_project,
+)
 from repo_familiar.managed_surfaces import (
     attach_managed_surface,
     migrate_metadata_v2,
@@ -59,6 +64,57 @@ class ManagedSurfaceTests(unittest.TestCase):
             [("AGENTS.md", "written")],
         )
         self.assertEqual(migrated.history[0].command, "migrate-metadata")
+
+    def test_v1_migration_preserves_multiple_surfaces_options_and_missing_checksums(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo = Path(tmpdir) / "legacy"
+            generate_project(
+                GenerationOptions(
+                    name="Legacy Complete",
+                    description="Legacy complete fixture.",
+                    output_dir=repo,
+                    template="basic",
+                    tool_profiles=("cq", "python-guardrails"),
+                    skills=("grill-with-docs", "ponytail"),
+                    generated_at="2026-08-10T00:00:00Z",
+                )
+            )
+            metadata = load_bootstrap_metadata(repo / ".repo-familiar/bootstrap.yml")
+            legacy_assets = tuple(
+                replace(asset, content_sha256=None)
+                if asset.path in ("README.md", ".agents/tools.yml")
+                else asset
+                for asset in metadata.generated_assets
+            )
+            legacy = replace(
+                metadata,
+                schema_version=1,
+                generated_assets=legacy_assets,
+                render_context=None,
+                managed_surfaces=(),
+                managed_surface_assets=(),
+                history=(),
+            )
+            (repo / "unrecorded.txt").write_text("user owned\n")
+
+            migrated = migrate_metadata_v2(
+                legacy,
+                project_name="Legacy Complete",
+                project_description="Legacy complete fixture.",
+            )
+
+        self.assertEqual(migrated.selected_options, metadata.selected_options)
+        self.assertEqual(migrated.generated_assets, legacy_assets)
+        self.assertGreaterEqual(len(migrated.managed_surfaces), 3)
+        presence_only = {
+            asset.path
+            for asset in migrated.managed_surface_assets
+            if asset.comparison_basis == "presence_only"
+        }
+        self.assertEqual(presence_only, {"README.md", ".agents/tools.yml"})
+        self.assertNotIn(
+            "unrecorded.txt", {asset.path for asset in migrated.managed_surface_assets}
+        )
 
     def test_exact_surface_attach_writes_only_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -276,6 +332,11 @@ class ManagedSurfaceTests(unittest.TestCase):
             )
             repeated_metadata = load_bootstrap_metadata(metadata_path)
             after_reattach = metadata_path.read_text()
+            clean_check = check_generated_repository(repo)
+            (repo / "service/api.py").write_text("app = object()\nchanged = True\n")
+            modified_check = check_generated_repository(repo)
+            (repo / "service/test_api.py").unlink()
+            missing_check = check_generated_repository(repo)
 
         self.assertEqual({asset.status for asset in preview.assets}, {"current"})
         self.assertEqual(
@@ -289,6 +350,13 @@ class ManagedSurfaceTests(unittest.TestCase):
             {"service/api.py", "service/test_api.py"},
         )
         self.assertEqual(len(repeated_metadata.history), len(metadata.history))
+        self.assertIn("service/api.py", {item.asset.path for item in clean_check.ok})
+        self.assertIn(
+            "service/api.py", {item.asset.path for item in modified_check.modified}
+        )
+        self.assertIn(
+            "service/test_api.py", {item.asset.path for item in missing_check.missing}
+        )
 
     def test_explicit_assets_cannot_invent_surface_for_unrelated_template(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

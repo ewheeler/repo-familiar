@@ -19,7 +19,7 @@
 
 - Treat Divio documentation as evidence: tutorials use known inputs and results, how-to guides include verification, reference describes tested contracts, and explanation records rationale.
 - Keep batch reproduction, API behavior, tests, and tutorial claims on the same application path.
-- Existing repositories may attach Metadata v2 Managed Surfaces explicitly, but attach never rewrites application files and template promotion remains read-only.
+- Existing repositories may attach Metadata v2 Managed Surfaces explicitly. Surface and template promotion write only missing or checksum-clean replaceable paths atomically; broad promotion changes `selected_template` only after every target surface conforms.
 
 ## Validation
 

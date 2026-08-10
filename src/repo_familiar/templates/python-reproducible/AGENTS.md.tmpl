@@ -41,6 +41,8 @@ This is a Python Reproducible Project generated with `repo-familiar`.
 
 - Treat manifests, locks, source, tests, CI, and docs as downstream-owned after generation.
 - Never replace existing repository choices merely to match preferred defaults.
+- Use `promote-surface` only for missing or checksum-clean eligible paths; manual-review differences block the whole surface.
+- Use `promote-template` only after every dependency-ordered surface passes preview; no partial promotion or deletion is allowed.
 - Keep generator provenance in `.repo-familiar/bootstrap.yml` and agent runtime guidance in `.agents/`.
 $repository_routing_section
 ## Selected Agent Defaults

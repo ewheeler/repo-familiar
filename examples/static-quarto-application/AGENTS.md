@@ -38,6 +38,8 @@ This is a Static Quarto Application generated with `repo-familiar`.
 
 - Treat existing manifests, locks, source, tests, CI, application UI, and docs as user-owned until an explicit Metadata v2 attach records a manual-review baseline.
 - Never rewrite an existing Static Quarto Application merely to match this scaffold; attach writes metadata only.
+- Surface promotion may create missing files or replace checksum-clean eligible assets atomically, but manual-review application differences remain blocked.
+- Broad promotion is all-or-nothing across dependency-ordered surfaces and changes `selected_template` only after the full application conforms.
 - Keep generator provenance in `.repo-familiar/bootstrap.yml` and runtime guidance in `.agents/`.
 
 ## Selected Agent Defaults

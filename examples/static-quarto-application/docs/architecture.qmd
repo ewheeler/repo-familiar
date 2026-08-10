@@ -26,4 +26,4 @@ The browser initiates every interaction. The initial architecture has no server-
 
 ## Ownership
 
-The generated scaffold becomes downstream-owned. Existing applications may attach Metadata v2 Managed Surfaces explicitly, but attach writes metadata only and template promotion remains read-only.
+The generated scaffold becomes downstream-owned. Existing applications may attach Metadata v2 Managed Surfaces explicitly, promote one eligible surface, or use all-or-nothing broad promotion after every target surface conforms.

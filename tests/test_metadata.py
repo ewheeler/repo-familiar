@@ -46,6 +46,30 @@ history:
         with self.assertRaisesRegex(ValueError, "Invalid Managed Surface state"):
             parse_bootstrap_metadata(invalid)
 
+    def test_rejects_duplicate_operation_ids(self) -> None:
+        invalid = """schema_version: 2
+render_context:
+  project_name: "Demo"
+  project_description: "Demo."
+  template: "basic"
+  docs: "quarto"
+  selected_options_sha256: "abc"
+  source: "generation_inputs"
+managed_surfaces:
+managed_surface_assets:
+history:
+  - id: "op-duplicate"
+    at: "2026-08-10T00:00:00Z"
+    command: "attach"
+    mode: "apply"
+  - id: "op-duplicate"
+    at: "2026-08-10T00:00:01Z"
+    command: "promote-surface"
+    mode: "apply"
+"""
+        with self.assertRaisesRegex(ValueError, "operation IDs must be unique"):
+            parse_bootstrap_metadata(invalid)
+
     def test_round_trips_metadata_v2_managed_surfaces(self) -> None:
         context = RenderContext(
             project_name="Demo",

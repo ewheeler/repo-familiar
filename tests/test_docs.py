@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import unittest
+from pathlib import Path
 
-from repo_familiar.cli import PROFILE_FAMILY_COMMANDS, TARGETED_ADD_COMMANDS, build_parser
+from repo_familiar.cli import (
+    PROFILE_FAMILY_COMMANDS,
+    TARGETED_ADD_COMMANDS,
+    build_parser,
+)
 from repo_familiar.generator import GenerationOptions, list_templates
 from repo_familiar.metadata import SELECTED_OPTION_KEYS, load_bootstrap_metadata
-
 
 DOCS_DIR = Path(__file__).resolve().parents[1] / "docs"
 REPO_ROOT = DOCS_DIR.parent
@@ -22,6 +25,7 @@ METADATA_V2_ADR = DOCS_DIR / "adr/0010-metadata-v2-preview-first-refresh.md"
 AGENT_PLUGIN_ADR = DOCS_DIR / "adr/0011-agent-plugins-export-pilot.md"
 PYTHON_FIRST_ADR = DOCS_DIR / "adr/0012-python-first-greenfield-existing-repository-boundary.md"
 PYTHON_FIRST_PLAN = DOCS_DIR / "python-first-project-plan.qmd"
+ROOT_PLAN = REPO_ROOT / "PLAN.md"
 REPOSITORY_MAP_DOC = DOCS_DIR / "agents/repository-map.md"
 EXAMPLE_BOOTSTRAP_METADATA = (
     Path(__file__).resolve().parents[1]
@@ -347,11 +351,54 @@ class DocsTests(unittest.TestCase):
         lifecycle_doc = BOOTSTRAP_LIFECYCLE_DOC.read_text()
         existing_doc = (DOCS_DIR / "existing-repos.qmd").read_text()
 
-        for command in ("migrate-metadata", "attach", "migrate-template"):
+        for command in (
+            "migrate-metadata",
+            "attach",
+            "promote-surface",
+            "promote-template",
+            "migrate-template",
+        ):
             self.assertIn(command, _subcommand_parser(command).prog)
             self.assertIn(f"repo_familiar {command}", generator_doc)
             self.assertIn(f"`{command}`", lifecycle_doc)
             self.assertIn(f"repo_familiar {command}", existing_doc)
+        self.assertIn(
+            "`promote-surface` writes one eligible surface atomically",
+            lifecycle_doc,
+        )
+        self.assertIn(
+            "`promote-template` changes `selected_template` only after every target surface",
+            lifecycle_doc,
+        )
+        self.assertIn(
+            "then use `promote-surface` or all-or-nothing `promote-template`",
+            existing_doc,
+        )
+        self.assertIn(
+            "Managed Surface and template writes use the separate preview-first "
+            "`promote-surface` and `promote-template` commands",
+            generator_doc,
+        )
+        self.assertNotIn("skills are the only write-capable path", generator_doc)
+
+        roadmap = ROOT_PLAN.read_text()
+        self.assertIn("Dogfood Metadata v2 migration, attach, surface promotion", roadmap)
+        self.assertIn("additional write strategies", roadmap)
+        self.assertNotIn(
+            "Add narrow write strategies only after preview evidence",
+            roadmap,
+        )
+
+        context = (REPO_ROOT / "CONTEXT.md").read_text()
+        architecture = (DOCS_DIR / "architecture.qmd").read_text()
+        adr = PYTHON_FIRST_ADR.read_text()
+        python_plan = PYTHON_FIRST_PLAN.read_text()
+        self.assertNotIn("A future explicit workflow", context)
+        self.assertNotIn("The first implementation is a Python CLI", architecture)
+        self.assertNotIn("The planned refresh model", architecture)
+        self.assertNotIn("promotion and application-source adoption preview-only", adr)
+        self.assertIn("Those records now gate", python_plan)
+        self.assertIn("adopted Managed Surface assets", existing_doc)
 
     def test_catalog_and_describe_parser_cover_profile_families_and_formats(self) -> None:
         catalog_parser = _subcommand_parser("catalog")

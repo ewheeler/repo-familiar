@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted and partially implemented. Metadata v2, Managed Surfaces, lossless v1 migration, metadata-only attach, and template-promotion preview are implemented. `upgrade --asset-group skills --apply` remains the only content-writing refresh slice.
+Accepted and implemented through dependency-ordered broad promotion. Metadata v2, Managed Surfaces, lossless v1 migration, metadata-only attach, surface-scoped promotion, and all-or-nothing template promotion are available.
 
 ## Context
 
@@ -150,12 +150,12 @@ Metadata v2 and future refresh work must preserve the existing product boundary:
 - No secret capture in metadata; record only non-secret render inputs and provenance.
 - No write-capable refresh shortcut that skips preview.
 - No broad repository takeover; user-owned files remain user-owned unless an explicit adoption or apply workflow records otherwise.
-- No template-promotion content apply. `attach --apply` writes Metadata v2 only and never rewrites application files; conflicts require explicit `--accept-current` and missing files block attachment.
+- No promotion shortcut may delete paths or escalate manual review. `attach --apply` writes Metadata v2 only. `promote-surface --apply` handles one eligible surface. `promote-template --apply` composes every target surface in dependency order and blocks the entire transaction when any surface is edited, conflicting, extra, omitted by the target, or manual-review only.
 - README files, plans, documentation prose, application source, lockfiles, and edited files default to `manual_review` even when they belong to a Managed Surface.
 
 ## Consequences
 
-- `check` and `diff-upstream-candidate` stay read-only. `upgrade` may write only within an explicitly supported asset-group strategy; skills are the first supported group.
+- `check`, `diff-upstream-candidate`, and legacy `migrate-template` stay read-only. `upgrade`, `promote-surface`, and `promote-template` may write only within explicitly supported strategies.
 - Metadata v2 records render context, Managed Surfaces, per-surface assets, and append-only operation history because implemented preview/attach behavior needs them.
 - Existing Metadata v1 repositories migrate losslessly: only recorded generated assets become `written`; unrecorded files remain user-owned.
 - Lifecycle and upgrade docs should point maintainers to this ADR instead of re-explaining the full design in every command page.

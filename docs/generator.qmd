@@ -128,6 +128,40 @@ uv run python -m repo_familiar migrate-template \
 
 Template migration is read-only. It reports target surfaces and per-file states but has no apply mode.
 
+Promote one eligible surface after reviewing its plan:
+
+```bash
+uv run python -m repo_familiar promote-surface \
+  --path /path/to/repo \
+  --surface python-runtime \
+  --to python-reproducible
+
+uv run python -m repo_familiar promote-surface \
+  --path /path/to/repo \
+  --surface python-runtime \
+  --to python-reproducible \
+  --reference-ref <commit-or-tag> \
+  --apply
+```
+
+Promotion is atomic and surface-scoped. Missing paths are created. Target-different paths are replaced only when the recorded checksum is still clean and the surface strategy is `replace_if_unchanged`. Edited, conflicting, extra managed, and manual-review paths block the whole surface. The command records a `promote-surface` operation but does not change `selected_template`.
+
+Promote every conformable target surface as one dependency-ordered transaction:
+
+```bash
+uv run python -m repo_familiar promote-template \
+  --path /path/to/repo \
+  --to python-reproducible
+
+uv run python -m repo_familiar promote-template \
+  --path /path/to/repo \
+  --to python-reproducible \
+  --reference-ref <commit-or-tag> \
+  --apply
+```
+
+Broad apply uses the same per-asset rules as `promote-surface`, blocks any omitted current surface rather than deleting it, and rolls back the entire batch on failure. `selected_template` changes only in the final Metadata v2 committed with all target surfaces.
+
 When the downstream path is in Git, apply refuses a dirty worktree by default. Commit or stash first; `--allow-dirty` is an explicit escape hatch. A clean Reference Source checkout contributes its current commit to bootstrap metadata automatically. Packaged installs use the repo-familiar version; use `--reference-ref <commit-or-tag>` to provide a specific source identity. Removed or renamed skill assets are blocked for manual review rather than deleted. The write batch is staged and rolls back completed replacements when an apply error occurs.
 
 Get recommendations for an existing repository before bootstrapping:
@@ -384,11 +418,11 @@ Audit output reports the comparison basis, selected options, and asset groups. U
 
 Use `--asset-group` with `audit` or `bootstrap-existing` for scoped work. Supported groups are `agent`, `application`, `config`, `design`, `docs`, `memory`, `metadata`, `models`, `plan`, `privacy`, `prompts`, `public-interest`, `python`, `repomap`, `safety`, `sandbox`, `secrets`, `skills`, `tools`, and `worktrees`. The `python` and `application` groups are audit-only when they include scaffold assets; use `attach` for metadata-only adoption.
 
-Generated asset records include `content_sha256` for drift detection. The metadata file itself is presence-checked but not self-hashed.
+Generated asset records and adopted Managed Surface assets include `content_sha256` when a checksum baseline exists. `check` reports drift for both ownership classes and refuses to follow symlinked asset paths. The metadata file itself is presence-checked but not self-hashed.
 
 `diff-upstream-candidate` is read-only. It classifies recorded generated assets as unchanged, modified, missing, or unchecked and adds a recommendation such as `review-for-upstream-improvement`, `review-profile-improvement`, `review-private-or-local-only`, or `restore-generated-asset`. Current Reference Source comparison is advisory; template-variable-heavy assets may report `reference-may-have-changed` until Bootstrap Metadata records richer template context.
 
-`upgrade` remains read-only by default. `--asset-group skills --apply` is the only write-capable path: it refreshes unchanged vendored skills and missing support files, then updates provenance and checksums. Other groups report strategies such as mapping merge, line union, heading merge, JSON merge, or manual review without writing.
+`upgrade` remains read-only by default and writes only the skills group. Managed Surface and template writes use the separate preview-first `promote-surface` and `promote-template` commands. Other upgrade groups report strategies such as mapping merge, line union, heading merge, JSON merge, or manual review without writing.
 
 The next upgrade evolution should extend the existing strategy previews into narrowly scoped apply behavior, not automatic sync. Profile YAML should use mapping-aware merges, `.gitignore` should use line union, `AGENTS.md` should use heading-aware merge previews, `opencode.json` should use JSON merge previews, and `README.md`, docs prose, and `plan.md` should remain manual-review by default. See [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md).
 

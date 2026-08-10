@@ -8,6 +8,8 @@ This repository was generated with `repo-familiar`.
 - Preserve project-specific terminology in `CONTEXT.md` when present.
 - Keep agent runtime configuration in `.agents/`.
 - Keep generator provenance in `.repo-familiar/bootstrap.yml`.
+- Use `promote-surface` only after preview; it writes one checksum-safe Managed Surface atomically and never changes `selected_template`.
+- Use `promote-template` only when every target surface is eligible; it performs one rollback-capable transaction and changes `selected_template` only after complete conformance.
 
 ## Documentation Defaults
 

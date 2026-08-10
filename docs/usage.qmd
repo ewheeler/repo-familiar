@@ -251,6 +251,39 @@ uv run python -m repo_familiar migrate-template \
   --to python-reproducible
 ```
 
+Promote one checksum-safe surface without claiming full template conformance:
+
+```bash
+uv run python -m repo_familiar promote-surface \
+  --path /path/to/repo \
+  --surface python-runtime \
+  --to python-reproducible
+
+uv run python -m repo_familiar promote-surface \
+  --path /path/to/repo \
+  --surface python-runtime \
+  --to python-reproducible \
+  --apply
+```
+
+The apply step creates missing target files and performs only permitted checksum-clean replacements. It stages surface files and Metadata v2 as one rollback-capable transaction. It never deletes extra files or changes `selected_template`.
+
+Promote the complete template only after every surface preview is eligible:
+
+```bash
+uv run python -m repo_familiar promote-template \
+  --path /path/to/repo \
+  --to python-reproducible
+
+uv run python -m repo_familiar promote-template \
+  --path /path/to/repo \
+  --to python-reproducible \
+  --reference-ref <commit-or-tag> \
+  --apply
+```
+
+Broad promotion never deletes an omitted current surface and never partially applies. It commits target files and Metadata v2 together, then changes `selected_template` only after complete target conformance.
+
 Use the read-only profile registry ergonomics when you need the built-in summaries or full field details for a profile family:
 
 ```bash

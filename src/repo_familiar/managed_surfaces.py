@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import __version__
-from .asset_plan import BOOTSTRAP_METADATA_PATH
+from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset
 from .metadata import (
     BootstrapMetadata,
     GeneratedAsset,
@@ -70,6 +70,20 @@ class MetadataMigrationResult:
     previous_schema_version: int
     metadata: BootstrapMetadata
     metadata_written: bool
+
+
+@dataclass(frozen=True)
+class PlannedSurfaceTarget:
+    assets: tuple[PlannedAsset, ...]
+    render_context: RenderContext
+
+
+@dataclass(frozen=True)
+class PlannedTemplateTarget:
+    assets: tuple[PlannedAsset, ...]
+    render_context: RenderContext
+    selected_options: dict[str, tuple[str, ...]]
+    docs: str
 
 
 def build_render_context(
@@ -342,7 +356,7 @@ def attach_managed_surface(
         description,
         template,
         target_options.docs,
-        _selected_options(target_options),
+        selected_options_from_generation(target_options),
         source="attach_preview",
     )
     surface = ManagedSurface(
@@ -438,6 +452,61 @@ def preview_template_migration(path: Path, target_template: str) -> TemplateMigr
     )
 
 
+def plan_surface_target(
+    path: Path,
+    surface_id: str,
+    template: str,
+    *,
+    project_name: str | None = None,
+    project_description: str | None = None,
+) -> PlannedSurfaceTarget:
+    planned_assets, options = _planned_target(
+        path,
+        template,
+        project_name=project_name,
+        project_description=project_description,
+    )
+    assets = tuple(
+        asset
+        for asset in planned_assets
+        if asset.kind != "metadata" and surface_id_for_path(asset.path) == surface_id
+    )
+    if not assets:
+        raise ValueError(f"Template {template} does not define Managed Surface {surface_id}")
+    inferred_name, inferred_description = repository_identity(path)
+    name = project_name or inferred_name
+    description = project_description or inferred_description
+    context = build_render_context(
+        name,
+        description,
+        template,
+        options.docs,
+        selected_options_from_generation(options),
+        source="surface_promotion",
+    )
+    return PlannedSurfaceTarget(assets=assets, render_context=context)
+
+
+def plan_template_target(path: Path, template: str) -> PlannedTemplateTarget:
+    planned_assets, options = _planned_target(path, template)
+    selected_options = selected_options_from_generation(options)
+    name, description = repository_identity(path)
+    context = build_render_context(
+        name,
+        description,
+        template,
+        options.docs,
+        selected_options,
+        source="template_promotion",
+    )
+    return PlannedTemplateTarget(
+        assets=tuple(planned_assets),
+        render_context=context,
+        selected_options=selected_options,
+        docs=options.docs,
+    )
+
+
 def surface_id_for_path(path: str) -> str:
     if path.startswith(".agents/") or path == "opencode.json":
         return "agent-runtime"
@@ -459,10 +528,18 @@ def surface_id_for_path(path: str) -> str:
     return "repository-foundation"
 
 
-def _planned_target(path: Path, template: str):
+def _planned_target(
+    path: Path,
+    template: str,
+    *,
+    project_name: str | None = None,
+    project_description: str | None = None,
+):
     from .generator import GenerationOptions, plan_project, resolve_generation_options
 
-    name, description = repository_identity(path)
+    inferred_name, inferred_description = repository_identity(path)
+    name = project_name or inferred_name
+    description = project_description or inferred_description
     options = resolve_generation_options(
         GenerationOptions(
             name=name,
@@ -485,7 +562,9 @@ def _preview_template_assets(path: Path, surface_id: str, targets, managed):
         if current_sha is None:
             status = "missing"
         elif owned is not None:
-            if owned.content_sha256 is not None and current_sha != owned.content_sha256:
+            if owned.content_sha256 is None and current_sha != target_sha:
+                status = "unverifiable"
+            elif owned.content_sha256 is not None and current_sha != owned.content_sha256:
                 status = "edited"
             elif current_sha == target_sha:
                 status = owned.state
@@ -499,7 +578,7 @@ def _preview_template_assets(path: Path, surface_id: str, targets, managed):
             SurfaceAssetPreview(
                 path=target.path,
                 status=status,
-                strategy=SURFACE_STRATEGIES[surface_id],
+                strategy=(owned.strategy if owned is not None else SURFACE_STRATEGIES[surface_id]),
                 current_sha256=current_sha,
                 target_sha256=target_sha,
             )
@@ -564,7 +643,7 @@ def _new_existing_metadata(name: str, description: str):
     )
 
 
-def _selected_options(options) -> dict[str, tuple[str, ...]]:
+def selected_options_from_generation(options) -> dict[str, tuple[str, ...]]:
     return {
         "agent_harnesses": options.agent_harnesses,
         "model_profiles": options.model_profiles,
@@ -653,4 +732,4 @@ def _sha256_json(value) -> str:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")  # noqa: UP017
+    return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")  # noqa: UP017

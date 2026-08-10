@@ -35,6 +35,8 @@ uv run python -m repo_familiar audit --path /path/to/repo --asset-group docs
 uv run python -m repo_familiar migrate-metadata --path /path/to/repo
 uv run python -m repo_familiar migrate-metadata --path /path/to/repo --apply
 uv run python -m repo_familiar attach --path /path/to/repo --surface fastapi-api --template static-quarto-application
+uv run python -m repo_familiar promote-surface --path /path/to/repo --surface python-runtime --to python-reproducible
+uv run python -m repo_familiar promote-template --path /path/to/repo --to python-reproducible
 uv run python -m repo_familiar migrate-template --path /path/to/repo --to python-reproducible
 uv run python -m repo_familiar resolve-conflicts --path /path/to/repo
 uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
@@ -118,7 +120,7 @@ uv run python -m repo_familiar add-skill --path /path/to/repo --skill privacy-re
 
 Existing repository bootstrap should write `.repo-familiar/bootstrap.yml` with `bootstrap_mode: existing_repository`. The current implementation records assets actually written by the operation and does not claim skipped conflicts as generated assets.
 
-Generated asset records include `content_sha256` for written non-metadata assets. This allows `check` to report generated assets as `ok`, `modified`, `downstream-managed`, `missing`, or `unchecked`. A changed generated dependency lock is downstream-managed and does not make `check` fail; refresh remains manual.
+Generated asset records and explicitly adopted Managed Surface assets include checksum baselines when available. `check` reports both ownership classes as `ok`, `modified`, `downstream-managed`, `missing`, or `unchecked`; symlinked assets are modified rather than followed. A changed generated dependency lock is downstream-managed and does not make `check` fail; refresh remains manual.
 
 Use `diff-upstream-candidate` after local changes to classify generated asset drift before proposing improvements back to the Reference Source. It is read-only and should be paired with the `upstream-improvement` skill before copying downstream content upstream. Current Reference Source comparison is advisory; template-variable-heavy assets may report `reference-may-have-changed` until Bootstrap Metadata records richer template context.
 
@@ -152,8 +154,8 @@ The accepted [Python-First Project Plan](./python-first-project-plan.qmd) change
 | Existing repository state | Current behavior |
 |---|---|
 | No Bootstrap Metadata | Compare against `basic` unless a template is explicitly selected; recommend Python or Static Quarto guidance without adding application source by default. |
-| Recorded `basic`, generated assets untouched | Migrate to v2 and preview target template surfaces; content promotion remains read-only. |
-| Recorded assets edited | Preserve edits and keep promotion or refresh manual. |
+| Recorded `basic`, generated assets untouched | Migrate to v2, reconcile manual-review surfaces, then use `promote-surface` or all-or-nothing `promote-template`; `selected_template` changes only after complete conformance. |
+| Recorded assets edited | Preserve edits; the affected surface and any broad promotion remain blocked until explicit manual reconciliation. |
 | Existing FastAPI plus static Quarto | Detect and recommend guidance; attach selected surfaces explicitly without rewriting app source, docs, CI, manifests, or lockfiles. |
 | Guidance-only adoption | Use targeted Tool Profile and skill additions without changing the selected template. |
 | Unknown recorded template | Fail closed rather than falling back to the new greenfield default. |
@@ -166,7 +168,11 @@ Metadata v2 Managed Surfaces are now implemented. Existing v1 metadata can be mi
 
 When an independent implementation uses different paths, repeated `--asset` arguments define the explicit surface membership. This requires `--accept-current`; repo-familiar does not infer ownership from framework detection or matching filenames.
 
-`migrate-template` previews every surface in a target template without changing files or metadata. Content-writing template promotion remains unavailable.
+`migrate-template` remains a read-only compatibility preview. `promote-template` previews the same broad transition with write actions, dependency ordering, omission blockers, and an explicit apply mode.
+
+`promote-surface` is the write-capable primitive beneath that broad preview. It operates on one surface, refuses dirty Git worktrees by default, creates missing target paths, and replaces a target-different path only when its current checksum still matches the recorded baseline and the surface strategy is `replace_if_unchanged`. Edited, conflicting, extra managed, and manual-review target differences block the complete transaction. Successful writes and Metadata v2 updates commit atomically, and `selected_template` remains unchanged.
+
+`promote-template` composes those same rules across every target surface in dependency order. It blocks downgrades or transitions that would omit a currently managed surface because promotion never deletes files. One blocked surface prevents all writes. On success, every file and Metadata v2 commit in one rollback-capable transaction, operation history records the ordered surfaces, and only then does `selected_template` change.
 
 ## Current Status
 

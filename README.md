@@ -406,7 +406,7 @@ For Python-heavy projects, this repository prefers these tools when the project 
 
 Hamilton is especially important because DAG visualizations make abstraction boundaries, data dependencies, and execution flow inspectable without reading every line of code.
 
-The implemented [Python-First Project Plan](docs/python-first-project-plan.qmd) makes these preferences executable through the default `python-reproducible` template and the opt-in `static-quarto-application` template. Metadata v2 can record existing application surfaces without rewriting them and preview template promotion; broad content apply remains intentionally unavailable.
+The implemented [Python-First Project Plan](docs/python-first-project-plan.qmd) makes these preferences executable through the default `python-reproducible` template and the opt-in `static-quarto-application` template. Metadata v2 can record existing surfaces without rewriting them, promote one checksum-safe surface, or commit a dependency-ordered all-or-nothing template transition before changing `selected_template`.
 
 ## Skill Sources
 

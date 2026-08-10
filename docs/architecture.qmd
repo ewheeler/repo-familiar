@@ -11,9 +11,9 @@ title: "Architecture"
 - Documentation: a Quarto site that records usage, architecture, decisions, research, and stories.
 - Examples: complete reference projects that show generated outputs in context.
 
-## Generator Skeleton
+## Project Generator
 
-The first implementation is a Python CLI under `src/repo_familiar`. It uses package templates from `src/repo_familiar/templates/basic`, renders them with standard library `string.Template`, and adds optional `questionary` prompts without requiring Cookiecutter or Banks yet.
+The implementation is a Python CLI under `src/repo_familiar`. It composes the `basic`, `python-reproducible`, and `static-quarto-application` package templates, renders them with standard library `string.Template`, and adds optional `questionary` prompts without requiring Cookiecutter or Banks.
 
 Repository advice is split between signal detection in `generator.py` and Hamilton-compatible decision nodes in `advice_dag.py`. Command formatting and other non-DAG helpers stay outside the node module so future Hamilton graph fingerprints are not polluted by runtime helper functions.
 
@@ -49,7 +49,7 @@ The generated asset set currently includes:
 - `plan.md`
 - `.repo-familiar/bootstrap.yml`
 
-This keeps the first generator easy to smoke test while preserving the option to adopt Banks or Cookiecutter once the template contract proves it needs richer rendering or generation behavior.
+This keeps generation deterministic and easy to smoke test while preserving Banks or Cookiecutter as thresholded options if future template contracts require richer behavior.
 
 ## Generated Project Assets
 
@@ -72,9 +72,9 @@ The `basic` template can generate:
 - Optional harness adapters for tools with specialized conventions.
 - `.repo-familiar/bootstrap.yml` metadata recording the `repo-familiar` source, version, selected options, and generated asset set.
 
-Generated assets should be vendored into the downstream repository by default. Future update behavior should be explicit, likely through an upgrade command, rather than live synchronization back to this reference source.
+Generated assets are vendored into the downstream repository by default. Updates are explicit through preview-first upgrade and promotion commands rather than live synchronization back to this Reference Source.
 
-The planned refresh model is preview-first and selected-asset based. It should compare generated assets, profile render output, skill templates, and skill-source provenance against the current Reference Source, then classify safe updates, local edits, missing assets, and conflicts. Any apply path should be opt-in and asset-aware rather than a background sync.
+The implemented refresh model is preview-first and ownership-aware. It compares generated and adopted Managed Surface assets, profile render output, skill templates, and provenance against the current Reference Source, then classifies safe updates, local edits, missing assets, conflicts, and manual-review boundaries. Apply paths are explicit, atomic, strategy-gated, and never run as background sync.
 
 The `.repo-familiar/` namespace is reserved for generator-owned metadata. It is separate from `.agents/`, which should remain focused on agent runtime instructions and skills.
 
@@ -166,9 +166,11 @@ The product separates new repository generation from existing-repository adoptio
 - Internal template composition reuses known linear layers, while Bootstrap Metadata v1 records only the concrete effective template and each generated file's source.
 - Existing repositories receive detection and additive guidance; Python/application scaffold application is blocked under Metadata v1.
 
-The architecture has three product planes: guidance, greenfield scaffolds, and propagation. New generation writes Metadata v2 and groups every non-metadata generated asset into exactly one Managed Surface. Metadata v1 remains readable and migrates losslessly. Attach is metadata-only; template promotion remains read-only and broad refresh apply remains unavailable.
+The architecture has three product planes: guidance, greenfield scaffolds, and propagation. New generation writes Metadata v2 and groups every non-metadata generated asset into exactly one Managed Surface. Metadata v1 remains readable and migrates losslessly. Attach is metadata-only. Surface promotion is atomic and checksum-gated. Broad promotion composes target surfaces in dependency order and changes `selected_template` only after one successful all-or-nothing transaction.
 
 Managed Surfaces currently include repository foundation, agent runtime, Divio documentation, Python runtime, quality and CI, reproducible analysis, Quarto static client, and FastAPI API. Each surface records a render-context fingerprint, state, comparison basis, strategy, per-file checksums, and operation history.
+
+Broad promotion orders those capabilities as repository foundation, agent runtime, Python runtime, quality and CI, reproducible analysis, FastAPI API, Quarto static client, then Divio documentation. The order keeps runtime and shared analysis available before API/client/docs finalization; one blocker aborts the complete staged batch.
 
 See [Python-First Project Plan](./python-first-project-plan.qmd) and [ADR 0012](./adr/0012-python-first-greenfield-existing-repository-boundary.md) for the complete lifecycle and implementation sequence.
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted and implemented for the current safe boundary. Greenfield templates, split defaults, guidance, examples, Metadata v2 Managed Surfaces, metadata-only attach, and promotion preview are implemented; broad content apply remains deferred.
+Accepted and implemented. Greenfield templates, split defaults, guidance, examples, Metadata v2 Managed Surfaces, metadata-only attach, surface-scoped promotion, and all-or-nothing template promotion are implemented.
 
 ## Context
 
@@ -12,14 +12,14 @@ New repositories can safely receive a more opinionated scaffold. Existing reposi
 
 ## Decision
 
-- Add `python-reproducible` as the planned default for new repository generation.
+- Use `python-reproducible` as the default for new repository generation.
 - Keep `basic` as an explicit generic template and the fallback for unbootstrapped existing-repository workflows.
 - Add `static-quarto-application` as an opt-in concrete greenfield template.
 - Resolve new-generation defaults separately from existing-repository fallbacks.
 - Reconstruct already bootstrapped repositories from their recorded template and fail closed when that template is unavailable.
-- Permit internal linear template composition, but record only the concrete effective template and per-file sources in Metadata v1.
+- Permit internal linear template composition, and record the concrete effective template, per-file sources, render context, and Managed Surfaces in Metadata v2.
 - Deliver preferred-stack, reproducibility, and Static Quarto Application guidance additively to existing repositories without claiming ownership of their source, docs, CI, manifests, or lockfiles.
-- Keep template promotion and application-source adoption preview-only until Metadata v2 records render context, history, comparison basis, strategy, and per-surface ownership state.
+- Require Metadata v2 render context, history, comparison basis, strategy, and per-surface ownership before metadata-only attach or write-capable promotion.
 - Keep skills as the only write-capable upgrade slice under Metadata v1.
 
 The detailed product, lifecycle, and implementation plan is recorded in [Python-First Project Plan](../python-first-project-plan.qmd).

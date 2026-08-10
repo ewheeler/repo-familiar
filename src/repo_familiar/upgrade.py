@@ -11,6 +11,7 @@ from . import __version__
 from .asset_plan import BOOTSTRAP_METADATA_PATH, PlannedAsset, asset_in_groups
 from .managed_surfaces import (
     SURFACE_STRATEGIES,
+    build_managed_surfaces,
     migrate_metadata_v2,
     new_metadata_operation,
     repository_identity,
@@ -162,6 +163,7 @@ def apply_upgrade(
     assets_by_path = {asset.path: asset for asset in metadata.generated_assets}
     assets_by_path.update(refreshed_assets)
     managed_assets = []
+    surfaces_by_id = {surface.id: surface for surface in metadata.managed_surfaces}
     affected_surfaces: set[str] = set()
     for managed_asset in metadata.managed_surface_assets:
         refreshed = refreshed_assets.get(managed_asset.path)
@@ -182,6 +184,19 @@ def apply_upgrade(
             continue
         surface_id = surface_id_for_path(path_key)
         affected_surfaces.add(surface_id)
+        if surface_id not in surfaces_by_id:
+            if metadata.render_context is None:
+                raise ValueError("Metadata v2 upgrade requires render context")
+            new_surfaces, _, _ = build_managed_surfaces(
+                metadata.selected_template,
+                metadata.render_context,
+                (refreshed,),
+                state="written",
+                command="upgrade",
+                mode="apply",
+                at=metadata.generated_at,
+            )
+            surfaces_by_id.update({surface.id: surface for surface in new_surfaces})
         managed_assets.append(
             ManagedSurfaceAsset(
                 surface_id=surface_id,
@@ -200,6 +215,9 @@ def apply_upgrade(
         reference_ref=reference_ref or f"repo-familiar@{__version__}",
         generator_version=__version__,
         generated_assets=tuple(assets_by_path[key] for key in sorted(assets_by_path)),
+        managed_surfaces=tuple(
+            surfaces_by_id[surface_id] for surface_id in sorted(surfaces_by_id)
+        ),
         managed_surface_assets=tuple(managed_assets),
     )
     if render_bootstrap_metadata(updated_metadata) != metadata_path.read_text():
@@ -540,9 +558,15 @@ def _commit_writes(root: Path, writes: dict[str, str]) -> None:
     }
     staged: dict[str, Path] = {}
     replaced: list[str] = []
+    created_directories: set[Path] = set()
+    failed = False
     try:
         for relative, content in writes.items():
             target = targets[relative]
+            candidate = target.parent
+            while candidate != root and not candidate.exists():
+                created_directories.add(candidate)
+                candidate = candidate.parent
             target.parent.mkdir(parents=True, exist_ok=True)
             descriptor, temporary = tempfile.mkstemp(prefix=".repo-familiar-upgrade-", dir=target.parent)
             with os.fdopen(descriptor, "w") as handle:
@@ -553,6 +577,7 @@ def _commit_writes(root: Path, writes: dict[str, str]) -> None:
             os.replace(staged[relative], targets[relative])
             replaced.append(relative)
     except Exception:
+        failed = True
         for relative in reversed(replaced):
             original = originals[relative]
             target = targets[relative]
@@ -568,6 +593,16 @@ def _commit_writes(root: Path, writes: dict[str, str]) -> None:
     finally:
         for temporary in staged.values():
             temporary.unlink(missing_ok=True)
+        if failed:
+            for directory in sorted(
+                created_directories,
+                key=lambda candidate: len(candidate.parts),
+                reverse=True,
+            ):
+                try:
+                    directory.rmdir()
+                except OSError:
+                    pass
 
 
 def _content_sha256(content: str) -> str:

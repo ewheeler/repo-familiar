@@ -4,7 +4,7 @@ title: "Python-First Project Plan"
 
 ## Status
 
-Accepted and implemented through the safe propagation boundary. Guidance, split defaults, template composition, both greenfield exemplars, package-data validation, Metadata v2 Managed Surfaces, v1 migration, metadata-only attach, and template-promotion preview are complete. Broad content apply remains planned.
+Accepted and implemented. Guidance, split defaults, template composition, both greenfield exemplars, package-data validation, Metadata v2 Managed Surfaces, v1 migration, metadata-only attach, surface-scoped promotion, and dependency-ordered broad template promotion are complete.
 
 This plan makes new repository generation more opinionated while preserving the preview-first, non-destructive contract for existing Downstream Repositories.
 
@@ -46,7 +46,7 @@ Linear composition is an internal implementation detail. Bootstrap Metadata v2 r
 
 ### Propagation
 
-Long-lived adoption and refresh for existing repositories belongs to Metadata v2. It must represent render context, operation history, ownership state, comparison basis, and refresh strategy before repo-familiar offers template promotion or application-source adoption.
+Long-lived adoption and refresh for existing repositories uses Metadata v2 render context, operation history, ownership state, comparison basis, and refresh strategy. Those records now gate metadata-only attach, surface promotion, and all-or-nothing template promotion.
 
 ## Command Defaults
 
@@ -173,7 +173,7 @@ Existing repositories receive these checks only through explicit additive adopti
 | Repository state | Near-term behavior |
 |---|---|
 | Unbootstrapped existing repository | Detect and recommend; default comparison remains `basic`; add guidance only unless the user selects a narrower current capability explicitly |
-| Bootstrapped `basic`, generated assets untouched | Migrate losslessly to v2 and preview target surfaces; no template-promotion content apply |
+| Bootstrapped `basic`, generated assets untouched | Migrate losslessly to v2, reconcile manual-review surfaces, then promote all eligible surfaces atomically |
 | Bootstrapped repository with edited generated assets | Preserve edits; provide guidance and manual conflict review only |
 | Independently implemented FastAPI plus static Quarto | Detect the pattern and recommend guidance; do not generate `app/` or claim ownership of existing source, docs, CI, manifests, or locks |
 | Guidance-only adopter | Use targeted Tool Profile and skill additions without generated application code |
@@ -290,12 +290,14 @@ Status: implemented as an opt-in template.
 - Add Managed Surfaces, v1 migration, and read-only attach/promotion classification.
 - Do not add broad apply in the same slice.
 
-Status: implemented. Attach writes metadata only; template promotion remains read-only.
+Status: implemented. Attach writes metadata only; `promote-surface` and `promote-template` provide scoped and all-or-nothing write paths.
 
 ### 8. Narrow apply
 
 - Add apply only for checksum-clean, repo-familiar-owned, low-ambiguity assets.
 - Keep prose, application code, lockfiles, and edits manual by default.
+
+Status: implemented as `promote-surface`. Missing files are eligible; replacement requires a clean recorded checksum and `replace_if_unchanged`. Manual-review differences block the whole surface.
 
 ## Acceptance Criteria
 
@@ -315,7 +317,7 @@ Status: implemented. Attach writes metadata only; template promotion remains rea
 ## Deferred Work
 
 - General preset registry
-- Broad write-capable application-code refresh
+- Automatic refresh that bypasses Managed Surface preview or manual-review blockers
 - Automatic refresh of manifests, locks, CI, prose, or application source
 - Authentication, databases, deployment platforms, workers, WebSockets, or server-sent events
 - Mandatory Hydra/OmegaConf, fsspec/universal-pathlib, or Banks dependencies without a concrete need

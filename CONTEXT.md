@@ -77,7 +77,7 @@ The `.repo-familiar/` namespace for generator-owned metadata in a **Downstream R
 _Avoid_: Root metadata files, hidden agent directory
 
 **Upgrade Command**:
-A future explicit workflow that updates a **Downstream Repository** from a newer **Reference Source** version.
+An explicit preview-first workflow that updates eligible **Vendored Generated Assets** in a **Downstream Repository** from a newer **Reference Source** version.
 _Avoid_: Automatic sync, background update
 
 **Dotfiles Metaphor**:
@@ -101,7 +101,7 @@ _Avoid_: Dotfiles implementation, home-directory sync
 - An **Agent Plugin Export** is an optional portable subset derived from the **Reference Source**; client-specific installation and activation remain outside the **Project Generator**.
 - **Bootstrap Metadata** lives in the **Repo Familiar Metadata Directory** and records which **Reference Source** produced a **Downstream Repository**.
 - An **Upgrade Command** may later refresh **Vendored Generated Assets**, but updates are explicit rather than live-synced.
-- A **Managed Surface** supports explicit metadata-only attach and template-promotion previews. Matching files alone do not establish ownership, and attaching a surface never rewrites its files.
+- A **Managed Surface** supports explicit metadata-only attach, checksum-safe surface promotion, and dependency-ordered broad template promotion. Matching files alone do not establish ownership, and attaching a surface never rewrites its files.
 - The **Dotfiles Metaphor** explains portability, not the product scope.
 
 ## Example Dialogue

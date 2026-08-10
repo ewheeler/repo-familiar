@@ -460,6 +460,9 @@ def _validate_bootstrap_metadata(metadata: BootstrapMetadata) -> None:
         if asset.path in asset_paths:
             raise ValueError(f"Managed Surface asset path has multiple owners: {asset.path}")
         asset_paths.add(asset.path)
+    operation_ids = [operation.id for operation in metadata.history]
+    if len(operation_ids) != len(set(operation_ids)):
+        raise ValueError("Metadata v2 operation IDs must be unique")
 
 
 def _managed_surface_context_sha256(surface: ManagedSurface) -> str:

@@ -9,7 +9,7 @@ Use this page as the routing contract for what `repo-familiar` commands own, wha
 1. Discover templates, harnesses, skills, and profile families with `list-*` commands before selecting defaults.
 2. Preview generation with `generate --dry-run` when checking a new flag combination or template output.
 3. Run `generate` only after the preview matches the intended Downstream Repository shape.
-4. After generation, use `check` to compare vendored generated assets against `.repo-familiar/bootstrap.yml`.
+4. After generation or adoption, use `check` to compare generated and adopted Managed Surface assets against `.repo-familiar/bootstrap.yml`.
 
 Detailed walkthroughs live in [Usage](./usage.qmd) and [Generator](./generator.qmd).
 
@@ -21,9 +21,11 @@ Detailed walkthroughs live in [Usage](./usage.qmd) and [Generator](./generator.q
 4. Re-run the same command with `--apply` only after the preview matches the intended additive change.
 5. Use `check` and `diff-upstream-candidate` for read-only maintenance. Use `upgrade --asset-group skills --preview` before the explicit skills-only apply step.
 
-The first write-capable refresh slice applies only unchanged vendored skills and missing skill support files. Docs, profile, and template strategies remain preview-only; the broader design lives in [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md). The Python-first split, Static Quarto Application pattern, and existing-repository adoption boundary are recorded in [Python-First Project Plan](./python-first-project-plan.qmd) and [ADR 0012](./adr/0012-python-first-greenfield-existing-repository-boundary.md).
+Three content-writing maintenance paths are implemented: skills-only `upgrade --apply`, one-surface `promote-surface --apply`, and all-surfaces `promote-template --apply`. Promotion creates missing target paths and replaces only checksum-clean assets whose per-asset strategy is `replace_if_unchanged`; manual-review, edited, conflicting, extra, omitted-surface, or unordered-surface conditions block the complete transaction. The broader design lives in [Plan Metadata v2 and preview-first refresh](./adr/0010-metadata-v2-preview-first-refresh.md).
 
-Metadata v2 adds a separate metadata-only adoption lifecycle. `migrate-metadata` upgrades recorded provenance without inferring ownership, `attach` records an explicitly accepted Managed Surface without rewriting it, and `migrate-template` remains a read-only promotion preview. These commands do not broaden `upgrade --apply` beyond its skills-only content slice.
+Metadata v2 also provides a metadata-only adoption lifecycle. `migrate-metadata` upgrades recorded provenance without inferring ownership, `attach` records an explicitly accepted Managed Surface without rewriting it, `promote-surface` writes one eligible surface atomically without changing `selected_template`, and `promote-template` changes `selected_template` only after every target surface commits atomically. `migrate-template` remains a read-only compatibility preview.
+
+The Python-first and Static Quarto Application surface boundaries are recorded in [Python-First Project Plan](./python-first-project-plan.qmd) and [ADR 0012](./adr/0012-python-first-greenfield-existing-repository-boundary.md).
 
 Detailed walkthroughs live in [Existing Repositories](./existing-repos.qmd) and [Pre-Bootstrap Checklist](./pre-bootstrap.qmd).
 
@@ -44,7 +46,9 @@ Detailed walkthroughs live in [Existing Repositories](./existing-repos.qmd) and 
 | Existing repository | `advise`, `audit`, `resolve-conflicts` | No | Read-only planning and conflict review before any bootstrap write. |
 | Metadata migration | `migrate-metadata`, then `--apply` | Only with `--apply` | Converts recorded v1 assets to v2 Managed Surfaces without inferring ownership of unrecorded files. |
 | Surface adoption | `attach`, then `--apply` | Metadata only with `--apply` | Never rewrites surface files; exact matches are adoptable, conflicts require `--accept-current`, and missing files block attach. |
-| Template promotion | `migrate-template` | No | Compares every target Managed Surface and reports current, missing, edited, and target-different paths; no apply mode exists. |
+| Surface promotion | `promote-surface`, then `--apply` | Only with `--apply` | One atomic surface transaction: create missing paths, replace checksum-clean assets only under `replace_if_unchanged`, block edited/conflicting/extra/manual-review paths, and never change `selected_template`. |
+| Template promotion preview | `migrate-template` | No | Legacy read-only comparison of target Managed Surfaces. |
+| Broad template promotion | `promote-template`, then `--apply` | Only with `--apply` | Dependency-ordered all-or-nothing transaction across all target surfaces; no deletions; changes `selected_template` only after complete conformance. |
 | Existing repository | `bootstrap-existing`, `add-docs`, `add-model`, `add-tool`, `add-memory`, `add-prompts`, `add-safety`, `add-privacy`, `add-public-interest`, `add-repomap`, `add-sandbox`, `add-secrets`, `add-design`, `add-worktree`, `add-skill` | Only with `--apply` | Preview first; writes only selected generated assets when the apply step is chosen deliberately. |
 | Maintenance | `check`, `diff-upstream-candidate`, `check-skill-sources` | No | Drift checks and upstream review remain read-only. |
 | Skills refresh | `upgrade --asset-group skills --preview`, then `--apply` | Only with `--apply` | Requires a clean Git worktree by default; replaces only unchanged vendored skills, adds missing support files, records current Reference Source provenance, and updates skill-source/bootstrap metadata. Modified and removed-reference skills stay untouched. |
@@ -59,7 +63,7 @@ Detailed walkthroughs live in [Existing Repositories](./existing-repos.qmd) and 
 | `.repo-familiar/bootstrap.yml` | `repo-familiar` metadata contract | Records provenance, selected options, and generated assets so checks and future upgrade previews can reason about the repository. |
 | Metadata v2 Managed Surfaces | Explicit shared ownership record | Groups generated or adopted paths with truthful render inputs, checksums, state, strategy, and history. Attach changes metadata only. |
 | Machine-level harness config such as `~/.paseo`, global OpenCode config, shell PATH, MCP user config, and secret stores | User or team workstation owners | Must stay outside generated repository assets; `repo-familiar` may document these dependencies but must not write them. |
-| Refresh or upgrade application | Explicit scoped workflow | Skills have a preview-first apply path. Other asset groups remain preview-only; there is no live sync or background refresh contract. |
+| Refresh or upgrade application | Explicit scoped workflow | Skills, eligible Managed Surfaces, and completely conformable templates have preview-first apply paths. There is no live sync or background refresh contract. |
 
 ## Profile Family Selection Matrix
 
