@@ -1,0 +1,84 @@
+---
+title: "Bootstrap an Existing Repository"
+doc-type: how-to
+---
+
+Use this guide to add selected defaults without treating user-owned files as generated assets. Existing-repository workflows are audit-first, preview-first, and additive by default.
+
+## 1. Get Advice
+
+```bash
+uv run python -m repo_familiar advise --path /path/to/repo
+```
+
+Use `--intent` when the planned work is known, such as `significant-refactor`, `prompt-migration`, `production-maintenance`, `security-review`, or `docs-setup`.
+
+## 2. Audit The Target
+
+```bash
+uv run python -m repo_familiar audit --path /path/to/repo
+```
+
+Scope the audit with repeated `--asset-group` flags when only part of the repository is under consideration. The report distinguishes missing, present, and conflicting paths and states the comparison basis and selected scope.
+
+If user-owned files conflict with generated paths, inspect read-only suggestions first:
+
+```bash
+uv run python -m repo_familiar resolve-conflicts --path /path/to/repo
+```
+
+## 3. Preview The Narrowest Change
+
+Preview a full selected bootstrap:
+
+```bash
+uv run python -m repo_familiar bootstrap-existing --path /path/to/repo
+```
+
+Prefer a targeted command when one asset family is enough:
+
+```bash
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus
+uv run python -m repo_familiar add-docs --path /path/to/repo
+```
+
+Use [Profiles and Skills](../reference/profiles-and-skills.qmd) to discover all profile families and selectors. Do not use `--force` during first adoption unless replacing a reviewed conflict is the explicit goal.
+
+## 4. Apply The Reviewed Plan
+
+Re-run the same selection with `--apply` only after the preview matches the intended ownership boundary:
+
+```bash
+uv run python -m repo_familiar bootstrap-existing --path /path/to/repo --apply
+```
+
+Targeted commands follow the same contract:
+
+```bash
+uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
+uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
+uv run python -m repo_familiar add-docs --path /path/to/repo --apply
+```
+
+Bootstrap Metadata records only written assets. Skipped conflicts are reported but not claimed as generated.
+
+## 5. Verify And Maintain
+
+```bash
+uv run python -m repo_familiar check --path /path/to/repo
+uv run python -m repo_familiar diff-upstream-candidate --path /path/to/repo
+uv run python -m repo_familiar upgrade --path /path/to/repo --asset-group skills --preview
+```
+
+`check` reports both recorded generated assets and adopted Managed Surface assets against their checksum baselines.
+
+Run skill refresh apply from a clean downstream worktree. Unchanged vendored skills and missing support files are eligible; locally modified or removed-reference skills remain untouched.
+
+## Adopt Or Promote A Surface
+
+Plain Quarto documentation alone does not prove a Static Quarto Application. When an existing implementation matches a known Managed Surface, preview `attach`; use `--accept-current` only after reviewing a manual baseline. Attachment records metadata and does not rewrite the surface.
+
+For template evolution, preview with `migrate-template`, then use `promote-surface` or all-or-nothing `promote-template`. Missing files may be created, but edits, conflicts, extra managed assets, and manual-review strategies block the transaction. See [ADR 0010](../project-record/adr/0010-metadata-v2-preview-first-refresh.md) and the [Python-First Project Plan](../project-record/python-first-project-plan.qmd).
+
+Use [Bootstrap Lifecycle](../reference/bootstrap-lifecycle.qmd) as the exact write and ownership contract.

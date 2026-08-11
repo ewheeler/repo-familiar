@@ -1,0 +1,48 @@
+---
+title: "Profiles and Skills"
+doc-type: reference
+---
+
+Profiles are named, non-secret defaults rendered into `.agents/*.yml` files. Bootstrap Metadata records selected names, while `src/repo_familiar/profiles.py` is the executable registry authority.
+
+## Profile Families
+
+| Family | Metadata key | List | Generate selector | Targeted add |
+|---|---|---|---|---|
+| Model | `model_profiles` | `list-model-profiles` | `--model-profile` | `add-model` |
+| Tool | `tool_profiles` | `list-tool-profiles` | `--tool-profile` | `add-tool` |
+| Memory | `memory_profiles` | `list-memory-profiles` | `--memory-profile` | `add-memory` |
+| Prompt | `prompt_profiles` | `list-prompt-profiles` | `--prompt-profile` | `add-prompts` |
+| Safety | `safety_profiles` | `list-safety-profiles` | `--safety-profile` | `add-safety` |
+| Privacy | `privacy_profiles` | `list-privacy-profiles` | `--privacy-profile` | `add-privacy` |
+| Repo map | `repomap_profiles` | `list-repomap-profiles` | `--repomap-profile` | `add-repomap` |
+| Sandbox | `sandbox_profiles` | `list-sandbox-profiles` | `--sandbox-profile` | `add-sandbox` |
+| Secrets | `secrets_profiles` | `list-secrets-profiles` | `--secrets-profile` | `add-secrets` |
+| Design | `design_profiles` | `list-design-profiles` | `--design-profile` | `add-design` |
+| Worktree | `worktree_profiles` | `list-worktree-profiles` | `--worktree-profile` | `add-worktree` |
+| Public interest | `public_interest_profiles` | `list-public-interest-profiles` | `--public-interest-profile` | `add-public-interest` |
+
+Exact profile names and summaries are executable output:
+
+```bash
+uv run python -m repo_familiar catalog model
+uv run python -m repo_familiar catalog tool --format json
+uv run python -m repo_familiar describe tool cq
+uv run python -m repo_familiar describe public-interest child-rights-digital --format json
+```
+
+Do not copy the profile catalog into documentation. Registry-backed tests keep generated `.agents/*.yml` files and root dogfood copies aligned with canonical definitions.
+
+## Boundaries
+
+- Profiles can contain setup and verification guidance, but generation does not install workstation tools.
+- Provider credentials, API tokens, secret values, private keys, and machine-local paths stay out of profile files and Bootstrap Metadata.
+- Harness-specific repository config is generated only when selected and only with non-secret, reproducible settings.
+- Machine-level Paseo, OpenCode, shell, MCP, and secret-store configuration remains user-owned.
+- Profile names are stable handles for generation and future upgrade comparisons.
+
+## Skills
+
+Selected skills are vendored under `.agents/skills/`; `.agents/skill-sources.yml` records provenance. Use `list-skills` for the current registry and `check-skill-sources` to compare recorded upstream sources without writing files.
+
+Targeted `add-*` commands preview by default and write only with `--apply`. See [Bootstrap Lifecycle](./bootstrap-lifecycle.qmd) for the shared safety contract.

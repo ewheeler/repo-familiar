@@ -1,0 +1,71 @@
+---
+title: "Generate Your First Repository"
+doc-type: tutorial
+---
+
+This tutorial generates a small Downstream Repository, inspects the preview, writes it, and verifies its recorded assets.
+
+## Prerequisites
+
+- A checkout of this Reference Source.
+- `uv` available on `PATH`.
+- An unused `/tmp/repo-familiar-demo` path.
+
+Install the project environment:
+
+```bash
+uv sync
+```
+
+## 1. Preview The Repository
+
+Run generation with `--dry-run` first:
+
+```bash
+uv run python -m repo_familiar generate \
+  --name "Demo Project" \
+  --description "A generated demo." \
+  --output /tmp/repo-familiar-demo \
+  --template basic \
+  --agent-harness opencode \
+  --model-profile default-coding \
+  --tool-profile cq \
+  --skill session-focus \
+  --dry-run
+```
+
+The preview lists planned files without creating the output directory. Confirm that the selections and paths match the intended repository.
+
+## 2. Generate The Repository
+
+Re-run the same command without `--dry-run`:
+
+```bash
+uv run python -m repo_familiar generate \
+  --name "Demo Project" \
+  --description "A generated demo." \
+  --output /tmp/repo-familiar-demo \
+  --template basic \
+  --agent-harness opencode \
+  --model-profile default-coding \
+  --tool-profile cq \
+  --skill session-focus
+```
+
+The new repository now contains project instructions, selected profile guidance, the selected skill, Quarto docs, a project plan, and `.repo-familiar/bootstrap.yml` provenance.
+
+## 3. Verify The Result
+
+Check recorded generated assets against their checksums:
+
+```bash
+uv run python -m repo_familiar check --path /tmp/repo-familiar-demo
+```
+
+The check should report the generated assets as `ok`. Open `/tmp/repo-familiar-demo/.repo-familiar/bootstrap.yml` to see the selected template, options, Reference Source identity, and generated-asset records.
+
+## Next Steps
+
+- Use [Generate a Repository](../how-to/generate-repository.qmd) for template and profile selection.
+- Use [CLI and Metadata Reference](../reference/cli-and-metadata.qmd) for exact command behavior.
+- Use [Bootstrap an Existing Repository](../how-to/bootstrap-existing-repository.qmd) instead when the target already contains user-owned files.

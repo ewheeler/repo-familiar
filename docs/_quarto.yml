@@ -3,111 +3,106 @@ project:
   output-dir: _site
   render:
     - index.qmd
-    - usage.qmd
-    - bootstrap-lifecycle.qmd
-    - generator.qmd
-    - templates.qmd
-    - model-profiles.qmd
-    - tool-profiles.qmd
-    - advisory-profiles.qmd
-    - existing-repos.qmd
-    - pre-bootstrap.qmd
-    - examples.qmd
-    - architecture.qmd
-    - python-first-project-plan.qmd
-    - agents/repository-map.md
-    - documentation.qmd
-    - naming.qmd
-    - decisions.qmd
-    - research.qmd
-    - diagram-design-assessment.qmd
-    - ix-assessment.qmd
-    - writing-style-skills-assessment.qmd
-    - user-stories.qmd
-    - adr/0001-project-generator-as-primary-product.md
-    - adr/0002-vendor-generated-assets-by-default.md
-    - adr/0003-bootstrap-metadata-path.md
-    - adr/0004-minimal-bootstrap-metadata-schema.md
-    - adr/0005-structured-generated-assets.md
-    - adr/0006-generated-asset-kind-taxonomy.md
-    - adr/0007-model-profiles-location.md
-    - adr/0008-named-model-profile-schema.md
-    - adr/0009-existing-repository-bootstrap.md
-    - adr/0010-metadata-v2-preview-first-refresh.md
-    - adr/0011-agent-plugins-export-pilot.md
-    - adr/0012-python-first-greenfield-existing-repository-boundary.md
+    - tutorials/generate-first-repository.qmd
+    - how-to/generate-repository.qmd
+    - how-to/bootstrap-existing-repository.qmd
+    - how-to/write-documentation.qmd
+    - reference/cli-and-metadata.qmd
+    - reference/bootstrap-lifecycle.qmd
+    - reference/templates.qmd
+    - reference/profiles-and-skills.qmd
+    - explanation/architecture.qmd
+    - explanation/documentation-system.qmd
+    - project-record/decisions.qmd
+    - project-record/adr/0001-project-generator-as-primary-product.md
+    - project-record/adr/0002-vendor-generated-assets-by-default.md
+    - project-record/adr/0003-bootstrap-metadata-path.md
+    - project-record/adr/0004-minimal-bootstrap-metadata-schema.md
+    - project-record/adr/0005-structured-generated-assets.md
+    - project-record/adr/0006-generated-asset-kind-taxonomy.md
+    - project-record/adr/0007-model-profiles-location.md
+    - project-record/adr/0008-named-model-profile-schema.md
+    - project-record/adr/0009-existing-repository-bootstrap.md
+    - project-record/adr/0010-metadata-v2-preview-first-refresh.md
+    - project-record/adr/0011-agent-plugins-export-pilot.md
+    - project-record/adr/0012-python-first-greenfield-existing-repository-boundary.md
+    - project-record/python-first-project-plan.qmd
+    - project-record/research.qmd
+    - project-record/assessments/diagram-design.qmd
+    - project-record/assessments/ix-code-map.qmd
+    - project-record/assessments/writing-style-skills.qmd
+    - project-record/product-outcomes.qmd
+    - project-record/repository-map.md
 
 website:
   title: "repo-familiar"
   description: "Agentic engineering project generation, existing repository bootstrap, and documentation practices."
+  search: true
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - href: usage.qmd
-        text: Usage
-      - href: generator.qmd
-        text: Generator
-      - href: architecture.qmd
+      - href: tutorials/generate-first-repository.qmd
+        text: Getting Started
+      - href: reference/cli-and-metadata.qmd
+        text: Reference
+      - href: explanation/architecture.qmd
         text: Architecture
-      - href: documentation.qmd
-        text: Docs
-      - href: naming.qmd
-        text: Naming
-      - href: decisions.qmd
-        text: Decisions
-      - href: research.qmd
-        text: Research
-      - href: user-stories.qmd
-        text: User Stories
   sidebar:
     style: docked
+    collapse-level: 1
     contents:
       - index.qmd
-      - usage.qmd
-      - bootstrap-lifecycle.qmd
-      - section: Generator
+      - section: Tutorials
         contents:
-          - generator.qmd
-          - templates.qmd
-          - model-profiles.qmd
-          - tool-profiles.qmd
-          - advisory-profiles.qmd
-          - existing-repos.qmd
-          - pre-bootstrap.qmd
-          - examples.qmd
-      - architecture.qmd
-      - python-first-project-plan.qmd
-      - agents/repository-map.md
-      - documentation.qmd
-      - naming.qmd
-      - decisions.qmd
-      - section: ADRs
+          - tutorials/generate-first-repository.qmd
+      - section: How-to
         contents:
-          - adr/0001-project-generator-as-primary-product.md
-          - adr/0002-vendor-generated-assets-by-default.md
-          - adr/0003-bootstrap-metadata-path.md
-          - adr/0004-minimal-bootstrap-metadata-schema.md
-          - adr/0005-structured-generated-assets.md
-          - adr/0006-generated-asset-kind-taxonomy.md
-          - adr/0007-model-profiles-location.md
-          - adr/0008-named-model-profile-schema.md
-          - adr/0009-existing-repository-bootstrap.md
-          - adr/0010-metadata-v2-preview-first-refresh.md
-          - adr/0011-agent-plugins-export-pilot.md
-          - adr/0012-python-first-greenfield-existing-repository-boundary.md
-      - section: Research
+          - how-to/generate-repository.qmd
+          - how-to/bootstrap-existing-repository.qmd
+          - how-to/write-documentation.qmd
+      - section: Reference
         contents:
-          - research.qmd
-          - diagram-design-assessment.qmd
-          - ix-assessment.qmd
-          - writing-style-skills-assessment.qmd
-      - user-stories.qmd
+          - reference/cli-and-metadata.qmd
+          - reference/bootstrap-lifecycle.qmd
+          - reference/templates.qmd
+          - reference/profiles-and-skills.qmd
+      - section: Explanation
+        contents:
+          - explanation/architecture.qmd
+          - explanation/documentation-system.qmd
+      - section: Project Record
+        contents:
+          - project-record/decisions.qmd
+          - section: ADRs
+            contents:
+              - project-record/adr/0001-project-generator-as-primary-product.md
+              - project-record/adr/0002-vendor-generated-assets-by-default.md
+              - project-record/adr/0003-bootstrap-metadata-path.md
+              - project-record/adr/0004-minimal-bootstrap-metadata-schema.md
+              - project-record/adr/0005-structured-generated-assets.md
+              - project-record/adr/0006-generated-asset-kind-taxonomy.md
+              - project-record/adr/0007-model-profiles-location.md
+              - project-record/adr/0008-named-model-profile-schema.md
+              - project-record/adr/0009-existing-repository-bootstrap.md
+              - project-record/adr/0010-metadata-v2-preview-first-refresh.md
+              - project-record/adr/0011-agent-plugins-export-pilot.md
+              - project-record/adr/0012-python-first-greenfield-existing-repository-boundary.md
+          - project-record/python-first-project-plan.qmd
+          - project-record/research.qmd
+          - section: Assessments
+            contents:
+              - project-record/assessments/diagram-design.qmd
+              - project-record/assessments/ix-code-map.qmd
+              - project-record/assessments/writing-style-skills.qmd
+          - project-record/product-outcomes.qmd
+          - project-record/repository-map.md
   page-footer:
-    left: "Personal agentic engineering notes."
+    left: "repo-familiar Reference Source documentation."
 
 format:
   html:
+    include-after-body: accessibility.html
     theme:
       - cosmo
       - styles.scss

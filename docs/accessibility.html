@@ -1,0 +1,13 @@
+<script>
+  function labelQuartoSearch() {
+    document
+      .querySelector("#quarto-search [role='combobox']")
+      ?.setAttribute("aria-label", "Search documentation");
+    document
+      .querySelector("#quarto-search button")
+      ?.setAttribute("aria-label", "Search documentation");
+  }
+
+  labelQuartoSearch();
+  window.addEventListener("load", labelQuartoSearch);
+</script>

@@ -1,566 +1,122 @@
 # repo-familiar Plan
 
-`repo-familiar` is a project generator for downstream repositories, with this repository serving as the canonical reference source for reusable agentic engineering defaults.
+`repo-familiar` is a Project Generator for Downstream Repositories. This repository is the canonical Reference Source for reusable Agentic Engineering Defaults.
+
+Use `CONTEXT.md` for product boundaries and domain language, `docs/project-record/adr/` for durable decisions, and `docs/project-record/repository-map.md` for implementation and test routing. This file owns live status, priorities, milestones, and open questions.
 
 ## Current Status
 
-- The product boundary is defined: generate downstream repositories, not workstation dotfiles.
-- Generated repositories receive vendored assets by default.
-- Generator provenance is recorded in `.repo-familiar/bootstrap.yml`.
-- Agent-facing model profiles live in `.agents/models.yml`.
-- The Quarto documentation site is scaffolded and renders with `/usr/local/bin/quarto render docs` from the repository root, or `/usr/local/bin/quarto render .` from `docs/`.
-- A minimal Python generator exists under `src/repo_familiar`, with `questionary` for optional interaction and `string.Template` for rendering.
-- Python package management and documented CLI invocation are uv-first: run `uv sync` and `uv run python -m repo_familiar ...`.
-- The generator supports list commands for templates, profiles, and skills; `generate --dry-run`; `generate --interactive`; non-empty output directory protection; `advise`; `audit`; `check`; `bootstrap-existing --interactive`; and targeted existing-repo add commands.
-- The `basic` template generates `.gitignore`, `.env.example`, `README.md`, `AGENTS.md`, `.agents/*.yml` advisory/runtime files, selected skills, Quarto docs, `plan.md`, and `.repo-familiar/bootstrap.yml`.
-- The default `python-reproducible` template composes `basic` with a uv-managed Python project, canonical lock, guardrails, deterministic Hamilton/Polars exemplar, provenance, tests, CI, and executable Divio documentation.
-- The opt-in `static-quarto-application` template adds a Quarto-rendered product client, FastAPI/Pydantic request boundary, Structlog events, API tests, and a Playwright tutorial flow.
-- When `opencode` is selected as an agent harness, the `basic` template generates `opencode.json` with `.agents/skills` registered as a skill path.
-- `paseo` is available as an agent harness selection; it records compatibility without writing machine-level Paseo daemon config.
-- Existing repository bootstrap can audit, dry-run, and apply missing selected assets without overwriting conflicts by default.
-- Existing repository metadata records `bootstrap_mode: existing_repository` and only assets written by that operation.
-- Targeted add commands reuse the bootstrap engine with narrow asset groups and are table-driven in the CLI.
-- `audit` and `bootstrap-existing` support `--asset-group` for scoped adoption.
-- `add-model` and `add-docs` provide targeted existing repository adoption flows.
-- Generated asset metadata includes `content_sha256` for non-metadata assets.
-- `check` detects missing and modified generated assets from `.repo-familiar/bootstrap.yml`.
-- Advisory profile families exist for memory, sandboxing, design, and worktree orchestration.
-- Secrets profiles exist for dotenv, kvenv/Azure Key Vault, and 1Password-style local secret injection guidance.
-- Accessibility scanning support exists through `a11y-scanner`, `design-a11y`, and `a11y-web-scan`.
-- Browser automation support exists through the `browser-automation` tool profile plus `playwright-cli` and `rodney-browser` skills.
-- MicroPython/WASI sandbox support exists through the `micropython-wasm` tool profile and `sandbox-micropython-wasm` sandbox profile.
-- Agent knowledge commons support exists through the `cq` tool profile plus the selectable `cq` skill.
-- API documentation lookup support exists through the vendored `get-api-docs` skill.
-- Agent discipline and review support includes selectable `session-focus`, `qa-test-design`, and `security-audit` skills adapted from `omega-memory/omega-skills`.
-- OpenCode/Homebrew PATH setup guidance exists through the `opencode-homebrew-path` tool profile.
-- Prompt migration/eval profiles exist for GPT-5.5 prompt migrations and prompt DAG eval design.
-- Safety and privacy profiles exist for prompt/output safety and data/privacy review.
-- Public-interest profiles exist for child-rights, humanitarian, civic, education, and public-sector digital guidance.
-- Repo map profiles exist with `hamilton-dag` as the preferred graph approach.
-- Advisory profile files are generated under `.agents/` and selected profile names are recorded in bootstrap metadata.
-- Skill source provenance is generated in `.agents/skill-sources.yml` for selected skills, so drift checks can compare vendored/imported skills against upstream sources where known.
-- `check-skill-sources` compares `.agents/skill-sources.yml` entries against current GitHub upstreams, flags upstream-newer skills and missing support files, and stays read-only.
-- A June 2026 upstream scan refreshed high-priority vendored skills (`cq`, `grill-with-docs`, `improve-codebase-architecture`, `to-prd`, `prototype`, and `playwright-cli`) and added missing support files for `improve-codebase-architecture` and `playwright-cli`.
-- Downstream refresh remains explicit: future tooling should preview and optionally refresh selected generated assets, not live-sync repositories back to this Reference Source.
-- Root `.agents/` dogfoods the Reference Source asset set: profile family files, selectable skills, and non-secret tool/advisory guidance live in this repository as working defaults as well as generated templates.
-- Every root dogfooded skill is registered as a selectable downstream skill and has a matching template under `src/repo_familiar/templates/skills/`.
-- `advise` recommends stage, profile families, asset groups, next commands, and memory usage for an existing repository. It accepts `--intent` so intended near-term work can adjust recommendations beyond observed repo maturity.
-- `advise` decision logic lives in `src/repo_familiar/advice_dag.py` as Hamilton-compatible nodes; command formatting helpers remain outside the DAG module.
-- Core generator seams have been deepened: Bootstrap Metadata, profile registry, asset planning, repository advice orchestration, and targeted CLI add commands now live behind dedicated Modules or descriptor tables.
-- `examples/basic-agentic-project` is a deterministic generated snapshot and regression fixture.
-- The example snapshot uses lowercase `plan.md`, matching the generator contract and avoiding path drift from the old `PLAN.md` casing.
-- Profile-renderer regression coverage checks that generated `.agents/*.yml` profile files match registry-backed output for selected profiles.
-- Root `.agents/` consistency coverage checks dogfood profile files and registered selectable skill files against generated registry/template output.
-- Quarto render outputs are ignored through `docs/_site/` and `docs/.quarto/` in `.gitignore`.
-- Existing repository bootstrap is implemented as a second bootstrap mode: advise/audit first, dry-run by default, and additive unless explicit replacement is selected.
-- New generation defaults to `python-reproducible`; `static-quarto-application` is opt-in, and Metadata v2 records Managed Surfaces for new generation, lossless v1 migration, metadata-only attach, surface promotion, and dependency-ordered template promotion.
+- New repository generation defaults to `python-reproducible`; `basic` remains the generic template and conservative existing-repository fallback; `static-quarto-application` is opt-in.
+- Generated repositories receive vendored instructions, selected profiles and skills, Divio documentation, a plan, and Bootstrap Metadata.
+- Existing repositories have read-only advice, scoped audit, conflict previews, dry-run bootstrap, and explicit additive `--apply` paths.
+- Bootstrap Metadata v2 records provenance, selected options, generated assets, render context, Managed Surfaces, and operation history. Metadata v1 remains readable and migrates losslessly.
+- Metadata-only `attach`, atomic `promote-surface`, and dependency-ordered all-or-nothing `promote-template` are implemented.
+- `upgrade` remains preview-first; its write-capable path is limited to checksum-clean vendored skills and missing skill support files. Other write strategies require separate evidence.
+- Profile and skill registries generate downstream `.agents/` assets and are dogfooded in the Reference Source with parity tests.
+- Deterministic generated examples cover `basic`, `python-reproducible`, and `static-quarto-application` contracts.
+- The optional Agent Plugins pilot exports the canonical `repository-map` skill; compatible-client installation validation remains pending.
+- Reference Source documentation now uses physical Divio directories, matching tested sidebar sections, explicit page classification, and single-source authority boundaries.
+- Source provenance checking is implemented for vendored skills; automated skill security scanning remains planned.
+- The full test suite, generated example parity, package-data validation, and Quarto render are current release evidence.
 
-## Goals
+## Current Limitations
 
-- Make it easy to bootstrap a new repository with agent instructions, selected skills, model/provider profiles, planning artifacts, and Quarto documentation.
-- Make it possible to add selected tools, skills, model profiles, docs, and metadata to existing repositories safely.
-- Keep generated repositories self-contained and stable after creation.
-- Preserve enough bootstrap metadata for future explicit upgrades without turning metadata into a dependency lockfile.
-- Keep agent runtime assets separate from generator-owned metadata.
-- Maintain documentation in parallel with implementation so humans and agents can inspect plans, decisions, research, and usage.
-- Make preferred Python and reproducible-data-science practices executable through manifests, tests, CI, provenance, and exemplar documentation.
-- Let Static Quarto Applications expose client-initiated FastAPI interactions without conflating the product interface with the Divio documentation site.
+- No live or background synchronization exists between the Reference Source and Downstream Repositories.
+- No command silently adopts application source or overwrites edited downstream assets.
+- Non-skill `upgrade` groups remain preview-only; Managed Surface promotion uses separate explicit commands.
+- Machine-level harness settings, global MCP configuration, shell setup, credentials, and secret stores remain user-owned.
+- Advice is heuristic and must be tuned from representative repository evidence.
+- Automated SkillSpector integration and a first-class upstream PR preparation command are not implemented.
 
-## Non-Goals
+## Current Priorities
 
-- Do not build a general workstation installer.
-- Do not live-sync generated repositories back to this reference source.
-- Do not store provider secrets in `.agents/models.yml` or `.repo-familiar/bootstrap.yml`.
-- Do not over-normalize model/provider metadata before real templates need it.
-- Do not make Quarto docs depend on rendering arbitrary root-level Markdown files.
-- Do not force-migrate or take ownership of existing repository files during bootstrap.
+1. Dogfood preferred Python, reproducible data science, and Static Quarto Application guidance on representative existing repositories.
+2. Tune advice detection from real Quarto, Python, and Static Quarto Application repositories.
+3. Keep all three generated examples, dependency pins, canonical locks, and executable contracts current.
+4. Dogfood Metadata v2 migration, attach, surface promotion, and broad template promotion on independently implemented Downstream Repositories.
+5. Exercise untouched, edited, partially adopted, and conflicting Managed Surfaces to refine boundaries and comparison strategies.
+6. Decide whether dogfood evidence justifies any additional write strategies beyond missing-file creation and checksum-clean `replace_if_unchanged`.
+7. Validate the Agent Plugins pilot with at least two compatible clients before expanding its scope.
+8. Add vendored-skill security scanning only through a deterministic, pinned, read-only first slice.
+9. Revisit deployment guidance only when a real Static Quarto Application requires it.
 
-## Resolved Decisions
+## Active Milestones
 
-- Primary product: project generator for downstream repositories.
-- Reference source: this repository records canonical defaults, templates, skills, and documentation patterns.
-- Delivery model: generated repositories receive vendored generated assets.
-- Metadata path: `.repo-familiar/bootstrap.yml`.
-- Bootstrap schema: `schema_version`, `reference_source`, `generated_at`, `generator`, `selected_options`, and structured `generated_assets`.
-- Generated asset records: `path`, `kind`, and `source`.
-- Generated asset kinds: `agent_instructions`, `skill`, `documentation`, `template_config`, `project_plan`, `metadata`, `dependency_manifest`, `dependency_lock`, `source_code`, `test_code`, and `data_fixture`.
-- Model profiles: `.agents/models.yml` contains non-secret runtime defaults; `.repo-familiar/bootstrap.yml` records selected profile names.
-- Tool profiles: `.agents/tools.yml` contains non-secret tool guidance; `.repo-familiar/bootstrap.yml` records selected tool profile names.
-- OpenCode/Homebrew setup remains Tool Profile guidance for agent shells only; it must not become workstation mutation or an installer.
-- OpenCode harness config: generate `opencode.json` only when `opencode` is selected. Keep the default config minimal and use opt-in tool profiles for project-level MCP entries.
-- Paseo harness boundary: record `paseo` in generated instructions and Bootstrap Metadata, but keep `~/.paseo` provider preferences, schedules, daemon settings, and worktree roots user-owned and outside generated assets.
-- Skills: selected skills are vendored under `.agents/skills/` and recorded as `skill` assets.
-- Skill provenance: `.agents/skill-sources.yml` records selected skill source type, source URL when known, and notes about local adaptation or missing upstreams.
-- Reference Source dogfooding: root `.agents/` should contain the same reusable profile families and selectable skills that this repository offers to Downstream Repositories. If a skill is useful enough to dogfood here, it should be available to Downstream Repositories.
-- Renderer: keep `string.Template` until the template contract needs Banks, Cookiecutter, or another dedicated engine.
-- Example policy: commit deterministic generated snapshots and compare them in tests.
-- Existing repository bootstrap: support it as a distinct audit-first, additive workflow rather than overloading new repository generation.
-- Existing bootstrap metadata ownership: record only assets actually written, not conflicts skipped for safety.
-- Targeted adoption: support narrow asset groups so a skill or tool can be adopted without also adding full project scaffolding.
-- Granular adoption: expose asset groups directly for audit and bootstrap workflows.
-- Drift detection: record content checksums for generated non-metadata assets and expose a read-only `check` command.
-- Advisory profile boundary: generate non-secret guidance files and selected profile names, not installers or machine-specific configuration.
-- Sandboxed snippet execution boundary: `micropython-wasm` guidance is for lightweight MicroPython/WASI execution with explicit limits, not a full CPython replacement or complete production security boundary by itself.
-- Secret profile boundary: generate `.agents/secrets.yml` and `.env.example`, but never generate or store secret values.
-- Accessibility boundary: generate scanning guidance and skills, but treat automated scans as a baseline rather than full compliance proof.
-- Accessibility reporting: prefer compact ADT-style summaries with rule deltas, top issues, and manual-review queues over raw scanner dumps.
-- Prompt migration boundary: require fixtures or golden examples before prompt rewrites in existing prompt DAGs.
-- Repo map boundary: prefer Hamilton DAG artifacts where Hamilton is already used, and avoid changing DAG fingerprints with helper functions.
-- Safety/privacy boundary: provide review guidance and fixtures, not policy enforcement or secret-bearing config.
-- Advice before bootstrap: run a read-only recommendation step before modifying existing repositories.
-- Interaction: use `questionary` first for prompt-based flows; keep CLI flags fully supported.
-- Template rendering: keep `string.Template` for now and introduce Banks later only when prompt or project templates outgrow it.
-- Advice architecture: keep Hamilton DAG node logic separate from non-DAG helpers to protect future graph fingerprints.
-- Python-first default boundary: use `python-reproducible` for new repository generation only; preserve `basic` as the generic template and conservative existing-repository fallback.
-- Static Quarto Application boundary: use a static Quarto browser client with ordinary FastAPI request/response calls, while keeping `app/` separate from Divio documentation under `docs/`.
-- Existing-repository propagation boundary: ship additive guidance before source adoption; Metadata v1 may preview promotion candidacy but cannot apply template promotion.
-- Metadata v2 surface boundary: record explicit Managed Surface state, render basis, history, comparison method, and strategy; allow metadata-only attach plus checksum-safe surface and template promotion without deletion or manual-review escalation.
-- Lockfile ownership: vendor a greenfield `uv.lock` for reproducibility, then treat normal downstream lock changes as expected/manual rather than automatically repairable generator drift.
+### Dogfood Managed Surface Workflows
 
-## Best-Fit Additions
+Status: implemented in source; downstream evidence gathering remains active.
 
-These are the suggested tool/component categories to dogfood in this Reference Source and offer to Downstream Repositories through generation, advice, or targeted existing-repo adoption.
+- Run migration, attach, surface promotion, and template promotion against independently implemented repositories.
+- Capture where exact-file comparison, accepted-current baselines, dependencies, or surface boundaries are unclear.
+- Preserve atomic rollback, no-deletion behavior, clean-checksum replacement, and final-only template transition.
 
-| Category | Best-fit addition | repo-familiar representation | Adopt when |
-|---|---|---|---|
-| Python package management | `uv` | Project dependency workflow and documented command runner | Any Python repo generated or bootstrapped by this Reference Source. |
-| Interactive CLI | `questionary` first; InquirerPy remains an alternative | Runtime dependency and `--interactive` flows | Users need prompt-based generation or existing repo bootstrap. |
-| Advice decision graph | Hamilton-compatible node module | `src/repo_familiar/advice_dag.py` and `hamilton-dag` repomap profile | Advice rules need graphing, reviewability, or future visual artifacts. |
-| Future template rendering | Banks later; keep `string.Template` for now | Deferred renderer decision | Prompt or project templates outgrow simple substitution. |
-| Current API docs | `get-api-docs` skill with `chub` when available | Vendored skill and selectable skill template | Work touches third-party APIs, SDKs, CLIs, package managers, or fast-moving docs. |
-| Local document parsing | `liteparse` | Selectable skill with source provenance and setup guidance | Repos need local parsing or conversion of PDFs, Office documents, spreadsheets, or images without cloud dependencies. |
-| External skill source | `mattpocock/skills` | Selectable vendored skill templates with source provenance | Engineering workflows need diagnose, TDD, triage, PRD, issue, architecture, or zoom-out support. |
-| Agent knowledge commons | `cq` | Tool profile plus selectable skill | Before implementation tasks or error fixes where stale/version-specific gotchas matter. |
-| Context compression | `headroom-context-compression`, `headroom-mcp`, `headroom-proxy` | Tool profiles | Large repos, verbose logs, long sessions, RAG-heavy workflows, or multi-agent memory need explicit opt-in context compression/proxy/MCP guidance. |
-| Agent-authored charts | `flint-chart`, `flint-chart-mcp`, `opencode-flint-chart-mcp`, `flint-chart-author` | Tool profiles plus selectable skill | Repos need agents to author, validate, render, preview, or compile semantic chart specs without hand-writing backend-native chart JSON. |
-| Agent session discipline | `session-focus`, `qa-test-design`, `security-audit` | Selectable skills with source provenance | Multi-step agent work, test design, or security-sensitive code review benefits from stricter gates. |
-| Browser automation | `browser-automation`, `playwright-cli`, `rodney-browser` | Tool profile plus selectable skills | Repos have frontend routes, Quarto/published docs, user-facing web outputs, browser smoke checks, screenshots, console-error checks, or accessibility tree checks. |
-| OpenCode shell setup | `opencode-homebrew-path` | Tool profile | macOS Homebrew users need `node`, `npm`, `npx`, `pnpm`, `uv`, or `quarto` visible in OpenCode agent shells. |
-| OpenCode project config | `opencode.json`, `opencode-playwright-mcp`, `opencode-flint-chart-mcp`, `opencode-cq-mcp`, `opencode-context7-mcp`, `opencode-headroom-mcp` | Harness-specific config plus opt-in tool profiles | Repos use OpenCode and need vendored skill discovery or non-secret project-level MCP entries. |
-| Memory | `memory-local` | `.agents/memory.yml` advisory profile | Any repo with recurring decisions, conventions, stage changes, or non-obvious debugging lessons. |
-| Model defaults | `default-coding`, `budget-review` | `.agents/models.yml` model profiles | Repos need explicit model/provider defaults without storing credentials. |
-| Prompt migration and evals | `prompt-migration-gpt55`, `prompt-evals-dag`, `prompt-migration`, `prompt-eval-design` | Prompt profiles and skills | Prompt DAGs, model migrations, or prompt-heavy pipelines exist. |
-| Repo map and graphing | `semantic-routing-map`, `repository-map`, and `hamilton-dag` | `.agents/repomap.yml` advisory profiles plus a selectable authoring skill | Mature repositories need semantic ownership/test routing, or Python pipelines need DAG visualization and fingerprints. |
-| Safety review | `prompt-output-safety` profile and skill; `security-audit` for code/security review | `.agents/safety.yml` plus skill | User-facing AI, policy-sensitive, education, child-related, high-impact outputs, auth, secrets, or dependency risk exists. |
-| Privacy review | `data-privacy-review` profile and `privacy-review` skill | `.agents/privacy.yml` plus skill | Repos handle PII, child data, logs, analytics, memory, prompts, or exported artifacts. |
-| Public-interest digital | `child-rights-digital`, `public-interest-digital` | `.agents/public-interest.yml` advisory profile | Child-facing, humanitarian, civic, education, public-sector, or public-interest services need safeguarding, inclusion, localization, low-connectivity, transparency, and handover guidance. |
-| Accessibility and design | `a11y-scanner`, `design-a11y`, `design-impeccable`, `a11y-web-scan` | Tool, design profiles, and skill | Frontend code, Quarto sites, design docs, or user-facing web outputs exist. Browser automation can support the manual/browser recheck portion. |
-| Sandboxing | `sandbox-light`, optionally `sandbox-agent-runtime` | `.agents/sandbox.yml` advisory profile | Agents run generated code, package installs, unknown scripts, risky tests, or long autonomous sessions. |
-| Secret handling | `dotenv-local`, `kvenv-azure-keyvault`, `onepassword-op` | `.agents/secrets.yml` and commented `.env.example` | Any repo needs local env guidance without committing real secret values. |
-| Parallel work | `parallel-worktrees` | `.agents/worktrees.yml` advisory profile | Multiple agents, prototypes, or isolated services may run concurrently. |
-| Documentation and planning | Quarto docs, `CONTEXT.md`, ADRs, `plan.md`, `grill-with-docs` | Generated docs, planning asset, and skill | Repos need durable project memory, domain language, or decision records. |
-| Upstream contribution loop | `diff-upstream-candidate`, `upstream-improvement`, and future PR helper | Read-only diff command, skill, plus bootstrap metadata source fields | Downstream repos improve generated assets, profiles, skills, docs, or advice heuristics in ways that should flow back to this Reference Source. |
+Done when representative untouched, edited, partial, and conflicting cases produce actionable previews and no silent ownership expansion.
 
-Default first-pass adoption for existing repos should remain narrow: memory, `cq`, `session-focus`, `grill-with-docs`, `get-api-docs`, and `opencode-homebrew-path`. Add the other categories only when `advise` or repo inspection shows a concrete trigger.
-
-## Pre-Usage Priorities For Existing Repos
-
-Priority 1: Use `advise` on representative repositories and compare recommendations against your intuition. Initial scans have already covered `project-review`, `model-decision-advice`, `ai-policy-kids-education`, `digital-playbook-quarto`, and `design.md`.
-
-Priority 2: For the first real repo, apply only `add-memory`, `add-skill --skill cq`, `add-skill --skill session-focus`, `add-skill --skill grill-with-docs`, `add-skill --skill get-api-docs`, and `add-tool --tool opencode-homebrew-path` unless `advise` shows clear missing docs, prompt DAGs, model defaults, security/privacy risk, or user-facing web outputs.
-
-Priority 3: Add docs with `add-docs` only after checking README/docs conflicts; avoid `--force` on first adoption.
-
-Priority 4: For prompt DAG repos, add `prompt-migration-gpt55`, `prompt-evals-dag`, and `hamilton-dag` before rewriting prompts.
-
-Priority 5: For policy, education, children, public-sector, or user-facing AI repos, add `prompt-output-safety` and `data-privacy-review` before production-maintenance work.
-
-Priority 6: Add `sandbox-light` before letting agents run generated code, package installs, or unfamiliar scripts.
-
-Priority 7: Run `check` after each bootstrap and capture any unexpected conflicts or drift as follow-up issues.
-
-Priority 8: After the first 2-3 bootstraps, revisit whether stage progression needs `advance-stage` and bootstrap history fields.
-
-First recommended real bootstrap sequence:
-
-```bash
-uv run python -m repo_familiar advise --path /path/to/repo
-uv run python -m repo_familiar audit --path /path/to/repo
-uv run python -m repo_familiar add-memory --path /path/to/repo --memory-profile memory-local --apply
-uv run python -m repo_familiar add-skill --path /path/to/repo --skill cq --apply
-uv run python -m repo_familiar add-skill --path /path/to/repo --skill session-focus --apply
-uv run python -m repo_familiar add-skill --path /path/to/repo --skill grill-with-docs --apply
-uv run python -m repo_familiar add-skill --path /path/to/repo --skill get-api-docs --apply
-uv run python -m repo_familiar add-tool --path /path/to/repo --tool opencode-homebrew-path --apply
-uv run python -m repo_familiar check --path /path/to/repo
-```
-
-## Implementation Milestones
-
-### 1. Harden The Minimal Generator
-
-Status: done for the current skeleton.
-
-- Added CLI validation for existing non-empty output directories.
-- Added `--dry-run` to preview generated files and metadata.
-- Added `list-templates` and `list-model-profiles` commands.
-- Added tests for overwrite behavior, unknown model profiles, dry runs, and multiple harness/profile selections.
-- Chose path-sorted template traversal for deterministic generated asset ordering.
-
-Acceptance criteria:
-
-- `uv run python -m unittest discover -s tests` passes.
-- A smoke-generated project contains all expected files and valid bootstrap metadata.
-- The CLI gives actionable errors for invalid inputs.
-
-### 2. Define The First Real Template Contract
-
-Status: first interactive pass done with `questionary`; renderer remains `string.Template`.
-
-- Keep the internal `string.Template` renderer until templates need Banks or a broader generator framework.
-- Define the first interactive question set. Done for `generate --interactive` and `bootstrap-existing --interactive`.
-- Split common assets from optional docs, model, and harness assets.
-- Add a generated `.gitignore` template if needed. Done for `basic`.
-- Add a generated project `README.md` template. Done for `basic`.
-
-Acceptance criteria:
-
-- The template contract can express optional Quarto docs, selected harnesses, selected model profiles, and selected skills.
-- Generated metadata accurately records selected options and generated assets.
-- Template files remain easy for agents to inspect and edit.
-
-### 3. Expand Agentic Engineering Defaults
-
-Status: done for the current selectable defaults and root `.agents/` dogfood pass; more harness adapters and model profiles remain future work.
-
-- Normalize local skill locations under `.agents/skills/` or another stable reference-source path. Done for current vendored skills.
-- Add starter `AGENTS.md` content for downstream repositories. Done for `basic`.
-- Root `.agents/` now includes the selectable profile families and skills exposed by the Reference Source, including all dogfooded Matt Pocock skills, cq, session-focus, qa-test-design, security-audit, browser automation, accessibility, prompt migration/evals, safety, privacy, and upstream-improvement support.
-- Selected skill source provenance is generated and dogfooded through `.agents/skill-sources.yml`.
-- Add optional harness adapters for OpenCode, Paseo, Conductor, Hermes, and Pi if their required conventions become clear. Paseo currently needs no repository-local adapter beyond recorded harness compatibility.
-- Add model profiles for coding, planning, review, low-cost passes, and high-context tasks.
-
-Acceptance criteria:
-
-- Generated agent instructions are agent-agnostic by default.
-- Harness-specific files are generated only when selected.
-- Model profile names are stable handles and contain no secrets.
-
-### 4. Improve Documentation Site
-
-- Add a generator usage page with end-to-end examples. Done.
-- Add a templates page describing available templates and options. Done.
-- Add a model profiles page documenting profile intent and harness compatibility. Done.
-- Add an examples page describing generated snapshots. Done.
-- Add an upgrade-design page once upgrade behavior becomes concrete.
-- Keep Quarto render targets explicit in `docs/_quarto.yml`.
-
-Acceptance criteria:
-
-- `/usr/local/bin/quarto render .` passes from `docs/`.
-- The site explains how to generate a downstream repository from this checkout.
-- ADRs remain linked from the decisions page.
-
-### 5. Add Example Generated Repositories
-
-Status: done for the first snapshot.
-
-- Generated a minimal example repository into `examples/basic-agentic-project`.
-- Included Quarto docs and the default coding profile.
-- Included multiple harnesses and multiple model profiles.
-- Added a regression test that regenerates the example and compares file contents.
-- Normalized the snapshot planning file to lowercase `plan.md` so it matches generated output on case-sensitive filesystems.
-
-Acceptance criteria:
-
-- Examples can be regenerated deterministically or clearly documented as snapshots.
-- Example bootstrap metadata demonstrates the schema.
-- Examples are useful as regression fixtures for the generator.
-
-### 6. Design Explicit Upgrade Behavior
-
-Status: preview implemented; first skills-only write slice implemented.
-
-- Define what an upgrade command may update. Started with read-only readiness categories: `safe_to_auto_apply`, `needs_user_review`, `blocked`, and `unavailable`.
-- Decide whether to add checksums or content fingerprints to `generated_assets`. Done with `content_sha256` for non-metadata assets.
-- Decide how user-edited generated files are detected and handled. Started with checksum drift plus `modified` and `missing` blockers.
-- Decide whether `.repo-familiar/manifest.yml` or `.repo-familiar/overrides.yml` is needed.
-
-Acceptance criteria:
-
-- Upgrade behavior is explicit and opt-in.
-- User edits are never overwritten silently.
-- Bootstrap metadata remains sufficient to reason about old generated repositories.
-- Current `upgrade` command is read-only by default. `--asset-group skills --apply` refreshes only unchanged vendored skills and missing support files, then updates skill-source and bootstrap metadata.
-- Skills apply records the current Reference Source ref/version, blocks removed-reference assets, refuses dirty Git worktrees unless explicitly overridden, and stages writes with rollback on failure.
-- No apply path is exposed for docs, profiles, or template-heavy assets until their preview strategies have sufficient comparison context.
-- Next evolution: implement the reported mapping, line-union, heading, and JSON merge strategies one asset group at a time without overwriting local changes silently.
-- Refresh strategies should be asset-aware: skills update only when unchanged from recorded checksums, `.agents/*.yml` can merge profile keys when safe, `.agents/skill-sources.yml` can refresh provenance when unmodified, `AGENTS.md` should use heading-based merge preview, `.gitignore` should use line-union merge, and `README.md`/`plan.md` should remain manual-review by default.
-
-### 6a. Track External Skill Source Drift
-
-Status: first read-only checker implemented.
-
-- Add a command that reads `.agents/skill-sources.yml`, fetches current GitHub blob sources, compares vendored `SKILL.md` hashes, and reports missing upstream support files. Done as `check-skill-sources`.
-- Keep the command read-only; it should never rewrite vendored skills automatically.
-- Treat exact upstream matches as clean, upstream commits newer than the local vendored commit as actionable drift, and older/different content as local adaptation requiring manual review.
-- Include JSON output for scripted checks. Done.
-- Use the checker before manual vendored skill refreshes and before future write-capable upgrade work.
-
-Acceptance criteria:
-
-- `uv run python -m repo_familiar check-skill-sources` reports a compact status summary.
-- `uv run python -m repo_familiar check-skill-sources --format json` is parseable.
-- Missing upstream support files are surfaced separately from `SKILL.md` content drift.
-- The checker exits non-zero only for actionable drift such as upstream-newer skills, missing local vendored files, fetch errors, or missing support files.
-
-### 6b. Add Vendored Skill Security Scanning
+### Add Vendored Skill Security Scanning
 
 Status: planned.
 
-- Incorporate NVIDIA SkillSpector as a gated security review for vendored skills, not as a hidden runtime dependency for generated repositories.
-- Start with a read-only `check-skill-security` command that scans `.agents/skills` or `src/repo_familiar/templates/skills` and emits text plus JSON output for CI.
-- Default to static, credential-free scans with `--no-llm`; make LLM-backed semantic analysis an explicit opt-in because it requires provider credentials and can vary by network/model availability.
-- Invoke SkillSpector through a pinned external runner such as `uvx --python 3.12 --from git+https://github.com/NVIDIA/SkillSpector@<sha> skillspector scan <skill-dir> --no-llm --format json`, rather than adding it to repo-familiar's normal dependencies while repo-familiar supports Python 3.11 and SkillSpector requires Python 3.12+.
-- Scan whole skill directories, not only `SKILL.md`, so support scripts and reference files are included.
-- Fail automated checks only on HIGH/CRITICAL risk initially; keep LOW/MEDIUM findings visible for manual review to account for expected false positives in security-oriented skills.
-- Add `--scan-security` to `add-skill` only after the standalone checker exists; downstream bootstrap should warn or skip gracefully when the scanner is unavailable instead of blocking ordinary additive bootstrap work.
+- Add a read-only `check-skill-security` command over whole vendored skill directories.
+- Invoke a pinned external SkillSpector runner rather than adding it to the normal project dependencies.
+- Default to static, credential-free `--no-llm` analysis with text and JSON output.
+- Use fake runners in tests; require no network, provider credentials, or real scanner installation.
+- Consider `add-skill --scan-security` only after the standalone command proves useful and reliable.
 
-Acceptance criteria:
+Done when deterministic tests cover success, unavailable scanner, malformed output, and actionable HIGH/CRITICAL findings.
 
-- `uv run python -m repo_familiar check-skill-security --skills-root .agents/skills` reports a compact status summary.
-- `uv run python -m repo_familiar check-skill-security --skills-root .agents/skills --format json` is parseable.
-- Tests use a fake scanner runner and do not require network access, external GitHub installs, LLM credentials, or real SkillSpector execution.
-- Documentation explains that `check-skill-sources` handles provenance/drift and `check-skill-security` handles security risk scanning.
+### Validate Agent Plugins Export
 
-### 6c. Pilot Agent Plugins Export
+Status: skills-only exporter implemented; client validation pending.
 
-Status: skills-only exporter implemented; compatible-client installation validation pending.
+- Test the generated `plugin.json` and `repository-map` skill package with two compatible clients.
+- Keep installation, activation, updates, and permissions client-owned.
+- Do not replace `.agents/skills/`, Bootstrap Metadata, or normal Project Generator delivery.
 
-- Add an optional `export-plugin` command that derives an Agent Plugins 1.0.0 package from canonical skill templates.
-- Limit the first package to the locally authored `repository-map` skill and omit MCP configuration.
-- Keep client installation, activation, updates, and permissions outside the Project Generator.
-- Preserve `.agents/skills/`, Bootstrap Metadata, provenance, and preview-first upgrades as the default Downstream Repository delivery model.
+Done when client evidence either validates the portable pilot or identifies a concrete adapter requirement.
 
-Acceptance criteria:
+### Improve Advice From Dogfood Evidence
 
-- Export writes only `plugin.json` and `skills/repository-map/SKILL.md`.
-- Manifest and skill metadata match the pinned portable specifications.
-- Non-empty output directories are refused.
-- At least two compatible clients successfully install the package before broader adoption.
+Status: first Hamilton-compatible heuristic pass implemented.
 
-### 8. Add Drift Detection
+- Compare recommendations against representative repositories and explicit user intent.
+- Tune signals only when false positives or missing recommendations repeat.
+- Keep filesystem inspection and formatting outside pure recommendation nodes.
 
-Status: done for current generated metadata, registry-backed profile output, and root `.agents/` dogfood consistency.
+Done when recommendations reliably distinguish research, prototyping, implementation planning, and production maintenance without broad default adoption.
 
-- Add `content_sha256` to non-metadata generated asset records.
-- Add `check` command to report `ok`, `modified`, `downstream-managed`, `missing`, and `unchecked` assets. Dependency-lock drift is downstream-managed and non-failing.
-- Add JSON output for scripted checks.
-- Add a regression check that generated profile files match the registry-backed renderers for selected profiles. Done.
-- Add a regression check that root `.agents/` dogfood profile and registered skill assets match generated registry/template output. Done.
+### Expand Upgrade Writes Conservatively
 
-Acceptance criteria:
+Status: evidence gathering.
 
-- `check` returns success when generated assets match recorded checksums.
-- `check` returns non-zero when generated assets are missing or modified.
-- Bootstrap metadata is not self-hashed.
-- Generated profile files stay aligned with the registry renderers.
-- Root dogfood `.agents/` assets stay aligned with generated registry/template output.
+- Keep `README.md`, docs prose, project plans, and edited assets manual-review by default.
+- Consider mapping merge, line union, heading merge, and JSON merge one asset family at a time.
+- Require reconstructable render context, clean comparison bases, preview evidence, and rollback tests before enabling apply.
 
-### 9. Add Advisory Profile Families
+Done only when one additional strategy has a narrow ownership boundary and cannot silently overwrite local work.
 
-Status: done for first profile set.
+## Completed Milestones
 
-- Add `memory_profiles` and `.agents/memory.yml`.
-- Add `sandbox_profiles` and `.agents/sandbox.yml`.
-- Add `design_profiles` and `.agents/design.yml`.
-- Add `public_interest_profiles` and `.agents/public-interest.yml`.
-- Add `worktree_profiles` and `.agents/worktrees.yml`.
-- Add `secrets_profiles`, `.agents/secrets.yml`, and `.env.example`.
-- Add `sops-age` secrets profile and conditional SOPS scaffold generation when `--sops-age-recipient` is provided. Done.
-- Add list and targeted add commands for each profile family.
-- Add public-interest advisory profiles and targeted add command. Done.
-- Dogfood the current advisory profile families in root `.agents/`. Done.
-
-Acceptance criteria:
-
-- Selected advisory profile names are recorded in `.repo-familiar/bootstrap.yml`.
-- Advisory files contain no secrets and do not install tools.
-- Existing repository bootstrap can add each advisory profile family independently.
-
-### 10. Add Repository Advice
-
-Status: done for first Hamilton-compatible heuristic pass; orchestration is extracted to `advice.py` while `advice_dag.py` stays pure.
-
-- Add `advise` command for existing repositories.
-- Detect coarse repository signals such as docs, tests, CI, Quarto, frontend files, container config, agent instructions, and bootstrap metadata.
-- Recommend stage, asset groups, model/tool/advisory profiles, skills, next commands, and memory use.
-- Move decision nodes to `advice_dag.py` so the logic can be run or visualized as a Hamilton graph later.
-- `advise --intent` accounts for intended near-term work such as `significant-refactor`, `prompt-migration`, `production-maintenance`, `security-review`, and `docs-setup`. Done for the first heuristic pass.
-
-Acceptance criteria:
-
-- Advice is read-only and supports JSON output.
-- Advice includes when/how to use memory tools.
-- Advice gives a clear first command to run before bootstrap.
-
-### 11. Add Accessibility Scanning Support
-
-Status: done for first advisory pass.
-
-- Add `a11y-scanner` tool profile.
-- Add `design-a11y` advisory design profile.
-- Add `a11y-web-scan` skill.
-- Dogfood `a11y-web-scan` in root `.agents/skills/`. Done.
-- Update `advise` so frontend, Quarto, and design-doc repositories recommend accessibility scanning.
-- Adapt the ADT Studio reporting pattern: selected targets, rule count deltas, top violations, browser recheck, and residual manual-review queue.
-
-Acceptance criteria:
-
-- Accessibility support is opt-in and advisory.
-- Generated guidance recommends automated and manual checks.
-- No Node dependencies are installed by default.
-- Accessibility reports should lead with concrete remediation priorities.
-
-### 12. Add Prompt Migration, Safety, Privacy, And Repo Maps
-
-Status: done for first advisory pass.
-
-- Add `prompt_profiles` and `.agents/prompts.yml`.
-- Add `safety_profiles` and `.agents/safety.yml`.
-- Add `privacy_profiles` and `.agents/privacy.yml`.
-- Add `repomap_profiles` and `.agents/repomap.yml`.
-- Add `prompt-migration`, `prompt-eval-design`, `prompt-output-safety`, and `privacy-review` skills.
-- Dogfood prompt, safety, privacy, and repo-map profile files plus their selectable skills in root `.agents/`. Done.
-- Recommend prompt/safety/privacy/repomap profiles from `advise` when prompt DAGs, policy/education repos, frontend outputs, or Python projects are detected.
-
-Acceptance criteria:
-
-- Prompt migrations start with inventory and eval fixtures before rewrites.
-- Prompt DAG review can use Hamilton DAGs and fingerprints where appropriate.
-- Safety and privacy reviews include prompt, output, logging, memory, cache, and export exposure points.
-
-### 7. Add Existing Repository Bootstrap
-
-Status: done for the current additive bootstrap model.
-
-- Add `audit` command to inspect existing agent instructions, docs, model profiles, skills, tool profiles, and `.repo-familiar/bootstrap.yml`. Done.
-- Add `bootstrap-existing` dry-run behavior to preview proposed additive changes. Done.
-- Add `bootstrap-existing --apply` to write missing assets without overwriting conflicts. Done.
-- Add conflict reporting for files such as `AGENTS.md`, `.agents/models.yml`, `docs/_quarto.yml`, and `plan.md`. Done.
-- Add selected `add-skill` and `add-tool` flows that can vendor chosen assets into an existing repository. Done.
-- Add selected `add-model` and `add-docs` flows. Done.
-- Add targeted advisory profile add commands for memory, prompts, safety, privacy, repomap, sandbox, secrets, design, and worktrees. Done.
-- Add `--asset-group` to audit and bootstrap existing repositories. Done.
-- `audit` output makes its comparison basis explicit, including default full bootstrap audit, scoped asset-group audit, or selected-options full bootstrap audit. Done.
-- `audit` surfaces the selected option set used for the audit so users can tell whether a full adoption audit is actually using default selections. Done.
-- Added `resolve-conflicts` as a non-destructive preview for existing-repo conflicts. It starts with Markdown heading merge suggestions for `AGENTS.md`, line-union suggestions for `.gitignore`, and preview/manual-review recommendations for other conflicts. Done for the first preview-only pass.
-- Metadata v2 decision inputs from dogfooding: likely needs `adopted_assets`, `conflicts`, `bootstrap_history`, selected user intent, selected option snapshots, and conflict-resolution strategy records once merge/apply behavior exists.
-- Add JSON output for scripted audits. Done for `audit` and bootstrap results.
-
-Acceptance criteria:
-
-- Existing repository bootstrap does not overwrite user-owned files by default.
-- Dry-run output clearly separates assets to add, assets already present, and conflicts requiring user action.
-- Added tools and skills are represented in `.repo-familiar/bootstrap.yml` using structured asset records.
-- Tool profiles contain non-secret setup guidance only.
-- Targeted add flows do not create unrelated defaults.
-
-### 13. Add Upstream Improvement Loop
-
-Status: partially done. The read-only `diff-upstream-candidate` command and `upstream-improvement` skill exist; `prepare-upstream-pr` remains future work.
-
-Downstream Repositories should be able to propose improvements back to this Reference Source when generated assets, advisory profiles, skills, docs, or advice heuristics improve through real use.
-
-Candidate shape:
-
-- Add an `upstream-improvement` skill that helps an agent identify whether a local change is generally useful, strips project-specific details, and drafts a focused upstream PR. Done.
-- Dogfood `upstream-improvement` in root `.agents/skills/`. Done.
-- Use `.repo-familiar/bootstrap.yml` as the provenance source for which assets came from this Reference Source.
-- Add a read-only `diff-upstream-candidate` command to compare generated assets against Bootstrap Metadata and classify changes as unchanged, modified, missing, unchecked, or unsafe/private. Current Reference Source comparison is advisory until richer template context is recorded. Done.
-- Add a `prepare-upstream-pr` command later only if repeated manual PR prep becomes tedious.
-- Keep real secrets, private data, customer specifics, and machine-local paths out of upstream proposals.
-- Prefer small upstream PRs: one generated asset improvement, one skill improvement, one profile addition, or one advice heuristic change at a time.
-
-Acceptance criteria:
-
-- A Downstream Repository can identify which local generated assets have changed from recorded checksums. Done.
-- The skill can guide the user through deciding whether a change is local-only or reusable upstream. Done.
-- The workflow produces a concise PR summary with source context, affected generated assets, and verification commands.
-- The workflow never pushes or opens a PR without explicit user approval.
-- The workflow includes a privacy/safety checklist before copying downstream content into this Reference Source.
-
-### 14. Deepen Core Generator Modules
-
-Status: done for the planned seam extraction pass. Bootstrap Metadata, profile registry, asset planning, repository advice orchestration, and table-driven targeted CLI command seams are extracted.
-
-Architecture review found that `generator.py` is carrying too many responsibilities: profile registries, asset planning, filesystem writes, bootstrap metadata rendering/parsing, check behavior, repository signal detection, advice orchestration, and command suggestion formatting.
-
-Refactor sequence:
-
-1. Extract a Bootstrap Metadata Module. Done.
-2. Extract a profile registry Module for profile data, validation, listing, and profile rendering. Done.
-3. Extract an asset planning Module for template assets, skill assets, asset kinds, and asset-group filtering. Done.
-4. Extract repository advice orchestration from `generator.py` while keeping `advice_dag.py` pure and Hamilton-compatible. Done.
-5. Make targeted CLI add commands table-driven so new profile families do not require repeated branch edits. Done.
-
-Acceptance criteria:
-
-- Bootstrap Metadata can be loaded and rendered through one interface.
-- `check` reads generated asset records through the metadata Module.
-- Future commands can access reference source, selected options, bootstrap mode, generator version, and generated assets without parsing YAML inline.
-- Metadata tests cover full schema-v1 fields needed by `upgrade`, including reference source, selected options, generator identity, and metadata self-hash omission.
-- Asset planning tests cover checksums and asset-group filtering needed by `diff-upstream-candidate`.
-- `opencode-homebrew-path` remains framed as agent-shell guidance only, not workstation installation or machine configuration.
-- Existing tests and generated snapshots continue to pass without user-facing CLI changes.
-- No new broad compatibility layer is added unless a real Downstream Repository requires it.
-
-### 15. Add Python-First Greenfield Templates And Safe Propagation
-
-Status: greenfield templates, guidance, split defaults, examples, Metadata v2 Managed Surfaces, v1 migration, attach, surface-scoped promotion, and dependency-ordered broad template promotion implemented.
-
-The complete contract is in [Python-First Project Plan](docs/python-first-project-plan.qmd) and [ADR 0012](docs/adr/0012-python-first-greenfield-existing-repository-boundary.md).
-
-Implementation sequence:
-
-1. Add preferred-stack, reproducibility, and Static Quarto Application guidance plus precise advice detection for existing repositories. Done.
-2. Separate new-repository default resolution from the existing-repository fallback; preserve recorded templates and fail closed for unknown ones. Done.
-3. Add explicit internal composition for concrete `basic`, `python-reproducible`, and `static-quarto-application` templates. Done.
-4. Add and validate the Python reproducibility exemplar with uv, guardrails, deterministic data/provenance, tests, CI, and executable Divio docs, then activate it as the new-repository default. Done.
-5. Add the Static Quarto Application exemplar with separate `app/` and `docs/`, a FastAPI/Pydantic boundary, shared deterministic analysis, and a browser test matching the tutorial. Done.
-6. Add Metadata v2 Managed Surfaces, lossless v1 migration, metadata-only attach, and template-promotion previews. Done.
-7. Add surface-scoped promotion for missing and checksum-clean replaceable assets, with atomic rollback and manual-review blockers. Done.
-8. Compose eligible surfaces into one dependency-ordered all-or-nothing template promotion and finalize `selected_template` only after complete conformance. Done.
-
-Acceptance criteria:
-
-- `generate` defaults to `python-reproducible`; existing-repository commands do not.
-- `--template basic` remains stable, and recorded `basic` repositories continue to reconstruct it.
-- Unknown recorded templates fail closed instead of falling back.
-- Plain Quarto documentation does not trigger Static Quarto Application advice.
-- Independent FastAPI plus Quarto repositories receive guidance without writes or ownership claims.
-- Changed lockfiles remain manual and are never auto-refreshed.
-- The Python exemplar reproduces identical outputs in isolated runs.
-- The Static Quarto Application browser test and tutorial prove the same interaction.
-- No non-skill upgrade apply is added under Metadata v1.
-
-## Next Highest Priority Slices
-
-Priority 1: Dogfood preferred Python stack, reproducible data science, and Static Quarto Application guidance on representative existing repositories.
-
-Priority 2: Tune implemented advice detection from real Quarto documentation and Static Quarto Application repositories.
-
-Priority 3: Keep the three generated examples current as the preferred-stack dependencies and executable contracts evolve.
-
-Priority 4: Dogfood Metadata v2 migration, attach, surface promotion, and broad template promotion on independently implemented Downstream Repositories.
-
-Priority 5: Tune Managed Surface boundaries and comparison strategies from dogfood evidence.
-
-Priority 6: Dogfood preview and atomic apply paths on untouched, edited, partially adopted, and independently implemented Downstream Repositories.
-
-Priority 7: Decide whether dogfood evidence justifies any additional write strategies beyond missing-file creation and checksum-clean `replace_if_unchanged`.
-
-Priority 8: Keep dependency pins and the generated lockfile current through executable example validation.
-
-Priority 9: Revisit optional deployment guidance only after a real Static Quarto Application needs it.
+| Area | Result |
+|---|---|
+| Minimal generator | Deterministic planning, dry-run, overwrite protection, interaction, and guarded writes. |
+| Template contracts | Generic, reproducible Python, and Static Quarto Application templates with explicit composition. |
+| Existing-repository adoption | Advice, audit, conflict preview, targeted additions, scoped bootstrap, and metadata ownership. |
+| Metadata and drift | Structured assets, checksums, v1/v2 parsing, Managed Surfaces, checks, migration, attach, and promotion. |
+| Profiles and skills | Registry-backed profile families, selectable vendored skills, source provenance, and root dogfood parity. |
+| Examples | Three deterministic generated snapshots with focused regression tests. |
+| Documentation | Physical Divio directories, matching navigation, typed pages, authority routing, exact inventory/link tests, render validation, and accessibility labels. |
+| Architecture seams | Dedicated CLI, metadata, asset planning, profile, advice, upgrade, Managed Surface, and promotion modules. |
+| Upstream review | Read-only downstream candidate classification and the `upstream-improvement` skill. |
 
 ## Verification Commands
 
 ```bash
 uv sync
-uv run python -m unittest discover -s tests
-uv run python -m compileall src tests
+PYTHONPATH=src uv run pytest tests/test_docs.py
+PYTHONPATH=src uv run pytest
+PYTHONPATH=src uv run python -m compileall src tests
 /usr/local/bin/quarto render docs
+git diff --check
 ```
 
 Smoke generation:
@@ -570,22 +126,17 @@ uv run python -m repo_familiar generate \
   --name "Smoke Project" \
   --description "Smoke test project." \
   --output /tmp/repo-familiar-smoke \
+  --template python-reproducible \
   --agent-harness opencode \
-  --agent-harness hermes \
   --model-profile default-coding \
-  --model-profile budget-review \
-  --generated-at "2026-05-10T00:00:00Z" \
-  --force
+  --dry-run
 ```
 
 ## Open Questions
 
-- Which additional prompts should `questionary` ask versus infer from `advise`?
-- What exact file conventions do Conductor, Hermes, and Pi need?
-- Which external skill sources should get automated upstream drift checks first?
-- Which optional asset groups should the `basic` template split out first?
-- What concrete template complexity should trigger Banks adoption?
-- What is the smallest executable dependency set for the first `python-reproducible` exemplar while preserving the documented adoption thresholds for the broader preferred stack?
-- Should future upgrade behavior use checksum drift, three-way merge, or explicit user prompts for each changed generated asset?
-- Should the explicit refresh command be an expanded `upgrade` command or a separate `refresh-selected-assets` command?
-- Should upstream-improvement start as a skill only, or should it also get a first-class CLI command once two or three real upstream PRs expose the repeated steps?
+- Which additional prompts should `questionary` ask rather than infer from `advise` or template defaults?
+- What repository-local conventions, if any, do Conductor, Hermes, and Pi require?
+- What measured template complexity should trigger replacing `string.Template` with Banks or another renderer?
+- Which additional write strategy has enough downstream evidence to implement safely first?
+- Should repeated upstream contribution work remain skill-guided or justify a `prepare-upstream-pr` command?
+- Which real deployment should define the first Static Quarto Application deployment guidance?

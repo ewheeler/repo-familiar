@@ -1,0 +1,14 @@
+---
+title: "Research Assessments"
+doc-type: reference
+---
+
+Research pages are point-in-time evaluations of candidate inputs. Revalidate upstream state, licensing, security, and maintenance before acting on an older recommendation.
+
+| Assessment | Date | Current recommendation |
+|---|---|---|
+| [Diagram Design](./assessments/diagram-design.qmd) | 2026-08-10 | Keep under consideration as opt-in external Design Profile guidance; do not vendor yet. |
+| [Ix Code Map](./assessments/ix-code-map.qmd) | 2026-08-10 | Keep as a research candidate; do not add as a dependency, default profile, or vendored skill. |
+| [Writing Style Skills](./assessments/writing-style-skills.qmd) | 2026-08-03 | Consider a reviewed SimpleEnglish adaptation; defer Economist Style pending evaluation and provenance review. |
+
+When a candidate is adopted or definitively rejected, record the durable outcome in the owning registry, plan, or ADR and retire the assessment if it no longer provides useful rationale.

@@ -1,0 +1,23 @@
+---
+title: "Architecture Decision Records"
+doc-type: reference
+---
+
+This index records durable decisions and ADR status. Current implementation progress and open priorities belong in [`PLAN.md`](https://github.com/ewheeler/repo-familiar/blob/main/PLAN.md).
+
+| ADR | Status | Decision |
+|---|---|---|
+| [0001](./adr/0001-project-generator-as-primary-product.md) | Accepted | Make project generation the primary product. |
+| [0002](./adr/0002-vendor-generated-assets-by-default.md) | Accepted | Vendor generated assets by default. |
+| [0003](./adr/0003-bootstrap-metadata-path.md) | Accepted | Store bootstrap metadata at `.repo-familiar/bootstrap.yml`. |
+| [0004](./adr/0004-minimal-bootstrap-metadata-schema.md) | Accepted | Start with a minimal Bootstrap Metadata schema. |
+| [0005](./adr/0005-structured-generated-assets.md) | Accepted | Use structured generated-asset records. |
+| [0006](./adr/0006-generated-asset-kind-taxonomy.md) | Accepted | Keep a small generated-asset kind taxonomy. |
+| [0007](./adr/0007-model-profiles-location.md) | Accepted | Store model profiles in `.agents/models.yml`. |
+| [0008](./adr/0008-named-model-profile-schema.md) | Accepted | Use named model profile handles. |
+| [0009](./adr/0009-existing-repository-bootstrap.md) | Accepted | Support audit-first existing-repository bootstrap. |
+| [0010](./adr/0010-metadata-v2-preview-first-refresh.md) | Accepted | Use Metadata v2 and preview-first refresh boundaries. |
+| [0011](./adr/0011-agent-plugins-export-pilot.md) | Accepted pilot | Keep Agent Plugins an optional derived export. |
+| [0012](./adr/0012-python-first-greenfield-existing-repository-boundary.md) | Accepted | Separate Python-first greenfield defaults from existing-repository adoption. |
+
+ADRs are point-in-time decisions. Confirm implemented behavior in current source and tests, and use the root plan for live delivery status.

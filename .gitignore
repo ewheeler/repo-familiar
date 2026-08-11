@@ -74,6 +74,7 @@ docs/_build/
 # Quarto documentation
 docs/_site/
 docs/.quarto/
+docs/.gitignore
 
 # PyBuilder
 .pybuilder/

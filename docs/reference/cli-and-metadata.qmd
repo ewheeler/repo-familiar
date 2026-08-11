@@ -1,0 +1,118 @@
+---
+title: "CLI and Metadata Reference"
+doc-type: reference
+---
+
+`src/repo_familiar/cli.py` defines executable command and option behavior. This page is the human-readable command index and the single prose reference for the Bootstrap Metadata schema defined by `src/repo_familiar/metadata.py`.
+
+Run any command with `--help` for its current options:
+
+```bash
+uv run python -m repo_familiar <command> --help
+```
+
+## Command Index
+
+| Purpose | Commands |
+|---|---|
+| Discover templates and harnesses | `list-templates`, `list-agent-harnesses` |
+| Discover profiles | `list-model-profiles`, `list-tool-profiles`, `list-memory-profiles`, `list-prompt-profiles`, `list-safety-profiles`, `list-privacy-profiles`, `list-repomap-profiles`, `list-sandbox-profiles`, `list-secrets-profiles`, `list-design-profiles`, `list-worktree-profiles`, `list-public-interest-profiles` |
+| Discover skills and inspect profiles | `list-skills`, `catalog`, `describe` |
+| Generate a repository | `generate` |
+| Inspect an existing repository | `advise`, `audit`, `resolve-conflicts` |
+| Bootstrap an existing repository | `bootstrap-existing` |
+| Add selected assets | `add-skill`, `add-docs`, `add-model`, `add-tool`, `add-memory`, `add-prompts`, `add-safety`, `add-privacy`, `add-repomap`, `add-sandbox`, `add-secrets`, `add-design`, `add-worktree`, `add-public-interest` |
+| Check provenance and drift | `check`, `diff-upstream-candidate`, `check-skill-sources` |
+| Preview or apply supported refresh | `upgrade` |
+| Adopt or promote Managed Surfaces | `attach`, `migrate-template`, `migrate-metadata`, `promote-surface`, `promote-template` |
+| Export the Agent Plugins pilot | `export-plugin` |
+
+The [Bootstrap Lifecycle](./bootstrap-lifecycle.qmd) records which commands write, preview, or require a clean worktree. Task guides intentionally show only the commands needed for their outcome.
+
+## Generation Defaults
+
+New `generate` calls default to `python-reproducible`. Select `basic` for the generic scaffold or `static-quarto-application` for the opt-in static Quarto client and FastAPI boundary.
+
+Existing-repository commands use `basic` when the repository has no recorded or explicit template. They do not silently reinterpret an unknown recorded template.
+
+Profiles and skills omitted from the command line can be supplied by concrete template defaults. Use [Profiles and Skills](./profiles-and-skills.qmd) for registry lookup commands.
+
+## Bootstrap Metadata
+
+`.repo-familiar/bootstrap.yml` is generator-owned metadata, separate from agent runtime files under `.agents/`. Schema v1 records provenance, selected options, and generated assets. Schema v2 adds render context, Managed Surfaces, surface assets, and operation history.
+
+The human-readable schema v2 shape is:
+
+```yaml
+schema_version: 2
+bootstrap_mode: <new_repository-or-existing_repository>
+reference_source:
+  type: <git-or-package>
+  url: <source-url>
+  ref: <tag-or-commit>
+generated_at: <iso-8601-timestamp>
+generator:
+  name: repo-familiar
+  version: <version-or-commit>
+selected_options:
+  template: <template-name>
+  agent_harnesses: []
+  model_profiles: []
+  tool_profiles: []
+  memory_profiles: []
+  prompt_profiles: []
+  safety_profiles: []
+  privacy_profiles: []
+  repomap_profiles: []
+  sandbox_profiles: []
+  secrets_profiles: []
+  design_profiles: []
+  worktree_profiles: []
+  public_interest_profiles: []
+  sops_age_recipients: []
+  skills: []
+  docs: quarto
+generated_assets:
+  - path: <repository-relative-path>
+    kind: <asset-kind>
+    source: <canonical-source>
+    content_sha256: <sha256>
+render_context:
+  project_name: <project-name>
+  project_description: <project-description>
+  template: <template-name>
+  docs: quarto
+  selected_options_sha256: <sha256>
+  source: generation_inputs
+managed_surfaces: []
+managed_surface_assets: []
+history: []
+```
+
+The metadata file is not self-hashed. `content_sha256` is optional when an asset has no checksum baseline and is omitted for the metadata file itself. Existing-repository metadata records only assets written or explicitly adopted by that operation; skipped conflicts remain user-owned.
+
+Valid v1 files stop after `generated_assets` and remain readable. `migrate-metadata` creates v2 render and surface records only from ownership already represented by v1; it does not infer ownership of other repository files.
+
+## Managed Surfaces
+
+Metadata v2 uses explicit Managed Surfaces for adoption and promotion:
+
+- `migrate-metadata` previews or applies a lossless v1-to-v2 migration; unrecorded files remain user-owned.
+- `attach` records a metadata-only surface attachment and does not rewrite surface files.
+- `migrate-template` previews target surfaces and file states without applying them.
+- `promote-surface` applies one checksum-safe, atomic surface promotion without changing the selected template.
+- `promote-template` applies all conformable target surfaces as one dependency-ordered transaction and changes the selected template only in the final committed metadata.
+
+Edits, conflicts, extra managed assets, and manual-review strategies can block promotion. Missing target files are eligible for creation; broad promotion never deletes an omitted current surface. See [ADR 0010](../project-record/adr/0010-metadata-v2-preview-first-refresh.md) and [ADR 0012](../project-record/adr/0012-python-first-greenfield-existing-repository-boundary.md) for rationale.
+
+Managed Surface records contain an `id`, version, template, state, comparison basis, strategy, render-context checksum, and the render inputs needed for comparison. Surface-asset records contain a surface ID, path, state, comparison basis, strategy, and optional content checksum.
+
+| Field vocabulary | Values |
+|---|---|
+| Surface or asset state | `written`, `adopted`, `edited`, `skipped`, `conflict` |
+| Strategy | `replace_if_unchanged`, `line_union`, `merge_preview_only`, `manual_review`, `unavailable` |
+| History record | `id`, `at`, `command`, `mode`, and optional `surface_id` |
+
+## Generated Asset Authority
+
+Canonical templates plus `src/repo_familiar/asset_plan.py` define generated asset composition. Generator plan output exposes the exact inventory for one selection, and tests verify it. Documentation describes categories and inspection methods rather than copying a full file list that can drift.

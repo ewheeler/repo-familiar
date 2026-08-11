@@ -1,0 +1,52 @@
+---
+title: "Architecture"
+doc-type: explanation
+---
+
+`repo-familiar` is organized around a Project Generator, a canonical Reference Source, and self-contained Downstream Repositories. The architecture favors inspectable copies and explicit ownership over hidden synchronization.
+
+## Product Boundary
+
+The primary product is repository generation and guarded adoption, not workstation setup. The Reference Source owns reusable templates, profile registries, selectable skills, command behavior, and documentation conventions. A Downstream Repository receives selected assets and then remains independently maintainable.
+
+Machine-level harness configuration, global MCP settings, shell setup, credentials, and secret stores remain user-owned. Repository guidance may describe them but generation does not silently mutate them.
+
+## Vendored Assets And Provenance
+
+Generated assets are copied into downstream repositories. This makes each repository stable if the Reference Source later changes, and it lets downstream maintainers edit local files deliberately.
+
+Bootstrap Metadata v1 records provenance, selections, generated paths, and checksums. Schema v2 adds render context, Managed Surfaces, and operation history. `.repo-familiar/` is generator-owned metadata; `.agents/` contains agent-facing runtime instructions and guidance.
+
+Checksums do not make generated files immutable. They establish a comparison baseline so checks and promotions can distinguish unchanged, edited, missing, adopted, and conflicting content.
+
+## Preview-First Change
+
+New generation writes a new repository after optional dry-run review. Existing-repository bootstrap, targeted additions, upgrades, metadata migration, attachment, and promotion separate preview from apply.
+
+This asymmetry is intentional: a new empty output has no user history, while an existing repository has unknown ownership and local decisions. Missing or checksum-clean content can be eligible for narrow writes; edits and ambiguity fail closed for review.
+
+Managed Surface promotion is atomic at the selected boundary. Broad template promotion is dependency-ordered and changes the recorded template only after all target surfaces conform. There is no live or background sync.
+
+## Template Composition
+
+Concrete templates compose known layers internally while Bootstrap Metadata records the effective template and per-file source. `python-reproducible` is the greenfield default; `basic` remains the generic template and conservative existing-repository fallback; `static-quarto-application` adds an explicit browser-to-API product boundary.
+
+A Static Quarto Application is not another documentation mode. Its static browser client initiates ordinary FastAPI request/response calls, while project documentation remains a Divio Quarto site under `docs/`.
+
+## Engineering Opinions
+
+- Prefer executable evidence over prose-only claims: manifests, locks, tests, CI, provenance, and tutorial verification should describe the same path.
+- Introduce dependencies when the scaffold exercises them or a documented threshold is met, not because they appear in a preferred stack list.
+- Use `uv` for Python package and environment management.
+- Use Pydantic at validation boundaries, Polars for dataframe work, and Hamilton where graph-shaped execution benefits from inspectable DAGs.
+- Reserve FastAPI and Structlog for service/application boundaries that need them.
+- Introduce Banks, Hydra/OmegaConf, and remote-storage abstractions only when template complexity, configuration composition, or storage requirements justify them.
+- Keep safety, privacy, accessibility, inclusion, and maintainability visible as product requirements rather than optional review passes.
+
+## Source Boundaries
+
+Canonical templates and `src/repo_familiar/asset_plan.py` define generated composition. `src/repo_familiar/metadata.py` defines Bootstrap Metadata. `src/repo_familiar/profiles.py` defines profile registries. `src/repo_familiar/advice.py` detects repository signals and orchestrates pure recommendation nodes from `src/repo_familiar/advice_dag.py`.
+
+Use the [Repository Map](../project-record/repository-map.md) for ownership and focused tests, [Bootstrap Lifecycle](../reference/bootstrap-lifecycle.qmd) for exact command safety, and ADRs for durable rationale.
+
+Deterministic example snapshots are regression fixtures for this architecture. They should be regenerated from canonical inputs rather than edited by hand.

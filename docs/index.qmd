@@ -1,26 +1,39 @@
 ---
-title: "repo-familiar"
-subtitle: "Agentic engineering dotfiles for repeatable project setup"
+title: "repo-familiar Documentation"
+subtitle: "Generate, adopt, and maintain agentic engineering defaults"
+page-role: landing
 ---
 
-`repo-familiar` collects reusable instructions, skills, templates, advisory profiles, and documentation practices for AI-assisted software engineering.
+`repo-familiar` is a **Project Generator** and **Reference Source** for reusable **Agentic Engineering Defaults**. It creates self-contained **Downstream Repositories** and supports preview-first adoption in existing repositories.
 
-The primary product is a project generator for downstream repositories. This repository is the canonical reference source; dotfiles are the metaphor for portable, personal defaults, not the boundary of the implementation.
+## Start Here
 
-## What This Site Tracks
+- New to the project? Complete [Generate Your First Repository](./tutorials/generate-first-repository.qmd).
+- Generating a configured repository? Use [Generate a Repository](./how-to/generate-repository.qmd).
+- Adopting defaults in existing work? Use [Bootstrap an Existing Repository](./how-to/bootstrap-existing-repository.qmd).
+- Looking up exact behavior? Start with the [CLI and Metadata Reference](./reference/cli-and-metadata.qmd) or [Bootstrap Lifecycle](./reference/bootstrap-lifecycle.qmd).
+- Trying to understand the design? Read [Architecture](./explanation/architecture.qmd) and the [Documentation System](./explanation/documentation-system.qmd).
 
-- How to use the repository to start new projects.
-- Architecture for templates, skills, and generated project assets.
-- [Semantic repository routing](./agents/repository-map.md) for implementation ownership and test locality.
-- Documentation conventions for Quarto sites and generated project docs.
-- Design decisions and tradeoffs.
-- Background research and reference links.
-- User stories for the bootstrap workflow.
+## Project Authorities
 
-## Current Status
+Use each source for its intended question:
 
-The first Python generator is implemented with `uv`-first CLI usage, optional `questionary` interaction, the `basic` template, generated Bootstrap Metadata, existing-repository bootstrap, targeted add commands, drift checks, preview-first upgrades with a safe skills-only apply slice, and skill source provenance checks.
+| Question | Authority |
+|---|---|
+| What does the product mean and exclude? | [`CONTEXT.md`](https://github.com/ewheeler/repo-familiar/blob/main/CONTEXT.md) |
+| What is implemented or planned now? | [`PLAN.md`](https://github.com/ewheeler/repo-familiar/blob/main/PLAN.md) |
+| Why was a durable choice made? | [Decisions and ADRs](./project-record/decisions.qmd) |
+| Which module and test own a change? | [Repository Map](./project-record/repository-map.md) |
+| What does the executable currently do? | Source and tests, routed through the repository map |
 
-Generated and bootstrapped repositories receive vendored assets by default. Refresh and upgrade behavior remains explicit and preview-first rather than live synchronization.
+Plans and ADRs can describe work that is not yet implemented. Confirm availability in current source and tests.
 
-Use [Bootstrap Lifecycle](./bootstrap-lifecycle.qmd) for the command-safety contract, ownership boundaries, and the profile-family selection matrix.
+## Documentation Shape
+
+The sidebar follows the Divio documentation system:
+
+- **Tutorials** teach through a complete, reliable learning path.
+- **How-to guides** solve a specific task.
+- **Reference** records exact commands, contracts, and configuration.
+- **Explanation** records architecture, tradeoffs, and opinions.
+- **Project Record** groups plans, decisions, research, requirements, and agent routing while retaining one of the four documentation types.

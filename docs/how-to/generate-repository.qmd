@@ -1,0 +1,64 @@
+---
+title: "Generate a Repository"
+doc-type: how-to
+---
+
+Use this guide when you know the Downstream Repository you want and need to choose its template, harnesses, profiles, and skills.
+
+## Discover Available Choices
+
+Start with the executable catalogs rather than a copied inventory:
+
+```bash
+uv run python -m repo_familiar list-templates
+uv run python -m repo_familiar list-agent-harnesses
+uv run python -m repo_familiar catalog model
+uv run python -m repo_familiar catalog tool
+uv run python -m repo_familiar describe tool cq
+uv run python -m repo_familiar list-skills
+```
+
+The default new-repository template is `python-reproducible`. Select `basic` for a generic repository or `static-quarto-application` for the opt-in Quarto client and FastAPI application boundary. See [Templates](../reference/templates.qmd) for the stable distinctions.
+
+## Preview A Selection
+
+Repeat profile and skill flags to include multiple choices:
+
+```bash
+uv run python -m repo_familiar generate \
+  --name "Demo Project" \
+  --description "A generated demo." \
+  --output /path/to/demo-project \
+  --template python-reproducible \
+  --agent-harness opencode \
+  --agent-harness paseo \
+  --model-profile default-coding \
+  --tool-profile cq \
+  --memory-profile memory-local \
+  --skill cq \
+  --skill session-focus \
+  --dry-run
+```
+
+Review the planned paths and selected options. Generation refuses a non-empty output directory unless `--force` is supplied; use `--force` only for known generated output such as a deterministic example refresh.
+
+## Write And Verify
+
+Remove `--dry-run` after the preview matches the intended shape, then verify the result:
+
+```bash
+uv run python -m repo_familiar check --path /path/to/demo-project
+```
+
+Bootstrap Metadata records selected profile names and generated assets. Exact profile definitions stay in generated `.agents/*.yml` files; secrets and machine-level harness configuration remain user-owned.
+
+## Use Interactive Selection
+
+Run the same flow through `questionary` prompts:
+
+```bash
+uv sync
+uv run python -m repo_familiar generate --interactive
+```
+
+For all flags and metadata fields, use [CLI and Metadata Reference](../reference/cli-and-metadata.qmd). For command ownership and write behavior, use [Bootstrap Lifecycle](../reference/bootstrap-lifecycle.qmd).

@@ -2,7 +2,7 @@
 
 ## Repository Routing
 
-- Read `docs/agents/repository-map.md` before broad code search or architectural work.
+- Read `docs/project-record/repository-map.md` before broad code search or architectural work.
 - Preserve the Project Generator, Reference Source, Downstream Repository, Vendored Generated Assets, Python Reproducible Project, Static Quarto Application, and Managed Surface language in `CONTEXT.md`.
 - Treat `src/repo_familiar/templates/` and `src/repo_familiar/profiles.py` as canonical inputs; root `.agents/` files and `examples/` are dogfood or snapshot copies.
 - Keep the repository map selective and update it when ownership moves or a high-leverage interface is added.

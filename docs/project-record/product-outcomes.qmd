@@ -1,0 +1,26 @@
+---
+title: "Product Outcomes"
+doc-type: reference
+---
+
+These outcomes describe who the product serves and what successful behavior means. Exact command behavior belongs in reference docs and source; delivery status belongs in `PLAN.md`.
+
+## Generate A New Repository
+
+A developer can create a self-contained repository with explicit instructions, selected profiles and skills, project documentation, a plan, and Bootstrap Metadata. The generated result can be inspected and verified without depending on a live Reference Source.
+
+## Adopt Defaults Safely
+
+A maintainer can inspect an existing repository, preview selected additions, preserve user-owned conflicts, and apply only the reviewed asset groups. Recorded ownership matches files actually written or explicitly adopted.
+
+## Understand Provenance And Drift
+
+A maintainer can identify the Reference Source, selected template and options, generated assets, checksums, Managed Surfaces, and operation history. Read-only checks distinguish stable generated content from edits, missing paths, and conflicts.
+
+## Choose Agent Support Explicitly
+
+A project can select harnesses, model defaults, tools, advisory profiles, and vendored skills without embedding credentials or machine-level configuration in repository assets.
+
+## Review Plans And Decisions
+
+Humans and agents can find canonical domain language, current priorities, durable decisions, architecture rationale, and implementation/test routing before changing code.

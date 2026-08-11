@@ -1,0 +1,46 @@
+---
+title: "Documentation System"
+doc-type: explanation
+---
+
+The Reference Source and generated Downstream Repositories use the Divio documentation system so readers can distinguish learning, task execution, lookup, and rationale.
+
+## Why Divio
+
+Documentation drift was not caused by missing folders. It came from pages accumulating commands, plans, schemas, catalogs, and rationale without one dominant purpose or one owner for each fact.
+
+The four documentation types create a reader contract:
+
+- **Tutorials** provide a reliable learning sequence with known inputs and visible results.
+- **How-to guides** help an informed reader complete a specific task.
+- **Reference** describes exact commands, schemas, configuration, and contracts.
+- **Explanation** records architecture, opinions, tradeoffs, and why the system behaves as it does.
+
+The Reference Source adds a **Project Record** sidebar collection for plans, ADRs, research, requirements, and agent routing. It is not a fifth type: every record still has one of the four reader purposes.
+
+## Why Paths And Navigation Agree
+
+The Reference Source makes reader purpose visible in both source paths and Quarto navigation. Product documentation lives under `tutorials/`, `how-to/`, `reference/`, or `explanation/`; plans, ADRs, research, requirements, and agent routing live under the orthogonal `project-record/` collection.
+
+Every rendered content page has a `doc-type`. Product pages must live in the directory matching that type. Project Record pages can use any valid Divio type, but remain physically grouped as repository history and maintainer context. Every page appears once in the explicit render list and once in the sidebar hierarchy. Tests reject unclassified, misplaced, duplicate, and orphan pages.
+
+## Authority Before Duplication
+
+Exact facts have one owner:
+
+- `CONTEXT.md` owns domain language and product boundaries.
+- `PLAN.md` owns current status, priorities, and open work.
+- ADRs own durable decisions and rationale.
+- Source modules own executable CLI, metadata, profile, and asset behavior.
+- Reference pages expose those contracts to humans without becoming a second implementation.
+- The repository map owns implementation and test routing.
+
+Tutorials and how-to guides may repeat the minimum command fragment needed for a task. They should link to the reference rather than reproduce full command, schema, profile, or asset inventories.
+
+## Documentation As Product Evidence
+
+Documentation claims should be executable where practical. Tutorials use known inputs and expected results; how-to guides include verification; reference pages align with parser and registry tests; explanation pages distinguish current behavior from proposed work.
+
+Generated Downstream Repository documentation is a separate Managed Surface. Root information architecture tests must not force the Reference Source to mirror generated filenames or content.
+
+Use [Write Repository Documentation](../how-to/write-documentation.qmd) for the editing and verification workflow.

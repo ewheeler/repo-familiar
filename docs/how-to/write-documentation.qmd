@@ -1,0 +1,56 @@
+---
+title: "Write Repository Documentation"
+doc-type: how-to
+---
+
+Use this guide when adding or changing Reference Source documentation.
+
+## 1. Choose One Purpose
+
+Assign exactly one `doc-type` in page frontmatter:
+
+```yaml
+doc-type: how-to
+```
+
+Choose `tutorial`, `how-to`, `reference`, or `explanation`. Project plans, ADRs, assessments, and routing maps still use one of these types even though the sidebar groups them under Project Record.
+
+## 2. Respect The Authority Map
+
+Before copying a fact, identify its owner:
+
+- Domain language and product boundaries: `CONTEXT.md`.
+- Current status and priorities: `PLAN.md`.
+- Durable decisions: `docs/project-record/adr/`.
+- CLI behavior: `src/repo_familiar/cli.py` and tested reference prose.
+- Metadata schema: `src/repo_familiar/metadata.py` and its single human reference.
+- Profile definitions: `src/repo_familiar/profiles.py` and `catalog`/`describe` output.
+- Asset composition: `src/repo_familiar/asset_plan.py` and canonical templates.
+- Ownership and focused tests: `docs/project-record/repository-map.md`.
+
+Link or summarize when another surface owns the exact fact. Do not maintain parallel status, schema, profile, command, or asset inventories.
+
+## 3. Keep The Page Type Clean
+
+- Tutorials use known inputs, reliable steps, visible results, and verification.
+- How-to guides assume a goal and include only the steps needed to achieve it.
+- Reference pages favor exact tables and contracts over narrative progression.
+- Explanation pages describe rationale, boundaries, tradeoffs, and rejected alternatives.
+
+Split a page only when substantial sections serve different reader needs. Do not create a thin page merely to mirror the taxonomy.
+
+## 4. Register The Page
+
+Put product documentation in the directory matching its type: `tutorials/`, `how-to/`, `reference/`, or `explanation/`. Put plans, ADRs, assessments, requirements, and agent routing under `project-record/` while retaining their reader-facing `doc-type`.
+
+Add every source page exactly once to the explicit `project.render` list and exactly once to the appropriate sidebar section in `docs/_quarto.yml`. The docs tests reject unclassified, misplaced, duplicate, and orphan pages.
+
+## 5. Verify The Site
+
+```bash
+PYTHONPATH=src uv run pytest tests/test_docs.py
+/usr/local/bin/quarto render docs
+git diff --check
+```
+
+For navigation or presentation changes, inspect the rendered site at desktop and mobile widths, exercise keyboard navigation and search, and pair automated accessibility checks with manual review.
