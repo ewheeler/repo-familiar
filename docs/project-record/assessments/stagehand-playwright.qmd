@@ -1,0 +1,147 @@
+---
+title: "Stagehand and Playwright Assessment"
+description: "Assessment of Stagehand v4 as a possible replacement for Playwright browser tests and agent browser tooling."
+date: "2026-08-12"
+doc-type: explanation
+---
+
+This page assesses [Stagehand](https://www.stagehand.dev/) v4 as a possible replacement for Playwright in the repo-familiar **Reference Source**. The comparison separates deterministic browser tests, agent-operated browser tooling, and accessibility workflows because they have different reliability and integration requirements.
+
+## Recommendation
+
+| Potential value | Replacement readiness | Recommendation |
+|---:|---:|---|
+| 8/10 for agentic workflows | 2/10 | Retain Playwright. Treat Stagehand as a possible opt-in complement for model-assisted browser workflows, not as a replacement for deterministic tests, `playwright-cli`, or accessibility scanning. |
+
+Stagehand's `act`, `observe`, and typed `extract` primitives are promising for selector-hostile third-party sites and structured web extraction. Those capabilities do not address the reasons repo-familiar currently uses Playwright: reproducible rendered-application checks, semantic locators, browser installation in CI, agent-facing command workflows, request inspection and mocking, trace and video diagnostics, and axe integration.
+
+Do not add Stagehand as a dependency, default profile, or vendored skill at this time. If future demand justifies a pilot, keep it separate from the browser regression test and existing `playwright-cli` profile so its model, cloud, security, and cost boundaries remain explicit.
+
+## Current Playwright Responsibilities
+
+Playwright currently serves three distinct roles.
+
+### Deterministic Static Quarto Application test
+
+The canonical browser test is `src/repo_familiar/templates/static-quarto-application/tests/test_browser.py.tmpl`. It uses the synchronous Python API to launch Chromium, exercise the rendered tutorial path against a local FastAPI server, and assert known count, total, average, and provenance results.
+
+The surrounding contract includes:
+
+- the `playwright` dependency and canonical lock in the Static Quarto Application template;
+- `playwright install --with-deps chromium` in generated CI;
+- local installation and verification commands in generated documentation;
+- the generated application snapshot and Bootstrap Metadata checksums;
+- generator, packaging, Managed Surface, documentation, and example-parity tests.
+
+Stagehand's deterministic locator API could reproduce this small flow with CSS selectors, but the port would add no agentic value. It would change the test to an asynchronous API, replace Playwright-managed browser binaries with an externally installed Chrome or Chromium, and give up semantic role and test-id locators without improving the product assertion.
+
+### Agent-operated browser tooling
+
+The canonical `playwright-cli` skill under `src/repo_familiar/templates/skills/playwright-cli/` documents snapshot references, semantic interaction, tabs, storage state, request routing, console and network inspection, attached and persistent sessions, screenshots, PDF output, tracing, video, interactive annotation, arbitrary Playwright code, and test generation. `src/repo_familiar/profiles.py` also owns the skill registry, provenance, browser-automation profile, and optional Playwright MCP configuration.
+
+Stagehand v4 is an SDK rather than a comparable command interface. Its migration guide removes the prior `agent()` API with no one-for-one replacement and recommends either generated scripts or a tool-calling loop owned by the consumer. Replacing `playwright-cli` would therefore require building and maintaining an orchestration or CLI layer before addressing feature gaps.
+
+Browserbase's separate Browse CLI may be a closer product comparison, but it is not Stagehand and requires its own assessment.
+
+### Accessibility workflows
+
+The `a11y-web-scan` skill lists Playwright with `@axe-core/playwright` alongside Pa11y, axe-core, Lighthouse, and browser automation. Stagehand's accessibility-oriented page snapshot helps an agent perceive page structure, but it does not scan WCAG rules, replace axe, or provide accessible-name assertions. It should not displace the current accessibility options.
+
+## Capability Comparison
+
+| Area | Playwright fit | Stagehand v4 fit |
+|---|---|---|
+| Primary design | Deterministic browser automation and testing | Browser-agent SDK combining deterministic controls with model-backed primitives |
+| Python API | Synchronous and asynchronous | Asynchronous examples and API |
+| Browser support | Chromium, Firefox, and WebKit | Chromium-based browsers over CDP |
+| Locators | Role, label, text, placeholder, test-id, CSS, XPath, filtering, and chaining | CSS-oriented locators with iframe and open or closed shadow-root traversal |
+| Reliability | Documented actionability waits and auto-retrying assertions | Basic selector and load-state waits; no test assertion layer |
+| Network control | Request and response events, interception, fulfillment, and HAR workflows | Headers and domain policy; public interception remains an open feature request |
+| Diagnostics | Local traces, Trace Viewer, screenshots, video, reports, console, and network events | Screenshots, logs, console events, token metrics, and OpenTelemetry; rich replay is a Browserbase service |
+| CI browser setup | Version-matched browser downloads with dependency installation | Requires an installed Chrome or Chromium for local execution |
+| Agent primitives | External agent, CLI, or MCP layers | Native `act`, `observe`, typed `extract`, action replay, and optional self-healing |
+| Accessibility | Mature axe integrations and semantic locator assertions | Accessibility-oriented snapshots, not a WCAG scanner |
+
+The current generated test only exercises Chromium, so Stagehand's Chromium-only design would not immediately reduce that test's coverage. It would still narrow the broader browser skill contract, which currently supports Firefox and WebKit workflows for downstream users.
+
+## Stagehand Strengths
+
+- Mixes deterministic page controls with model-backed actions and structured extraction.
+- Uses `observe()` to plan an action before executing it and can replay the resulting action without another inference call.
+- Supports typed extraction through Zod, Pydantic, or Go schemas.
+- Traverses nested iframes and closed shadow roots through its locator and snapshot implementation.
+- Provides context-level domain allowlists and blocklists.
+- Reports token and inference metrics and can emit OpenTelemetry traces.
+- Runs locally, on Browserbase, or against an existing Chromium CDP endpoint.
+- Uses the MIT license and has an active, substantial open-source community.
+
+These strengths are most relevant when the target page is external, changes frequently, lacks stable selectors, or requires judgement during extraction. They are not advantages for a first-party tutorial flow whose selectors and expected values are controlled by the **Reference Source**.
+
+## Maturity and Reliability Risks
+
+Stagehand v4 was published to npm and PyPI on August 10, 2026, two days before this assessment. It is a substantial cross-language redesign, and the official migration guide describes Python and Go adoption from v3 as a rewrite rather than a rename pass.
+
+Point-in-time signals include:
+
+- The official package registries reported v4.0.0, while the configured Python package index used during this review still reported 3.22.0. Newly published availability must be verified through the same resolver and index used by generated locks and CI.
+- [Issue #2486](https://github.com/browserbase/stagehand/issues/2486) reports a v4 deterministic locator click resolving successfully without changing a React application, while a Playwright locator succeeds on the same element.
+- [Issue #2381](https://github.com/browserbase/stagehand/issues/2381) requests a public network request and WebSocket interception API.
+- [Issue #1914](https://github.com/browserbase/stagehand/issues/1914) requests local browser video recording for test diagnostics.
+- GitHub Releases did not provide a Stagehand v4 release entry at review time even though package registries published v4.0.0.
+
+These do not make Stagehand unsuitable for experimentation. They do make a newly published major version a poor foundation for replacing deterministic project evidence.
+
+## Cost, Privacy, and Operational Boundaries
+
+Deterministic local Stagehand controls do not require Browserbase usage, but model-backed actions require an LLM provider or callback. Browserbase-hosted sessions add browser-hour and model-token costs. Managed action caching and the Model Gateway work only with Browserbase-hosted browsers.
+
+An evaluation must preserve these boundaries:
+
+- Use context domain policy to constrain a browser agent's network destinations.
+- Keep inference-backed actions out of deterministic CI pass or fail criteria.
+- Disable server-side caching for calls containing credentials; Stagehand documents that variable values travel to its cache service when caching is enabled.
+- Disable or sanitize debug logging around secrets and private page content.
+- Isolate local browser execution because Stagehand enables extension-debugging and permissive remote-origin Chrome flags for its runtime.
+- Measure model tokens, browser time, failed actions, and manual recovery rather than relying on vendor performance claims.
+
+The Stagehand site advertises faster execution and lower token use than Playwright-based agent control. Those are Browserbase-authored benchmarks, not evidence about repo-familiar's deterministic test or current `playwright-cli` workflow.
+
+## Bounded Pilot Path
+
+If a concrete **Downstream Repository** need emerges, evaluate Stagehand without replacing existing assets:
+
+1. Choose one non-destructive, selector-hostile third-party workflow where `act`, `observe`, or `extract` could provide measurable value.
+2. Keep the current Playwright path as the control and run both approaches against the same task corpus.
+3. Start with local Chromium and an explicit model configuration; do not require Browserbase for the first comparison.
+4. Add a domain allowlist, keep secrets out of prompts and logs, and disable caching for credential-bearing actions.
+5. Measure task success, repeatability, latency, token cost, browser cost, recovery effort, and maintenance after controlled page changes.
+6. Keep deterministic assertions in ordinary test code even when Stagehand discovers or extracts the preceding state.
+7. Represent a successful experiment as an opt-in Tool Profile or separate skill only after defining installation, verification, security, and cost guidance.
+
+## Reconsideration Criteria
+
+Reconsider Stagehand as a broader browser-tooling option only after:
+
+1. A post-v4.0 release has demonstrated stable Python installation through the project's normal resolver and lock workflow.
+2. Deterministic locator behavior passes representative first-party and third-party regression cases, including the interaction class in issue #2486.
+3. Network interception or an equivalent request-mocking contract is available for workflows that currently depend on Playwright routing.
+4. Local diagnostics provide sufficient trace or video evidence, or a Browserbase dependency is explicitly accepted.
+5. A maintained CLI or MCP adapter provides a credible replacement for the current agent-operated command surface.
+6. A bounded pilot demonstrates better reliability or lower maintenance than Playwright on a real selector-hostile workflow.
+7. Cost, credential handling, logging, caching, data retention, and cloud dependency are documented for downstream users.
+
+Until then, continue routing deterministic tests and accessibility checks through Playwright and axe-compatible tools. Evaluate Stagehand only where model-assisted browser understanding is itself the requirement.
+
+## Review Snapshot
+
+| Field | Reviewed state |
+|---|---|
+| Stagehand version | 4.0.0 |
+| v4 package publication | August 10, 2026 on npm and PyPI |
+| Repository | `browserbase/stagehand` |
+| Repository activity | 23,915 stars, 1,646 forks, 84 open issues; latest push August 11, 2026 |
+| License | MIT in the repository and npm metadata; PyPI metadata omitted the license value |
+| Supported runtimes | Node.js 22.18+, Python 3.11+, and Go 1.26+ |
+| Browser runtime | Chromium-based browsers over CDP |
+| Browserbase plans | Free allowance, then paid Developer, Startup, and custom Scale plans; model tokens billed separately |
+| Primary sources | [Introduction](https://docs.stagehand.dev/v4/first-steps/introduction), [installation](https://docs.stagehand.dev/v4/first-steps/installation), [browser configuration](https://docs.stagehand.dev/v4/configuration/browser), [page API](https://docs.stagehand.dev/v4/reference/page), [locator API](https://docs.stagehand.dev/v4/reference/locator), [v3 to v4 migration](https://docs.stagehand.dev/v4/migrations/v3), and [Browserbase pricing](https://www.browserbase.com/pricing) |

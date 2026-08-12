@@ -7,6 +7,7 @@ Research pages are point-in-time evaluations of candidate inputs. Revalidate ups
 
 | Assessment | Date | Current recommendation |
 |---|---|---|
+| [Stagehand and Playwright](./assessments/stagehand-playwright.qmd) | 2026-08-12 | Retain Playwright; consider Stagehand only as an opt-in complement for bounded model-assisted browser workflows. |
 | [Diagram Design](./assessments/diagram-design.qmd) | 2026-08-10 | Keep under consideration as opt-in external Design Profile guidance; do not vendor yet. |
 | [Ix Code Map](./assessments/ix-code-map.qmd) | 2026-08-10 | Keep as a research candidate; do not add as a dependency, default profile, or vendored skill. |
 | [Writing Style Skills](./assessments/writing-style-skills.qmd) | 2026-08-03 | Consider a reviewed SimpleEnglish adaptation; defer Economist Style pending evaluation and provenance review. |

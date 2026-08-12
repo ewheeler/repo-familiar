@@ -28,6 +28,7 @@ project:
     - project-record/adr/0012-python-first-greenfield-existing-repository-boundary.md
     - project-record/python-first-project-plan.qmd
     - project-record/research.qmd
+    - project-record/assessments/stagehand-playwright.qmd
     - project-record/assessments/diagram-design.qmd
     - project-record/assessments/ix-code-map.qmd
     - project-record/assessments/writing-style-skills.qmd
@@ -92,6 +93,7 @@ website:
           - project-record/research.qmd
           - section: Assessments
             contents:
+              - project-record/assessments/stagehand-playwright.qmd
               - project-record/assessments/diagram-design.qmd
               - project-record/assessments/ix-code-map.qmd
               - project-record/assessments/writing-style-skills.qmd
