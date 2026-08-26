@@ -38,6 +38,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("python-guardrails", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("preferred-python-stack", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("sandbox-micropython-wasm", profiles.list_names(profiles.SANDBOX_PROFILES))
+        self.assertIn("sandbox-microvm", profiles.list_names(profiles.SANDBOX_PROFILES))
         self.assertIn("flint-chart-author", profiles.list_names(profiles.SKILLS))
         self.assertIn("playwright-cli", profiles.list_names(profiles.SKILLS))
         self.assertIn("ponytail", profiles.list_names(profiles.SKILLS))
@@ -98,6 +99,10 @@ class ProfileRegistryTests(unittest.TestCase):
             ),
         )
         self.assertIn("sandbox-micropython-wasm", profiles.render_advisory_profiles(profiles.SANDBOX_PROFILES, ("sandbox-micropython-wasm",)))
+        microvm = profiles.render_advisory_profiles(profiles.SANDBOX_PROFILES, ("sandbox-microvm",))
+        self.assertIn("guest-kernel and hypervisor boundary", microvm)
+        self.assertIn("smolvm --version", microvm)
+        self.assertIn("read-only source mount", microvm)
         self.assertIn("sops-age", profiles.render_advisory_profiles(profiles.SECRETS_PROFILES, ("sops-age",)))
 
     def test_generated_profile_files_match_registry_renderers(self) -> None:

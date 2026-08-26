@@ -533,6 +533,27 @@ SANDBOX_PROFILES = {
             "Remember MicroPython is not CPython and lacks some modules such as hashlib.sha256 and zlib in the current bundled artifact",
         ],
     },
+    "sandbox-microvm": {
+        "tool": "smolvm",
+        "purpose": "run untrusted or model-generated Linux workloads behind a guest-kernel and hypervisor boundary",
+        "setup": [
+            "Install an explicitly reviewed current `smolvm` release outside repo-familiar and verify its published SHA-256 checksum",
+            "Confirm the host meets the current virtualization and architecture requirements before relying on this profile",
+        ],
+        "verify": [
+            "smolvm --version",
+            "smolvm machine run --image alpine:3.20 -- sh -c \"if wget -q -T 5 -O /dev/null https://example.com; then exit 1; fi\"",
+            "In a disposable directory, prove that a read-only source mount rejects writes while a separate output mount accepts them",
+        ],
+        "guidance": [
+            "Keep guest networking disabled by default; when egress is required, allow only explicit hosts or CIDRs and test both allowed and blocked destinations",
+            "Expose only required source paths read-only and use a separate writable output directory; do not mount home directories, credentials, shared temporary directories, or container runtime sockets",
+            "Do not inject secrets or forward an SSH agent to untrusted workloads",
+            "Set conservative CPU, memory, disk, wall-clock, and output limits, and delete machines on success, failure, timeout, and interruption",
+            "Add host-account separation or operating-system confinement when hostile local co-tenants are in scope; standalone smolvm is not a multi-user control plane",
+            "Re-run network, mount, resource, and cleanup checks after every upgrade because only the latest release is supported",
+        ],
+    },
     "sandbox-agent-runtime": {
         "tool": "OpenShell",
         "purpose": "policy-governed runtime for longer autonomous agent sessions",

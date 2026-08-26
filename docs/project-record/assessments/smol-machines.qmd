@@ -1,0 +1,149 @@
+---
+title: "Smol Machines Sandbox Assessment"
+description: "Assessment of smolvm and related Smol Machines surfaces for optional sandbox guidance."
+date: "2026-08-26"
+doc-type: explanation
+---
+
+This page assesses [Smol Machines](https://smolmachines.com/) for possible inclusion in the repo-familiar **Reference Source**. The review separates the open-source `smolvm` engine and CLI, the `smol` SDK and CLI, and the hosted smol cloud service because they have different maturity, installation, security, privacy, and cost boundaries.
+
+## Recommendation
+
+| Potential value | Adoption readiness | Recommendation |
+|---:|---:|---|
+| 8/10 | 5/10 | Keep local `smolvm` available as an experimental, opt-in `sandbox-microvm` Advisory Profile. Require target-host boundary tests before use; do not make it a default recommendation, replace lighter sandboxes, or include the alpha SDK or beta cloud service in this profile. |
+
+`smolvm` fills a real gap between lightweight process or language sandboxes and policy-governed agent runtimes. It runs Linux workloads with a separate guest kernel behind the host hypervisor, disables guest networking by default, supports explicit egress allowlists and mounts, and provides ephemeral, persistent, packed, and forked machine lifecycles.
+
+The implemented integration remains non-installing guidance, consistent with the **Advisory Profile** boundary. `repo-familiar` does not add a runtime dependency, execute the upstream installer, provision cloud credentials, or infer that an ordinary Python, frontend, test, or container repository needs a hardware VM boundary.
+
+## Product Fit
+
+### Useful capabilities
+
+- Runs OCI images as microVM workloads without requiring a Docker daemon.
+- Gives each workload its own Linux kernel through libkrun and the host virtualization interface.
+- Keeps guest networking off by default and supports hostname and CIDR egress allowlists when networking is enabled.
+- Supports read-only host mounts, dedicated writable output mounts, explicit CPU and memory sizing, persistent workspaces, and ephemeral cleanup.
+- Packs prepared disk state into a `.smolmachine` artifact and can fork a warm machine using copy-on-write memory and disk.
+- Provides local CLI releases for macOS on Apple Silicon, Linux x86_64 and aarch64 with KVM, and native Windows x86_64 with Windows Hypervisor Platform.
+- Uses Apache-2.0 for both the engine and SDK repositories.
+
+These capabilities are most useful for untrusted or model-generated Linux code, destructive package or code-generation experiments, persistent agent workspaces, and high fan-out tasks that justify a prepared machine. A container remains simpler when code is trusted and dependency packaging is the only requirement.
+
+### Relationship to current profiles
+
+The proposed profile would complement the existing sandbox catalog:
+
+| Profile role | Appropriate boundary |
+|---|---|
+| `sandbox-light` | Lower-overhead constrained execution with explicit write and network policy. |
+| `sandbox-micropython-wasm` | Small Python-like snippets that fit the MicroPython and WASI compatibility boundary. |
+| Proposed `sandbox-microvm` | General Linux workloads that require a guest-kernel and hypervisor boundary. |
+| `sandbox-agent-runtime` | Longer autonomous sessions that require declarative filesystem, network, process, inference, and credential policy. |
+
+The microVM profile should not replace lighter options merely because a repository contains tests, Python, frontend code, or a container file. Those signals do not establish that the workload is untrusted or that VM startup, storage, and platform requirements are justified.
+
+## Security Boundary
+
+The core isolation claim is credible but bounded. Each workload gets a guest kernel and hardware-virtualized VM boundary. The invoking host account, host OS, hypervisor backend, libkrun, smolvm, and VMM process remain in the trusted computing base.
+
+Every forwarded capability expands workload authority:
+
+- A host volume exposes its contents with the selected permissions; writable mounts can modify host files and may create root-owned files.
+- Secret injection places plaintext inside the guest, where guest code can read it.
+- SSH-agent forwarding keeps private keys on the host but lets the guest request signatures while connected.
+- Networking, published ports, Docker sockets, and host services expand the reachable attack surface.
+- The standalone `smolvm serve` API has no authentication and must remain on loopback or behind authenticated transport and host controls.
+
+Standalone `smolvm` is not a hardened multi-user fleet control plane. Its own documentation recommends separate host service accounts or stronger operating-system confinement for hostile local co-tenants. GPU remoting also remains a process-level shared-GPU boundary rather than hardware tenant isolation.
+
+A concrete network-policy regression reinforces the need for executable verification. [Issue #966](https://github.com/smol-machines/smolvm/issues/966) showed that cached OCI images bypassed both disabled networking and egress allowlists through v1.8.3. The project reported a fix in v1.9.0. A durable profile should not encode that historical version as a permanent minimum; it should require the currently supported release and repeat the no-network and allowlist tests after every upgrade.
+
+## Maturity and Maintenance
+
+The project is active but young and volatile:
+
+- The `smolvm` repository was created in December 2025 and had 5,731 stars and 271 forks at review time.
+- v1.13.0 was published on August 26, 2026. The release list showed 29 version tags from v1.6.6 on July 17 through v1.13.0, indicating both active maintenance and a rapidly changing contract.
+- The security policy supports only the latest published release.
+- One contributor accounted for 1,203 recorded commits, while the next contributor accounted for 72. Community breadth exists, but maintenance remains concentrated.
+- The public `smol` Python package and repository describe the SDK as alpha. The hosted service terms describe smol cloud as beta without a formal uptime SLA.
+
+CI includes formatting, linting, unit tests, RustSec auditing, secret invariants, cross-platform builds, native Windows filesystem tests, libkrun provenance and ABI checks, and SDK compatibility compilation. Full VM integration tests require KVM or Hypervisor.framework and are documented as running outside hosted CI. No independent security audit was found during this review.
+
+The rapid response to reported defects is positive. It does not yet establish a stable long-term sandbox contract, especially when only the latest release receives support.
+
+## Supply Chain and Installation
+
+Release archives include SHA-256 checksums, and current GitHub release metadata includes asset digests. Important gaps remain:
+
+- Release archives are not signed and do not include provenance attestations.
+- The documented installer may continue when it cannot download the checksum file.
+- The common `curl | bash` path executes a moving network-delivered installer and should not appear in security-sensitive generated guidance.
+- Current Python wheels are alpha, platform-specific binary packages of roughly 43-54 MiB with no source distribution, signature, or published provenance record.
+- The npm package publishes provenance, but its current unpacked size is about 401 MiB and it adds an SDK surface the initial CLI profile does not need.
+
+Use a package manager or download an explicit reviewed release, verify its published checksum before execution, and record the selected version outside Bootstrap Metadata if the machine owner needs an operational inventory. The **Project Generator** should provide guidance only; workstation installation and upgrades remain user-owned.
+
+## Platform and Documentation Risks
+
+Local support depends on host virtualization and matching guest architecture. The local SDK supports fewer targets than the standalone CLI: current wheels cover Apple Silicon and glibc 2.34 or newer Linux, but not native Windows, Intel macOS, musl Linux, or older glibc systems. Windows lacks some fork, snapshot, and GPU capabilities.
+
+Public documentation was not internally current at review time:
+
+- `llms.txt` and the Machine API page described v1.7.1 as current while GitHub published `smolvm` v1.13.0 and `smol` v1.12.0.
+- The supported-platform page said Intel macOS had no published release, while the FAQ described Intel macOS as supported but untested.
+
+Generated guidance should therefore point users to the current release, security policy, platform matrix, and installed `--help` output rather than copying a current version number or broad platform claim into a long-lived profile.
+
+## Cloud Boundary
+
+smol cloud can be useful when a **Downstream Repository** needs managed persistent machines or fleet capacity, but it should not be folded into the first local profile:
+
+- It requires an account, API credential, billing policy, and external data processor review.
+- The service is beta and has no formal SLA.
+- Machine metadata, usage, API logs, lifecycle logs, and IP addresses are processed by the service. Infrastructure and processors are primarily in US regions.
+- The terms exclude protected health information and workloads whose failure could cause severe physical harm.
+- Usage is metered for running machines, CPU, memory, disk, and egress; stopped machines continue to incur disk charges until deleted.
+
+If cloud demand emerges, assess it as a separate Advisory Profile with explicit credential, privacy, retention, location, billing, TTL, cleanup, and service-availability guidance.
+
+## Use Conditions
+
+Before selecting `sandbox-microvm` for real workloads:
+
+1. Select an explicit current release and verify its SHA-256 checksum without using `curl | bash`.
+2. Run an ephemeral no-network test and prove that DNS and outbound connections fail.
+3. Enable one egress allowlist entry and prove that the allowed destination succeeds while a second destination fails.
+4. Mount source read-only, mount a separate output directory writable, and prove that the guest cannot modify source.
+5. Set conservative CPU, memory, disk, wall-clock, and output limits, then verify cleanup on success, failure, timeout, and interruption.
+6. Confirm that no host credentials, SSH agent, Docker socket, home directory, repository root, or shared temporary directory are exposed to untrusted code.
+7. Test on at least Apple Silicon and Linux/KVM before broadening platform claims.
+8. Re-run the boundary checks after every upgrade because only the latest release is supported and security behavior has changed between recent releases.
+
+## Implemented Integration Boundary
+
+- `SANDBOX_PROFILES` in `src/repo_familiar/profiles.py` provides the experimental `sandbox-microvm` profile with `smolvm` as the external tool.
+- Setup remains non-installing and directs users to an explicitly reviewed, checksum-verified release.
+- Verification and guidance cover deny-by-default networking, read-only source mounts, dedicated writable outputs, resource and time limits, credential exclusion, host confinement, upgrade retesting, and unconditional cleanup.
+- The root dogfood `.agents/sandbox.yml`, Bootstrap Metadata baselines, and profile tests include the profile.
+- `recommended_sandbox_profiles()` remains unchanged. A later automatic recommendation should require explicit user intent such as untrusted-code execution or hardware isolation, not generic repository signals.
+- The `smol` SDK and smol cloud remain outside this profile. Assess them separately when an application needs embedded orchestration or managed capacity.
+
+## Review Snapshot
+
+| Field | Reviewed state |
+|---|---|
+| Review date | August 26, 2026 |
+| Local engine | `smol-machines/smolvm` v1.13.0 |
+| SDK and orchestration CLI | `smol-machines/smol` v1.12.0 |
+| License | Apache-2.0 for both public repositories |
+| Local isolation | libkrun microVM with separate Linux guest kernel |
+| Default guest network | Disabled |
+| Hosted service | Beta, usage-based, no formal SLA |
+| Release integrity | SHA-256 checksums and GitHub asset digests; no signatures or release provenance attestations |
+| Support policy | Latest release only |
+| Primary sources | [Overview](https://smolmachines.com/docs/), [isolation](https://smolmachines.com/docs/introduction/concepts/isolation-networking-credentials), [agent sandbox guide](https://smolmachines.com/docs/guides/agent-sandboxes-ci), [self-hosting](https://smolmachines.com/docs/local/self-hosting), [smolvm repository](https://github.com/smol-machines/smolvm), [SDK repository](https://github.com/smol-machines/smol), [pricing](https://smolmachines.com/pricing), [privacy](https://smolmachines.com/legal/privacy), and [terms](https://smolmachines.com/legal/terms) |
+
+These findings are point-in-time evidence. Recheck releases, security advisories, supported platforms, installer verification, CI coverage, cloud terms, and pricing before implementation.
