@@ -28,6 +28,7 @@ project:
     - project-record/adr/0012-python-first-greenfield-existing-repository-boundary.md
     - project-record/python-first-project-plan.qmd
     - project-record/research.qmd
+    - project-record/assessments/funes-cq.qmd
     - project-record/assessments/smol-machines.qmd
     - project-record/assessments/stagehand-playwright.qmd
     - project-record/assessments/diagram-design.qmd
@@ -94,6 +95,7 @@ website:
           - project-record/research.qmd
           - section: Assessments
             contents:
+              - project-record/assessments/funes-cq.qmd
               - project-record/assessments/smol-machines.qmd
               - project-record/assessments/stagehand-playwright.qmd
               - project-record/assessments/diagram-design.qmd

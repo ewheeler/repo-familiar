@@ -1,0 +1,147 @@
+---
+title: "Funes and cq Assessment"
+description: "Assessment of Hugging Face Funes as a possible replacement or complement for the cq knowledge commons workflow."
+date: "2026-09-07"
+doc-type: explanation
+---
+
+This page assesses [Funes](https://github.com/huggingface/funes) as a possible replacement or complement for the existing `cq` knowledge commons workflow in the repo-familiar **Reference Source**. The comparison separates curated reusable guidance from raw transcript recall because they solve different memory problems and have different privacy, freshness, and operating-risk profiles.
+
+## Recommendation
+
+| Potential value | Replacement readiness | Recommendation |
+|---:|---:|---|
+| 7/10 for auditable session recall | 1/10 | Keep `cq` as the mandatory curated knowledge workflow. Consider Funes only as an opt-in, local-first transcript and provenance recall layer when forgotten session history becomes a recurring cost. Do not add it as a default profile, vendored skill, or broad hook installation at this time. |
+
+`cq` and Funes have orthogonal roles. `cq` stores generalized Knowledge Units with action guidance, tags, confidence, confirmation, and flags. Funes indexes verbatim coding-agent session passages and returns ranked chunks with exact session and turn provenance. Replacing `cq` with Funes would remove the review, sanitation, and lifecycle semantics that make guidance reusable across projects.
+
+If Funes is piloted, keep it local-only first. Use it to answer questions such as "what did a past session decide?" or "where did this rationale come from?". Continue using `cq` for "what known gotchas should guide this task?" and for any reusable lesson discovered during work.
+
+## Current `cq` Responsibilities
+
+The canonical `cq` skill under `src/repo_familiar/templates/skills/cq/` defines a shared knowledge commons for agents. It provides five MCP operations:
+
+| Operation | Responsibility |
+|---|---|
+| `query` | Search existing guidance before acting. |
+| `propose` | Submit a new generalized Knowledge Unit after user approval. |
+| `confirm` | Increase confidence when retrieved guidance proves correct. |
+| `flag` | Mark stale, incorrect, or duplicate knowledge. |
+| `status` | Inspect the store on demand. |
+
+The load-bearing properties are not just retrieval. The workflow requires domain tags, a reusable summary/detail/action shape, human approval before proposal, VIBE√ privacy and safety review, confidence as a social signal, and explicit stale/incorrect/duplicate flags. Those features make `cq` suitable for guidance that should outlive a single session or repository.
+
+## Funes Responsibilities
+
+Funes is a Rust memory tool for coding-agent sessions. Its documented pipeline is deterministic: parse source transcripts, chunk turns and blocks, embed with a pinned local model, store the derived memory in Lance, and retrieve with hybrid vector plus BM25 search, cross-encoder reranking, recency weighting, and neighboring chunks.
+
+The Funes MCP server is read-oriented. It exposes:
+
+| Tool | Responsibility |
+|---|---|
+| `recall` | Retrieve ranked passages from local or remote memory. |
+| `get` | Reassemble a recalled hit and surrounding turns by session and turn coordinates. |
+| `status` | Inspect memory and synchronization state. |
+
+Funes can index Claude Code, Codex, pi, and Hermes sessions into one memory. Its `add` command installs read tools plus per-turn indexing hooks, and with a bound Hugging Face dataset memory it can publish at session boundaries. The optional `ask` command borrows Claude or Codex for one grounded answer, but the recalled passages are sent to that agent provider.
+
+## Capability Comparison
+
+| Area | `cq` fit | Funes fit |
+|---|---|---|
+| Primary design | Curated knowledge commons for reusable agent guidance | Verbatim recall over past coding-agent sessions |
+| Memory unit | Human-approved Knowledge Unit: summary, detail, action, tags | Raw transcript chunk with session and turn provenance |
+| Ingest | Explicit proposal after an agent/user identifies a generalizable lesson | Automatic or manual indexing of session transcripts |
+| Mutation model | Propose, confirm, flag; confidence changes over time | Append-only derived memory; old passages remain and recency influences recall |
+| Provenance | Knowledge Unit metadata and social confirmation | Exact source session and turn coordinates, plus `get` drill-down |
+| Best question | "What known pitfall or rule should guide this work?" | "What did we say, try, or decide before?" |
+| Privacy surface | Small curated facts after VIBE√ review | Raw prompts, assistant replies, tool calls/results, and possibly thinking blocks |
+| Sharing model | Shared commons of generalized guidance | Optional Hugging Face dataset containing raw recallable passages |
+| Agent behavior | Mandatory query/propose/confirm/flag protocol | Optional pulled recall; broad hooks can keep memory fresh automatically |
+| Replacement value | Already owns durable guidance lifecycle | Does not provide proposal approval, confidence, flags, or generalized action records |
+
+The tools can compose, but the authority order must be explicit: use `cq` first for reusable guidance; use Funes only when the answer depends on prior session history or exact provenance; verify either source against current repository state, documentation, and tests before acting.
+
+## Risks and Boundaries
+
+### Raw-session sensitivity
+
+Funes stores and retrieves raw session content. That can include prompts, code review context, tool calls, tool results, local paths, private repository details, and model thinking when indexed. Funes documents best-effort index-time credential redaction and a stricter TruffleHog-based push/scrub gate, but the privacy profile remains materially broader than `cq` because the intended stored unit is the original passage rather than a sanitized generalized lesson.
+
+Do not bind or publish a Funes memory until the team accepts that raw-agent-session boundary. Prefer local recall for evaluation. Avoid `funes ask` for sensitive memories unless the recalled passages may be sent to the configured Claude or Codex provider.
+
+### Branch and worktree staleness
+
+Funes currently records enough context to identify the same repository, but not necessarily the branch, commit, or worktree state that made a remembered claim true. [Issue #141](https://github.com/huggingface/funes/issues/141) explicitly notes that branch/worktree relevance needs more testing and may require the recalling agent to inspect git metadata captured in the session.
+
+Any pilot instruction must require the reader to treat Funes hits as historical evidence, not current truth. Current source, tests, docs, and explicit user reports override recalled passages.
+
+### Per-turn hooks and indexing cost
+
+Funes `add` installs automation for supported agents. The documented hook model indexes after each completed turn and may publish at session boundaries when a memory is bound. Indexing is incremental and budgeted, but it still adds user-wide integration files, hook logs, local model/cache state, Lance memory growth, and another moving part in every agent loop.
+
+Do not enable broad hooks by default. A pilot should start with an explicit local memory and manual or narrowly scoped indexing before deciding whether automatic per-turn freshness is worth the operational surface.
+
+### Overlapping agent query surfaces
+
+If both `cq` and Funes are installed, agents have two memory-like tools. Without a routing rule they may duplicate lookups, treat raw history as guidance, or turn a historical passage into a new rule without review.
+
+Use this routing rule:
+
+```text
+cq first for reusable external or project guidance.
+Funes only when the question depends on prior session history or exact provenance.
+Current repository state overrides both.
+If Funes reveals a reusable non-sensitive lesson, propose it to cq after approval.
+```
+
+### Remote publication and custody
+
+Funes can publish a memory to a Hugging Face dataset repository. Funes-created repositories are private by default, but an existing repository keeps its visibility and any publication exports raw recallable passages. Push requires a Hugging Face token and TruffleHog for the fail-closed secret gate. A published memory is append-only; selection happens before push and is not a remote undo mechanism.
+
+Do not treat Funes publication as equivalent to `cq` synchronization. `cq` synchronization distributes curated knowledge. Funes publication distributes indexed session history.
+
+## Bounded Pilot Path
+
+If forgotten session history becomes a recurring cost, evaluate Funes without changing repo-familiar defaults:
+
+1. Install or run Funes in a local-only configuration; do not bind a remote memory.
+2. Index a small, explicit set of non-sensitive sessions or use a separate `FUNES_HOME` for evaluation.
+3. Test recall on concrete questions where `cq` is not enough: prior rationale, abandoned approaches, or exact source of a decision.
+4. Record whether hits are relevant, whether `get` supplies enough evidence, and whether branch/worktree freshness is easy to establish.
+5. Check local storage, hook logs, indexing latency, cache growth, and any false-positive or redaction issues before enabling automation.
+6. If automatic freshness is justified, enable hooks for one harness first and keep remote publication disabled.
+7. Convert only durable, sanitized, reusable lessons from Funes history into `cq` Knowledge Units through the normal approval path.
+
+A successful pilot could justify an opt-in Memory or Advisory Profile that documents local installation, verification, privacy boundaries, and routing rules. It should not install workstation tools, configure global MCP servers, or publish memories during repository generation.
+
+## Reconsideration Criteria
+
+Reconsider Funes as a generated opt-in profile only after:
+
+1. A local pilot shows repeated recall value that `cq` cannot provide.
+2. Privacy review accepts which block types are indexed, whether thinking is included, and what must never be published.
+3. Branch, commit, or worktree freshness guidance is concrete enough for agents to apply consistently.
+4. Hook installation and removal are verified for the intended harnesses without clobbering user-owned configuration.
+5. Storage and indexing overhead are measured on representative sessions.
+6. Secret scanning behavior is verified locally, including what happens when TruffleHog is missing or flags content.
+7. Documentation makes the `cq` versus Funes routing rule unambiguous.
+
+Until then, keep `cq` as the mandatory knowledge-commons workflow and treat Funes as a research candidate for local, provenance-rich transcript recall.
+
+## Review Snapshot
+
+| Field | Reviewed state |
+|---|---|
+| Funes version in `Cargo.toml` | `1.3.0+dev` |
+| Repository | [`huggingface/funes`](https://github.com/huggingface/funes) |
+| Repository activity | 228 stars, 11 forks; latest repository update September 7, 2026 |
+| License | Apache-2.0 |
+| Primary language | Rust |
+| Storage | Local Lance dataset under `$FUNES_HOME`; optional Hugging Face dataset memory |
+| Supported harnesses | Claude Code, Codex, pi, and Hermes |
+| MCP tools | `recall`, `get`, and `status` |
+| Automation | Per-turn local indexing; optional session-boundary publishing when bound to a remote memory |
+| Security controls | Best-effort index-time credential redaction; TruffleHog-required push/scrub gate for publication |
+| Notable upstream signals | PR #123 removed Funes curation; issue #141 tracks worktree/branch staleness concerns; PR #137 addresses scanner attribution edge cases |
+| Primary sources | [README](https://github.com/huggingface/funes/blob/main/README.md), [Why Funes](https://github.com/huggingface/funes/blob/main/docs/RATIONALE.md), [Adding and removing](https://github.com/huggingface/funes/blob/main/docs/add.md), [Recalling](https://github.com/huggingface/funes/blob/main/docs/recall.md), [Publishing and sharing](https://github.com/huggingface/funes/blob/main/docs/push.md), [Automating Funes](https://github.com/huggingface/funes/blob/main/docs/automation.md), [Building the memory](https://github.com/huggingface/funes/blob/main/docs/index.md), and [Asking](https://github.com/huggingface/funes/blob/main/docs/ask.md) |
