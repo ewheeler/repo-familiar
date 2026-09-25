@@ -13,6 +13,7 @@ page-role: landing
 - Adopting defaults in existing work? Use [Bootstrap an Existing Repository](./how-to/bootstrap-existing-repository.qmd).
 - Looking up exact behavior? Start with the [CLI and Metadata Reference](./reference/cli-and-metadata.qmd) or [Bootstrap Lifecycle](./reference/bootstrap-lifecycle.qmd).
 - Trying to understand the design? Read [Architecture](./explanation/architecture.qmd) and the [Documentation System](./explanation/documentation-system.qmd).
+- Working with coding agents? Read [Agentic Software Engineering Practices](./explanation/agentic-engineering-practices.qmd).
 
 ## Project Authorities
 

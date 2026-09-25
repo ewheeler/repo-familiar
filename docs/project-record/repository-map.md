@@ -121,6 +121,7 @@ Prefer focused tests at the owning seam. Run the full suite when shared planning
 - `.repo-familiar/bootstrap.yml` records bootstrap provenance; it is metadata, not agent runtime configuration.
 - `examples/basic-agentic-project/` is a generated snapshot and should be regenerated when default output changes.
 - `docs/_site/`, `docs/.quarto/`, Python caches, and package build metadata are reproducible outputs, not implementation authority.
+- `.github/workflows/docs-pages.yml` owns the push-to-`main` Quarto render and GitHub Pages deployment of the generated documentation site.
 
 ## Implemented Versus Proposed
 

@@ -1,0 +1,118 @@
+---
+title: "Agentic Software Engineering Practices"
+doc-type: explanation
+---
+
+Agentic software engineering works best when an agent can understand the intended outcome, make a bounded change, observe whether it works, and leave evidence another person or agent can inspect. Better tools and more agents can shorten that loop. They cannot replace a clear requirement, a meaningful test, or direct observation of the product.
+
+These are defaults, not a fixed sequence for every change. A typo needs less planning than a new public interface. The standard of evidence should still match the claim being made. The running example below—adding a category filter to a data-backed web report—is **hypothetical**, not an implemented repo-familiar feature.
+
+## 1. Start With A Verifiable Outcome {#start-with-a-verifiable-outcome}
+
+Describe the behavior someone should be able to observe, not just the files an agent should edit. Name the relevant inputs, expected results, constraints, and failure behavior. Before implementation, identify how the agent will run the changed path and see the result.
+
+For a web feature, give the agent a runnable application and a browser it can operate. The feedback loop is concrete: start the app; exercise the acceptance path with Playwright or comparable browser tooling; inspect the rendered result and relevant console or network errors; fix discrepancies; repeat. Request human review *after* that loop. For a CLI, API, or batch process, use the equivalent executable path.
+
+**Example.** Given committed synthetic rows `(A, 10)`, `(A, 20)`, and `(B, 5)`, an acceptance criterion could say: “All categories shows count 3 and total 35; selecting A shows count 2 and total 30.” The agent needs a way to start the report, make the selection, and observe those values.
+
+**Further reading:** [Repository Map](../project-record/repository-map.md) for owning code and tests; [QA Test Design](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/qa-test-design/SKILL.md.tmpl) for behavioral cases; [Playwright CLI](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/playwright-cli/SKILL.md.tmpl) for agent-operated browser interaction.
+
+## 2. Use Documentation As Shared, Durable Context
+
+Documentation serves people working in a project and agents arriving in a fresh session. A useful entry point explains what the project means, where authoritative facts live, which decisions constrain a change, and how to check a claimed result. It reduces dependence on a previous agent's conversation history.
+
+Give each kind of fact an owner. Domain language belongs in project context; durable tradeoffs belong in decisions; exact current behavior must agree with source and tests. Tutorials and task guides should show enough commands and expected results to be useful without copying every contract.
+
+Documentation contributes to proof of completeness when it makes claims *reproducible*. A command, known input, expected output, and test covering the same path are stronger evidence than “the feature works.” Documentation can drift: check its claims against current behavior.
+
+**Example.** A report tutorial names the synthetic input, the command to run the report, the expected count and total, and a focused test of that workflow. A fresh agent can follow it to establish a baseline. The existing [reproducible-project tutorial template](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/python-reproducible/docs/tutorials.qmd.tmpl) demonstrates this pattern with a reproduction command, named artifact, exact values, and test.
+
+**Further reading:** [`CONTEXT.md`](https://github.com/ewheeler/repo-familiar/blob/main/CONTEXT.md) on Executable Exemplar Documentation; [Documentation System](./documentation-system.qmd) on page purposes and evidence; [Write Repository Documentation](../how-to/write-documentation.qmd) on authority and verification.
+
+## 3. Carry Reusable Knowledge Across Projects
+
+Project documentation answers “how does this repository work?” Personal or shared memory answers “what have I learned elsewhere that could save this investigation?” A fresh agent should not have to rediscover a library incompatibility, local-environment constraint, or applicable organizational convention each time it encounters one.
+
+A curated memory tool such as `cq` can retain a short, actionable gotcha with the conditions under which it applies. Querying early can save investigation time and context tokens; recording a newly established lesson makes that saving available to later work. Include the affected version or environment, symptom, action, evidence, and a way to verify the lesson now. Confirm useful guidance and flag stale guidance. Confidence or a previous success is not a substitute for checking the current environment.
+
+Choose the audience deliberately. `cq` has a local store and optional synchronization, so a personal or appropriately scoped team store can carry reusable environment and organizational guidance across projects. The canonical proposal workflow calls for reviewed, generalizable guidance and safety checks: do not include credentials, private paths, internal identifiers, or raw transcripts in a broadly shared knowledge unit. Where organization-specific detail is essential, use an authorized private knowledge scope; generalize or redact when sharing beyond it.
+
+**Examples.** After resolving a recurring dependency issue on one OS and architecture, record its symptom, affected version range, prerequisite, and a check for that prerequisite. For organization-wide work, a team-scoped note might record which approved CI image has a required toolchain and how to check its version. In the next project, verify the note against the current image instead of repeating the investigation.
+
+**Further reading:** Canonical [cq skill](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/cq/SKILL.md.tmpl) for query, propose, confirm, and flag; [Funes and cq Assessment](../project-record/assessments/funes-cq.qmd) for curated guidance versus raw session recall.
+
+## 4. Choose A Capable Harness; Keep Project Knowledge Portable
+
+A coding harness determines what an agent can inspect and operate: files, language-server information, debuggers, browser tools, skills, and other agents, depending on the harness and its configuration. Good access makes the feedback loop faster and gives the agent ways to investigate failures rather than guess from prose.
+
+[Oh My Pi](https://github.com/can1357/oh-my-pi) is an example of a coding harness with IDE-integrated tools and subagents. [Paseo](https://paseo.sh/docs/why.md) is an example of an orchestration layer that can supervise agents and manage workspaces around the coding tools they use. This combination may suit a workflow, but the practices here must not require it. Keep enduring instructions, decisions, tests, and documentation in the repository so they survive a change of harness or session.
+
+Give agents the permissions and tools needed for the task, not unrestricted access by default. Machine-level configuration and credentials remain separate from portable project guidance. This Reference Source records Paseo as a selectable harness but does **not** currently offer Oh My Pi as a Project Generator harness option.
+
+**Example.** One agent implements the report filter; another reviews it in an isolated workspace. Both start from the same repository requirements and expected results, regardless of how their sessions were launched.
+
+**Further reading:** The primary [Oh My Pi repository](https://github.com/can1357/oh-my-pi), Paseo's [architecture overview](https://paseo.sh/docs/why.md), and [Profiles and Skills](../reference/profiles-and-skills.qmd) for this project's configuration boundary.
+
+## 5. Sharpen The Plan Before Coding
+
+An agent can implement a plausible interpretation of an underspecified request quickly. Resolve expensive ambiguities first: What is the public behavior? What happens at a boundary? Which existing term or decision applies? What would make the design difficult to change later?
+
+Grilling helps when each question resolves a real branch of the decision tree. Ask one concrete question at a time; inspect the repository rather than asking a person for facts already recorded there. An advisor can challenge a consequential proposal. Differently constrained agents can compare alternatives, provided one owner synthesizes their findings into a single decision. Committees are an optional way to obtain independent perspectives, not a requirement for routine work.
+
+Record durable outcomes in the appropriate place. Update domain terminology when it becomes precise; reserve an architecture decision for a consequential tradeoff a future maintainer would otherwise struggle to understand.
+
+**Example.** Before implementing the filter, settle what “unknown category” means: empty result, validation error, or an option the UI cannot request? That answer changes the contract, tests, and documentation. For a new API, compare a minimal endpoint with a flexible query interface before choosing one.
+
+**Further reading:** Canonical [Grill Me](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/grill-me/SKILL.md.tmpl), [Grill With Docs](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/grill-with-docs/SKILL.md.tmpl), and the [parallel interface-design pattern](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/improve-codebase-architecture/INTERFACE-DESIGN.md.tmpl). That pattern documents differently constrained interface proposals; general-purpose advisor committees are proposed guidance, not an existing repository contract.
+
+## 6. Build In Test-First Vertical Slices
+
+Test-driven development is most useful when a test describes behavior through an interface a consumer uses. Write one failing test, implement just enough to pass it, then take the next slice. This keeps tests responsive to what the previous slice taught you. A test that mirrors the implementation or only asserts that an internal helper was called may pass without protecting the desired result.
+
+Choose cases for distinct behaviors and risks: a positive result, a meaningful boundary, a failure, or a state transition. Once tests pass, refactor without changing their observable contract. Then exercise the actual changed path; a green suite alone does not establish that the user-facing workflow works.
+
+**Example.** First test that the committed input produces count 3 and total 35. Implement that path. Next test that selecting A produces count 2 and total 30. After implementation, run the documented report command or operate the filter in the browser against the same input.
+
+**Further reading:** Canonical [TDD](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/tdd/SKILL.md.tmpl) for vertical red-green cycles; [QA Test Design](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/qa-test-design/SKILL.md.tmpl) for assertions, boundaries, and isolation.
+
+## 7. Delegate Bounded, Independent Work
+
+Subagents help when work can be separated without leaving each agent to invent the shared contract. A useful brief states the task, relevant paths and terminology, constraints, expected output, and how to substantiate findings. Different perspectives are more valuable than duplicate prompts producing several versions of the same answer.
+
+Keep an integration owner. That owner resolves conflicting assumptions, checks changes against the agreed behavior, and verifies the complete result. Parallel agents editing the same unsettled interface can create more integration work than they save.
+
+**Example.** One agent investigates the existing API and documentation; another identifies missing behavioral test cases. Once the contract is settled, implementation has a clear owner. For a design question, instead give agents different constraints—smallest interface, easiest common case, or most flexibility—and compare tradeoffs before implementation.
+
+**Further reading:** Canonical [interface-design briefs](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/improve-codebase-architecture/INTERFACE-DESIGN.md.tmpl) for comparable deliverables; [Repository Map](../project-record/repository-map.md) for locating ownership before delegation.
+
+## 8. Choose Architecture And Dependencies Deliberately
+
+Libraries and frameworks can make good boundaries easier to maintain: validation at an input boundary, a clear data transformation, or a service interface that tests can exercise. They can also introduce layers an agent must traverse to understand a simple change. Prefer a module that hides meaningful complexity behind a small interface over a pass-through abstraction that merely renames it.
+
+Choose a dependency for a present requirement or a documented threshold. Use the project's domain language when naming interfaces and tests, and respect existing architecture decisions. Familiarity with a framework is a reason to evaluate it, not evidence that this project needs it.
+
+**Example.** Put filter validation at the actual request boundary and keep the summary calculation in an inspectable module. Do not add a generic query framework solely to support one known filter. Test the resulting report, not the number of internal layers called.
+
+**Further reading:** [Architecture: Engineering Opinions](./architecture.qmd) on dependency thresholds; the canonical [architecture vocabulary](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/improve-codebase-architecture/LANGUAGE.md.tmpl) on interfaces, depth, seams, and locality.
+
+## 9. Control Context And Skill Load
+
+An agent needs the *relevant* context, not the entire repository at once. Start with the documented owner, then load nearby code, tests, and references as questions arise. A targeted brief lets a subagent work independently without transferring a whole session transcript. A targeted memory lookup can be cheaper than re-investigating a known gotcha, but retrieved guidance still needs verification.
+
+Skills should supply a repeatable process or specialized knowledge the task needs. Broad triggers, overlapping instructions, and large automatically loaded references compete with the immediate goal. Keep detailed references on demand. Activate a browser skill for a web task with a browser feedback loop, not for unrelated backend work.
+
+**Example.** For the report filter, load its contract, implementation, fixture, focused tests, and browser guidance. Do not load every writing, infrastructure, and UI skill because each might conceivably become relevant later.
+
+**Further reading:** Canonical [Write a Skill](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/write-a-skill/SKILL.md.tmpl) on invocation cost and progressive disclosure; [Writing Style Skill Assessment](../project-record/assessments/writing-style-skills.qmd) on context cost and over-activation.
+
+## 10. Review And Prove Completeness
+
+Review the result against the original acceptance criteria, not merely the diff. Give an independent reviewer the agreed behavior, relevant tests, documentation, and recorded observations from the agent's verification. Ask which criteria lack evidence, which boundaries remain untested, and whether the documentation describes what the application actually does.
+
+The reviewer compares [the observations from section 1](#start-with-a-verifiable-outcome) with the expected behavior and test results; the browser procedure belongs there, not here. Resolve discrepancies before requesting human review. Human review remains a separate final judgment, not the first opportunity to discover whether the feature works.
+
+Report evidence precisely. “Focused tests passed” and “the running report showed count 2 and total 30 after selecting A” support different claims. State any behavior that could not be exercised rather than implying it was verified.
+
+**Example.** For the report filter, a reviewer checks the acceptance criteria against the tests, tutorial, and recorded browser result. If the tutorial says selecting A produces total 30 but the observed page shows another value, the change is incomplete even if the tests pass.
+
+**Further reading:** [Documentation as Product Evidence](./documentation-system.qmd); canonical [QA Test Design](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/qa-test-design/SKILL.md.tmpl); the [reproducible-project tutorial template](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/python-reproducible/docs/tutorials.qmd.tmpl).

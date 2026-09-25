@@ -54,3 +54,11 @@ git diff --check
 ```
 
 For navigation or presentation changes, inspect the rendered site at desktop and mobile widths, exercise keyboard navigation and search, and pair automated accessibility checks with manual review.
+
+## 6. Publish The Site
+
+Commit and push to `main` after verification. The [documentation workflow](https://github.com/ewheeler/repo-familiar/blob/main/.github/workflows/docs-pages.yml) renders the complete `docs/_quarto.yml` inventory with Quarto 1.7.30, uploads `docs/_site/`, and deploys the artifact to GitHub Pages. Rendered output stays ignored by Git; do not commit it or publish from a `gh-pages` branch.
+
+In **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions** once. A push to `main` then triggers the workflow. Manual runs from other branches can build but do not deploy. Check the **Publish documentation** workflow's build and deploy jobs, then open <https://ewheeler.github.io/repo-familiar/> and confirm the changed page and its navigation. If a job fails, use its log; a local render alone does not prove deployment.
+
+See [GitHub's custom workflow guide](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) for Pages artifact and permission requirements.

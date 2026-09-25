@@ -13,6 +13,7 @@ project:
     - reference/profiles-and-skills.qmd
     - explanation/architecture.qmd
     - explanation/documentation-system.qmd
+    - explanation/agentic-engineering-practices.qmd
     - project-record/decisions.qmd
     - project-record/adr/0001-project-generator-as-primary-product.md
     - project-record/adr/0002-vendor-generated-assets-by-default.md
@@ -74,6 +75,7 @@ website:
         contents:
           - explanation/architecture.qmd
           - explanation/documentation-system.qmd
+          - explanation/agentic-engineering-practices.qmd
       - section: Project Record
         contents:
           - project-record/decisions.qmd
