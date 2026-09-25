@@ -23,6 +23,15 @@ Documentation serves people working in a project and agents arriving in a fresh 
 
 Give each kind of fact an owner. Domain language belongs in project context; durable tradeoffs belong in decisions; exact current behavior must agree with source and tests. Tutorials and task guides should show enough commands and expected results to be useful without copying every contract.
 
+Use the [Divio documentation system](./documentation-system.qmd) to give each page one dominant reader purpose. For the hypothetical report feature:
+
+- **Tutorial (learn by doing):** teach a newcomer to produce a known result from the sample input.
+- **How-to guide (accomplish a task):** help an informed reader filter a report and verify the result.
+- **Reference (look up exact facts):** state the filter options, outputs, and error contract.
+- **Explanation (understand rationale):** show why the filter is validated at its chosen boundary and what tradeoffs shaped that decision.
+
+Choose the type by the reader's need and link between types instead of making one page serve all four purposes. A Project Record groups plans, ADRs, research, and routing for maintainers; it is a collection, not a fifth documentation type. Each record still has one of the four reader purposes.
+
 Documentation contributes to proof of completeness when it makes claims *reproducible*. A command, known input, expected output, and test covering the same path are stronger evidence than “the feature works.” Documentation can drift: check its claims against current behavior.
 
 **Example.** A report tutorial names the synthetic input, the command to run the report, the expected count and total, and a focused test of that workflow. A fresh agent can follow it to establish a baseline. The existing [reproducible-project tutorial template](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/python-reproducible/docs/tutorials.qmd.tmpl) demonstrates this pattern with a reproduction command, named artifact, exact values, and test.
@@ -91,9 +100,15 @@ Libraries and frameworks can make good boundaries easier to maintain: validation
 
 Choose a dependency for a present requirement or a documented threshold. Use the project's domain language when naming interfaces and tests, and respect existing architecture decisions. Familiarity with a framework is a reason to evaluate it, not evidence that this project needs it.
 
+Some tools make the shape of a system easier to inspect when the problem warrants them:
+
+- **Hamilton:** In a graph-shaped analysis pipeline, function names become node names and parameter names declare dependencies. With visualization support installed, `display_all_functions()` can export the code-derived DAG as `dag.png`. The image gives a reviewer a quick view of dataflow, naming, and whether the agent's functions are too fragmented or hide too much behind one node. It is an architecture discussion aid, not a quality score.
+- **Banks:** When many prompts need shared structure or versioning, store reusable templates in a prompt registry instead of copying long prompt strings between call sites. Rendering them with different inputs preserves a consistent template and makes changes reviewable. A single short prompt does not justify a prompt-templating dependency.
+- **Pydantic:** Validate configuration, API requests and responses, or external data at the boundary where unknown values enter. Typed fields and constraints catch invalid formats at runtime before they spread through the application. Pydantic can coerce inputs by default; use strict validation when accepting a convertible value would itself be an error. Validation still does not replace tests of domain behavior.
+
 **Example.** Put filter validation at the actual request boundary and keep the summary calculation in an inspectable module. Do not add a generic query framework solely to support one known filter. Test the resulting report, not the number of internal layers called.
 
-**Further reading:** [Architecture: Engineering Opinions](./architecture.qmd) on dependency thresholds; the canonical [architecture vocabulary](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/improve-codebase-architecture/LANGUAGE.md.tmpl) on interfaces, depth, seams, and locality.
+**Further reading:** [Architecture: Engineering Opinions](./architecture.qmd) on dependency thresholds; the canonical [architecture vocabulary](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/improve-codebase-architecture/LANGUAGE.md.tmpl) on interfaces and locality; Hamilton's [function-to-node mapping](https://hamilton.apache.org/concepts/node/) and [visualizations](https://hamilton.apache.org/concepts/visualization/); Banks' [prompt registry](https://masci.github.io/banks/registry/); Pydantic's [runtime model validation](https://docs.pydantic.dev/latest/concepts/models/).
 
 ## 9. Control Context And Skill Load
 
@@ -101,9 +116,11 @@ An agent needs the *relevant* context, not the entire repository at once. Start 
 
 Skills should supply a repeatable process or specialized knowledge the task needs. Broad triggers, overlapping instructions, and large automatically loaded references compete with the immediate goal. Keep detailed references on demand. Activate a browser skill for a web task with a browser feedback loop, not for unrelated backend work.
 
-**Example.** For the report filter, load its contract, implementation, fixture, focused tests, and browser guidance. Do not load every writing, infrastructure, and UI skill because each might conceivably become relevant later.
+OpenAI and Anthropic publish separate prompting guidance, and advice can depend on the provider, model family, or even model version. Consult the current guide for the model actually in use; recommendations can emphasize different structures or techniques. Do not combine them into a universal rule or let them override project requirements. Adapt a small, relevant part and check the resulting behavior against representative tasks or prompt evaluations before changing shared instructions.
 
-**Further reading:** Canonical [Write a Skill](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/write-a-skill/SKILL.md.tmpl) on invocation cost and progressive disclosure; [Writing Style Skill Assessment](../project-record/assessments/writing-style-skills.qmd) on context cost and over-activation.
+**Example.** For the report filter, load its contract, implementation, fixture, focused tests, and browser guidance. Do not load every writing, infrastructure, and UI skill because each might conceivably become relevant later. If changing the agent's model, compare the same report task before and after applying any provider-specific prompt advice rather than assuming one prompt works equally well everywhere.
+
+**Further reading:** Canonical [Write a Skill](https://github.com/ewheeler/repo-familiar/blob/main/src/repo_familiar/templates/skills/write-a-skill/SKILL.md.tmpl) on invocation cost and progressive disclosure; [Writing Style Skill Assessment](../project-record/assessments/writing-style-skills.qmd) on context cost and over-activation; [Profiles and Skills](../reference/profiles-and-skills.qmd) for local prompt profiles; [OpenAI](https://developers.openai.com/api/docs/guides/prompt-engineering) and [Anthropic](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices) for current provider-specific guidance.
 
 ## 10. Review And Prove Completeness
 
