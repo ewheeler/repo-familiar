@@ -132,10 +132,10 @@ def generate_project(options: GenerationOptions) -> list[GeneratedAsset]:
     output_dir = options.output_dir
     if not options.dry_run:
         _validate_output_dir(output_dir, force=options.force)
-        output_dir.mkdir(parents=True, exist_ok=True)
 
     planned_assets = plan_project(options)
     if not options.dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
         for asset in planned_assets:
             _write_text(output_dir / asset.path, asset.content, force=options.force)
     return [asset.as_generated_asset() for asset in planned_assets]
@@ -648,6 +648,7 @@ def list_skills() -> list[str]:
 def _validate_options(options: GenerationOptions) -> None:
     profile_registry.validate_profile_selections(
         {
+            "agent_harnesses": options.agent_harnesses,
             "model_profiles": options.model_profiles,
             "tool_profiles": options.tool_profiles,
             "memory_profiles": options.memory_profiles,

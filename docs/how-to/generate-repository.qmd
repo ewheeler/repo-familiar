@@ -31,6 +31,7 @@ uv run python -m repo_familiar generate \
   --output /path/to/demo-project \
   --template python-reproducible \
   --agent-harness opencode \
+  --agent-harness oh-my-pi \
   --agent-harness paseo \
   --model-profile default-coding \
   --tool-profile cq \

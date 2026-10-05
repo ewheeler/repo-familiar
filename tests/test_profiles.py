@@ -29,6 +29,7 @@ PROFILE_ASSET_PATHS = (
 class ProfileRegistryTests(unittest.TestCase):
     def test_lists_profile_names(self) -> None:
         self.assertIn("paseo", profiles.list_names(profiles.AGENT_HARNESSES))
+        self.assertIn("oh-my-pi", profiles.list_names(profiles.AGENT_HARNESSES))
         self.assertIn("default-coding", profiles.list_names(profiles.MODEL_PROFILES))
         self.assertIn("browser-automation", profiles.list_names(profiles.TOOL_PROFILES))
         self.assertIn("flint-chart", profiles.list_names(profiles.TOOL_PROFILES))
@@ -70,6 +71,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("default-coding:", models)
         self.assertIn("provider:", models)
         self.assertIn("paseo", models)
+        self.assertIn("oh-my-pi", models)
         self.assertIn("browser-automation:", tools)
         self.assertIn("screenshots", tools)
         self.assertIn("setup:", tools)

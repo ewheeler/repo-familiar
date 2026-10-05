@@ -5,6 +5,7 @@ profiles:
     use: "general coding and repository maintenance"
     harnesses:
       - "opencode"
+      - "oh-my-pi"
       - "paseo"
     notes:
       latency: "medium"

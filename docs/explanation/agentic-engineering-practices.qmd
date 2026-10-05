@@ -58,7 +58,7 @@ A coding harness determines what an agent can inspect and operate: files, langua
 
 [Paseo](https://paseo.sh/docs/why.md) is an example of an orchestration layer that can supervise agents and manage workspaces around the coding tools they use. This combination may suit a workflow, but the practices here must not require it. Keep enduring instructions, decisions, tests, and documentation in the repository so they survive a change of harness or session.
 
-Give agents the permissions and tools needed for the task, not unrestricted access by default. Machine-level configuration and credentials remain separate from portable project guidance. This Reference Source records Paseo as a selectable harness but does **not** currently offer Oh My Pi as a Project Generator harness option.
+Give agents the permissions and tools needed for the task, not unrestricted access by default. Machine-level configuration and credentials remain separate from portable project guidance. This Reference Source offers Oh My Pi and Paseo as selectable harnesses; Oh My Pi uses the generated `AGENTS.md` and `.agents/skills/` without requiring generated `.omp/` configuration. Selecting it does not enable prewalk or the advisor.
 
 **Example.** One agent implements the report filter; another reviews it in an isolated workspace. Both start from the same repository requirements and expected results, regardless of how their sessions were launched.
 

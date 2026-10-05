@@ -373,6 +373,35 @@ class GeneratorTests(unittest.TestCase):
             self.assertIn('- `paseo`', (output_dir / "AGENTS.md").read_text())
             self.assertIn('- "paseo"', (output_dir / ".repo-familiar/bootstrap.yml").read_text())
 
+    def test_oh_my_pi_generation_and_recorded_audit(self) -> None:
+        for harnesses in (("oh-my-pi",), ("oh-my-pi", "opencode")):
+            with self.subTest(harnesses=harnesses), tempfile.TemporaryDirectory() as tmpdir:
+                repo = Path(tmpdir) / "demo-project"
+                generate_project(
+                    GenerationOptions(
+                        name="Demo Project",
+                        description="A generated demo.",
+                        output_dir=repo,
+                        template="basic",
+                        agent_harnesses=harnesses,
+                        skills=("session-focus",),
+                        generated_at="2026-05-10T00:00:00Z",
+                    )
+                )
+
+                metadata = load_bootstrap_metadata(repo / ".repo-familiar/bootstrap.yml")
+                self.assertEqual(metadata.selected_options["agent_harnesses"], harnesses)
+                self.assertIn("- `oh-my-pi`", (repo / "AGENTS.md").read_text())
+                self.assertTrue((repo / ".agents/skills/session-focus/SKILL.md").is_file())
+                self.assertIn('"oh-my-pi"', (repo / ".agents/models.yml").read_text())
+                self.assertEqual((repo / "opencode.json").exists(), "opencode" in harnesses)
+                self.assertNotIn(".omp/config.yml", {asset.path for asset in metadata.generated_assets})
+
+                report = audit_existing_repository(ExistingBootstrapOptions(path=repo))
+                self.assertEqual(report.selected_options["agent_harnesses"], harnesses)
+                self.assertEqual(report.missing, ())
+                self.assertEqual(report.conflicts, ())
+
     def test_opencode_mcp_profiles_render_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "demo-project"
@@ -460,6 +489,7 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(result, 0)
         self.assertIn("opencode", stdout.getvalue())
         self.assertIn("paseo", stdout.getvalue())
+        self.assertIn("oh-my-pi", stdout.getvalue())
 
         stdout = StringIO()
         with redirect_stdout(stdout):
@@ -538,6 +568,21 @@ class GeneratorTests(unittest.TestCase):
 
         self.assertEqual(result, 1)
         self.assertIn("Unknown model profile", stderr.getvalue())
+
+    def test_cli_rejects_unknown_agent_harness(self) -> None:
+        stderr = StringIO()
+        with tempfile.TemporaryDirectory() as tmpdir, redirect_stderr(stderr):
+            repo = Path(tmpdir) / "demo-project"
+            result = main(
+                [
+                    "generate", "--name", "Demo Project", "--output", str(repo),
+                    "--agent-harness", "unknown-harness",
+                ]
+            )
+            self.assertFalse(repo.exists())
+
+        self.assertEqual(result, 1)
+        self.assertIn("Unknown agent harness", stderr.getvalue())
 
     def test_targeted_add_requires_selected_profile(self) -> None:
         stderr = StringIO()

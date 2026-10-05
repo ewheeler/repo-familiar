@@ -12,6 +12,14 @@ AGENT_HARNESSES = {
             "OpenCode MCP entries are controlled by opencode-* tool profiles",
         ],
     },
+    "oh-my-pi": {
+        "purpose": "interactive coding harness with project instruction and skill discovery",
+        "generated_assets": [],
+        "notes": [
+            "Oh My Pi discovers AGENTS.md and .agents/skills without harness-specific repository config",
+            "Model roles, prewalk, advisor, and credentials remain user-owned unless configured separately",
+        ],
+    },
     "paseo": {
         "purpose": "daemon-supervised agent orchestration, schedules, terminals, and managed worktrees",
         "generated_assets": [],
@@ -36,7 +44,7 @@ MODEL_PROFILES = {
         "provider": "openai",
         "model": "gpt-5.5",
         "use": "general coding and repository maintenance",
-        "harnesses": ["opencode", "paseo"],
+        "harnesses": ["opencode", "oh-my-pi", "paseo"],
         "notes": {
             "latency": "medium",
             "cost": "high",
@@ -47,7 +55,7 @@ MODEL_PROFILES = {
         "provider": "anthropic",
         "model": "claude-sonnet-4-5",
         "use": "cheaper review and planning passes",
-        "harnesses": ["opencode", "paseo"],
+        "harnesses": ["opencode", "oh-my-pi", "paseo"],
         "notes": {
             "latency": "medium",
             "cost": "medium",
@@ -1067,6 +1075,7 @@ def describe_profile_family(family: str, name: str) -> dict:
 
 
 def validate_profile_selections(selections: dict[str, tuple[str, ...]]) -> None:
+    _validate("agent harness", selections.get("agent_harnesses", ()), AGENT_HARNESSES)
     _validate("model profile", selections.get("model_profiles", ()), MODEL_PROFILES)
     _validate("tool profile", selections.get("tool_profiles", ()), TOOL_PROFILES)
     _validate("memory profile", selections.get("memory_profiles", ()), MEMORY_PROFILES)

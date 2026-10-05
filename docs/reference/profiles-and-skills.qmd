@@ -39,6 +39,7 @@ Do not copy the profile catalog into documentation. Registry-backed tests keep g
 - Provider credentials, API tokens, secret values, private keys, and machine-local paths stay out of profile files and Bootstrap Metadata.
 - Harness-specific repository config is generated only when selected and only with non-secret, reproducible settings.
 - Machine-level Paseo, OpenCode, shell, MCP, and secret-store configuration remains user-owned.
+- Oh My Pi's global settings and project-local `.omp/config.yml` remain user-managed. Selecting `oh-my-pi` records the harness and vendors portable `AGENTS.md` and `.agents/skills/` assets; it does not generate OMP settings or enable prewalk or the advisor.
 - Profile names are stable handles for generation and future upgrade comparisons.
 
 ## Skills
