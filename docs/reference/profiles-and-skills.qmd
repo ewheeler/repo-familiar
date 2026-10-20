@@ -46,4 +46,33 @@ Do not copy the profile catalog into documentation. Registry-backed tests keep g
 
 Selected skills are vendored under `.agents/skills/`; `.agents/skill-sources.yml` records provenance. Use `list-skills` for the current registry and `check-skill-sources` to compare recorded upstream sources without writing files.
 
+### Wayfinder
+
+`wayfinder` is an optional, explicitly invoked planning skill for multi-session efforts whose route is unclear. It maps decisions on an issue tracker and stops before implementation; Notes cannot authorize building. Run `setup-matt-pocock-skills` first: its GitHub, GitLab, and local-Markdown templates document how to store maps and tickets, represent blocking, query the frontier, claim tickets, and resolve them. For another tracker, add the same `Wayfinding operations` section manually. Before first use on GitHub or GitLab, create any missing `wayfinder:map`, `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling`, and `wayfinder:task` labels; the tracker templates list them. Selecting the skill does not perform tracker writes.
+
+Wayfinder requires `grilling` and `domain-modeling` to chart the destination and resolve grilling tickets; `prototype` and `research` are required for those ticket types. A cleared map hands off to `to-spec`, then `to-tickets` and `implement`. Selecting Wayfinder does not install these companion skills. The local skill and its OpenAI metadata are distributed with the upstream MIT license.
+
+**New repository**
+
+```text
+uv run python -m repo_familiar generate \
+  --name my-project \
+  --output ./my-project \
+  --skill setup-matt-pocock-skills \
+  --skill wayfinder
+```
+
+**Existing repository**
+
+```text
+uv run python -m repo_familiar add-skill \
+  --path ./existing-repository \
+  --skill setup-matt-pocock-skills \
+  --skill wayfinder \
+  --apply
+```
+
+Source: [AI Hero overview](https://www.aihero.dev/skills-wayfinder), adapted from the [upstream skill](https://github.com/mattpocock/skills/blob/8295b8e10d4cdb6cce772a56dda7b7c37075074d/skills/engineering/wayfinder/SKILL.md), reviewed at upstream file commit `8295b8e10d4cdb6cce772a56dda7b7c37075074d`.
+
+
 Targeted `add-*` commands preview by default and write only with `--apply`. See [Bootstrap Lifecycle](./bootstrap-lifecycle.qmd) for the shared safety contract.

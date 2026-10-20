@@ -349,9 +349,9 @@ class UpgradePreviewTests(unittest.TestCase):
             generate_project(options)
             sources = repo / ".agents/skill-sources.yml"
             existing_sources = sources.read_text().replace(
-                '    notes: "Adapted from DietrichGebert/ponytail for repo-familiar selectable skill guidance."',
-                '    notes: "Adapted from DietrichGebert/ponytail for repo-familiar selectable skill guidance."\n'
-                '    custom_note: "preserve downstream field"',
+                "  ponytail:\n",
+                '  ponytail:\n    custom_note: "preserve downstream field"\n',
+                1,
             )
             sources.write_text(f"# keep me\n{existing_sources}\ncustom:\n  owner: downstream\n")
             current = _replace_plan_content(

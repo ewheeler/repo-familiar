@@ -48,6 +48,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("setup-python-guardrails", profiles.list_names(profiles.SKILLS))
         self.assertIn("static-quarto-application", profiles.list_names(profiles.SKILLS))
         self.assertIn("session-focus", profiles.list_names(profiles.SKILLS))
+        self.assertIn("wayfinder", profiles.list_names(profiles.SKILLS))
         self.assertIn("semantic-routing-map", profiles.list_names(profiles.REPOMAP_PROFILES))
 
     def test_validates_profile_selections(self) -> None:
@@ -56,7 +57,7 @@ class ProfileRegistryTests(unittest.TestCase):
                 "model_profiles": ("default-coding",),
                 "tool_profiles": ("cq",),
                 "memory_profiles": ("memory-local",),
-                "skills": ("grill-with-docs",),
+                "skills": ("grill-with-docs", "wayfinder"),
             }
         )
 
@@ -204,7 +205,7 @@ class ProfileRegistryTests(unittest.TestCase):
         self.assertIn("waiting for their approval", cq)
         self.assertIn("redacted captured artifact", diagnose)
         self.assertIn('playwright-cli find "Sign in"', playwright)
-        self.assertIn("Scope before scanning", architecture)
+        self.assertIn("put extra weight on the parts of the codebase that have recently changed", architecture)
 
 
 def _all_profile_options() -> GenerationOptions:

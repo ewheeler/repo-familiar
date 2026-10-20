@@ -742,14 +742,17 @@ PUBLIC_INTEREST_PROFILES = {
 SKILLS = {
     "a11y-web-scan": "Plan and run accessibility scans for user-facing web outputs",
     "caveman": "Use ultra-compressed communication when brevity is explicitly requested",
+    "codebase-design": "Use shared vocabulary and principles for designing deep modules",
     "cq": "Query the knowledge commons before implementation work and error fixes",
     "diagnose": "Diagnose hard bugs and performance regressions with a disciplined loop",
+    "domain-modeling": "Build and sharpen a project's domain model",
     "flint-chart-author": "Author valid Flint ChartAssemblyInput specs for chart rendering and MCP workflows",
     "get-api-docs": "Fetch current third-party API, SDK, and library documentation before integration work",
     "git-guardrails-claude-code": "Set up Claude Code hooks to block dangerous git commands",
-    "grill-me": "Stress-test a plan or design through focused questioning",
-    "grill-with-docs": "Stress-test plans against project language and documented decisions",
-    "improve-codebase-architecture": "Find architecture refactoring opportunities informed by domain docs",
+    "grill-me": "Run a relentless interview to sharpen a plan or design",
+    "grill-with-docs": "Grill a design against the project's domain model and decisions",
+    "grilling": "Resolve decisions through a user-led, round-based design tree",
+    "improve-codebase-architecture": "Find deepening opportunities and grill through an architecture change",
     "liteparse": "Parse local unstructured documents with LiteParse",
     "migrate-to-shoehorn": "Migrate tests from type assertions to @total-typescript/shoehorn",
     "playwright-cli": "Use Playwright CLI for browser inspection, screenshots, console errors, and web interaction checks",
@@ -758,7 +761,7 @@ SKILLS = {
     "prompt-migration": "Migrate prompt DAGs across model versions safely",
     "prompt-eval-design": "Design lightweight evals for prompt DAGs and model-version migrations",
     "prompt-output-safety": "Review prompts and outputs for unsafe or policy-sensitive behavior",
-    "prototype": "Build throwaway prototypes to flush out design questions",
+    "prototype": "Build throwaway UI or HTML prototypes to answer design questions",
     "qa-test-design": "Design meaningful tests before writing implementation or test code",
     "repository-map": "Create or refresh a selective semantic repository routing map",
     "reproducible-data-science": "Build reproducible data workflows with locked environments, input provenance, deterministic execution, and executable evidence",
@@ -766,15 +769,16 @@ SKILLS = {
     "scaffold-exercises": "Create exercise directory structures and stubs",
     "security-audit": "Review code, dependencies, secrets, and auth patterns for security risks",
     "session-focus": "Prevent goal drift during multi-step agent tasks",
-    "setup-matt-pocock-skills": "Set up agent skill context and issue-tracker documentation",
+    "setup-matt-pocock-skills": "Set up issue-tracker, Wayfinding, triage-label, and domain documentation for agent skills",
     "setup-pre-commit": "Set up Husky pre-commit hooks with formatting, type checks, and tests",
     "setup-python-guardrails": "Set up Python pre-commit guardrails with ruff, mypy, and opt-in deep coverage hooks",
     "static-quarto-application": "Preserve a static Quarto browser client and client-initiated FastAPI request/response boundary",
-    "tdd": "Use red-green-refactor test-driven development",
+    "tdd": "Use test-driven red-green-refactor at confirmed behavior seams",
     "to-issues": "Break a plan into independently grabbable implementation issues",
     "to-prd": "Turn conversation context into a product requirements document",
-    "triage": "Triage issues through a role-driven state machine",
+    "triage": "Move issues and external pull requests through configurable triage roles",
     "upstream-improvement": "Prepare safe upstream improvement proposals from downstream generated asset changes",
+    "wayfinder": "Map multi-session work as issue-tracker decisions and resolve the route before implementation",
     "write-a-skill": "Create new agent skills with proper structure and progressive disclosure",
     "zoom-out": "Give broader context and explain how a code area fits the system",
 }
@@ -790,6 +794,18 @@ SKILL_SOURCES = {
         "source_url": "https://github.com/mattpocock/skills",
         "notes": "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path.",
     },
+    "codebase-design": {
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/codebase-design/SKILL.md",
+        "notes": "Adapted from mattpocock/skills at HEAD 49dd158d1076134a641b33efb035946536778336; CONTEXT.md remains the project domain-language convention. Requires `domain-modeling`; MIT licensed.",
+        "setup": [
+            "Select with repo-familiar using `--skill codebase-design` when generating or bootstrapping a repository",
+            "Use with `improve-codebase-architecture` when designing a deepened module interface",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/codebase-design/SKILL.md` and its `DEEPENING.md` and `DESIGN-IT-TWICE.md` references exist",
+        ],
+    },
     "cq": {
         "source_type": "external",
         "source_url": "https://github.com/mozilla-ai/cq/blob/main/plugins/cq/skills/cq/SKILL.md",
@@ -798,12 +814,24 @@ SKILL_SOURCES = {
     "diagnose": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnosing-bugs/SKILL.md",
-        "notes": "Adapted from mattpocock/skills; upstream renamed from diagnose to diagnosing-bugs.",
+        "notes": "Refreshed from Matt Pocock's diagnosing-bugs skill at upstream file commit f3fc5632f401156837ee3872f14fe33ccf1024ea; MIT license included.",
+    },
+    "domain-modeling": {
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/domain-modeling/SKILL.md",
+        "notes": "Adapted from mattpocock/skills at upstream commit d80fa0f4ebe0c5714af0adf8670336065233ecc6; uses CONTEXT.md and CONTEXT-FORMAT.md instead of upstream GLOSSARY files. MIT licensed.",
+        "setup": [
+            "Select with repo-familiar using `--skill domain-modeling` when generating or bootstrapping a repository",
+            "Use with `grilling`, `grill-with-docs`, and `improve-codebase-architecture`",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/domain-modeling/SKILL.md`, `CONTEXT-FORMAT.md`, and `ADR-FORMAT.md` exist",
+        ],
     },
     "flint-chart-author": {
         "source_type": "external",
         "source_url": "https://github.com/microsoft/flint-chart/blob/main/agent-skills/flint-chart-author/SKILL.md",
-        "notes": "Vendored from Microsoft Flint Chart authoring skill for semantic chart spec guidance.",
+        "notes": "Refreshed from Microsoft Flint Chart authoring skill at upstream main commit 683d5de1ffd0c1a76001ca5aa044f297276d7734; MIT license included.",
         "setup": [
             "Select with repo-familiar using `--skill flint-chart-author` when generating or bootstrapping a repository",
             "Use the `flint-chart` tool profile for library integration guidance",
@@ -822,22 +850,55 @@ SKILL_SOURCES = {
     "git-guardrails-claude-code": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Refreshed from mattpocock/skills at upstream commit 321658273cb1d20b76026717d027d505790106d4; MIT license included.",
     },
     "grill-me": {
-        "source_type": "local-adapted",
+        "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md",
-        "notes": "Originally adapted from mattpocock/skills; upstream simplified to delegate to /grilling session. Local version retains full interview guidance.",
+        "notes": "Refreshed from mattpocock/skills at HEAD 49dd158d1076134a641b33efb035946536778336; delegates to the vendored `grilling` skill. MIT licensed.",
+        "setup": [
+            "Select with repo-familiar using `--skill grill-me` when generating or bootstrapping a repository",
+            "Also select `grilling`; the upstream grill-me skill delegates the interview to that companion",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/grill-me/SKILL.md` and `.agents/skills/grilling/SKILL.md` exist",
+        ],
     },
     "grill-with-docs": {
-        "source_type": "local-adapted",
+        "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/grill-with-docs/SKILL.md",
-        "notes": "Originally adapted from mattpocock/skills; upstream simplified to delegate to /grilling and /domain-modeling. Local version retains full documentation workflow guidance.",
+        "notes": "Refreshed from mattpocock/skills at HEAD 49dd158d1076134a641b33efb035946536778336; delegates to the vendored `grilling` and `domain-modeling` skills. MIT licensed.",
+        "setup": [
+            "Select with repo-familiar using `--skill grill-with-docs` when generating or bootstrapping a repository",
+            "Also select `grilling` and `domain-modeling`, which this skill invokes",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/grill-with-docs/SKILL.md`, `.agents/skills/grilling/SKILL.md`, and `.agents/skills/domain-modeling/SKILL.md` exist",
+        ],
+    },
+    "grilling": {
+        "source_type": "external",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/grilling/SKILL.md",
+        "notes": "Vendored from mattpocock/skills at HEAD 49dd158d1076134a641b33efb035946536778336; MIT licensed.",
+        "setup": [
+            "Select with repo-familiar using `--skill grilling` when generating or bootstrapping a repository",
+            "Used by `grill-me`, `grill-with-docs`, and `wayfinder`",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/grilling/SKILL.md` and `.agents/skills/grilling/agents/openai.yaml` exist",
+        ],
     },
     "improve-codebase-architecture": {
         "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/improve-codebase-architecture/SKILL.md",
-        "notes": "Originally adapted from mattpocock/skills; upstream now depends on /codebase-design and /domain-modeling skills not vendored here. Local version retains inline vocabulary in LANGUAGE.md.",
+        "notes": "Refreshed from mattpocock/skills at HEAD 49dd158d1076134a641b33efb035946536778336; locally adapted to CONTEXT.md, with `codebase-design` and `domain-modeling` companions vendored. MIT licensed.",
+        "setup": [
+            "Select with repo-familiar using `--skill improve-codebase-architecture` when generating or bootstrapping a repository",
+            "Also select `codebase-design` and `domain-modeling`, which the upstream skill invokes",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/improve-codebase-architecture/SKILL.md`, `.agents/skills/codebase-design/SKILL.md`, and `.agents/skills/domain-modeling/SKILL.md` exist",
+        ],
     },
     "liteparse": {
         "source_type": "external",
@@ -857,17 +918,20 @@ SKILL_SOURCES = {
     "migrate-to-shoehorn": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/migrate-to-shoehorn/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Adapted from mattpocock/skills; upstream OpenAI metadata included.",
+        "verify": [
+            "Confirm `.agents/skills/migrate-to-shoehorn/SKILL.md` and `.agents/skills/migrate-to-shoehorn/agents/openai.yaml` exist",
+        ],
     },
     "playwright-cli": {
         "source_type": "external",
         "source_url": "https://github.com/microsoft/playwright-cli/blob/main/skills/playwright-cli/SKILL.md",
-        "notes": "Adapted from Microsoft playwright-cli skill for repo-familiar browser automation guidance.",
+        "notes": "Refreshed from microsoft/playwright-cli at upstream main commit 83368cb3bfc0b2bd8ff8af4ade8e0107461ed421; Apache-2.0 license included.",
     },
     "ponytail": {
         "source_type": "external",
         "source_url": "https://github.com/DietrichGebert/ponytail/blob/main/skills/ponytail/SKILL.md",
-        "notes": "Adapted from DietrichGebert/ponytail for repo-familiar selectable skill guidance.",
+        "notes": "Refreshed from DietrichGebert/ponytail at upstream main commit 09c434ab73ca43761c5d8b0c5d341926c2fba710; MIT license included.",
         "setup": [
             "Select with repo-familiar using `--skill ponytail` when generating or bootstrapping a repository",
             "Use the `ponytail-agent-rules` tool profile when the repository should document always-on Ponytail plugin or extension setup",
@@ -901,7 +965,7 @@ SKILL_SOURCES = {
     "prototype": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/prototype/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Refreshed from mattpocock/skills at upstream commit 321658273cb1d20b76026717d027d505790106d4; MIT license included.",
     },
     "qa-test-design": {
         "source_type": "external",
@@ -926,7 +990,10 @@ SKILL_SOURCES = {
     "scaffold-exercises": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/scaffold-exercises/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Adapted from mattpocock/skills; upstream OpenAI metadata included.",
+        "verify": [
+            "Confirm `.agents/skills/scaffold-exercises/SKILL.md` and `.agents/skills/scaffold-exercises/agents/openai.yaml` exist",
+        ],
     },
     "security-audit": {
         "source_type": "external",
@@ -939,14 +1006,14 @@ SKILL_SOURCES = {
         "notes": "Adapted from omega-memory/omega-skills.",
     },
     "setup-matt-pocock-skills": {
-        "source_type": "external",
+        "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/setup-matt-pocock-skills/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Adapted from mattpocock/skills at upstream commit 5b7cade4d68947f34dae71326a0ce89f09e22c9c; repo-local tracker templates retain Wayfinding operations and CONTEXT.md conventions.",
     },
     "setup-pre-commit": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/misc/setup-pre-commit/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Refreshed from mattpocock/skills at upstream commit 321658273cb1d20b76026717d027d505790106d4; MIT license included.",
     },
     "setup-python-guardrails": {
         "source_type": "local",
@@ -961,12 +1028,12 @@ SKILL_SOURCES = {
     "tdd": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Refreshed from mattpocock/skills at upstream commit 3f599139104dfceabc7754eeb91319802f85e042; MIT license included.",
     },
     "to-issues": {
         "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills",
-        "notes": "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path.",
+        "notes": "Originally adapted from mattpocock/skills; upstream merged to-issues into to-tickets, a successor whose content is not an exact replacement for the local HITL/AFK workflow.",
         "setup": [
             "Select with repo-familiar using `--skill to-issues` when generating or bootstrapping a repository",
         ],
@@ -974,7 +1041,7 @@ SKILL_SOURCES = {
     "to-prd": {
         "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills",
-        "notes": "Originally adapted from mattpocock/skills; upstream skill no longer exists at the recorded path.",
+        "notes": "Originally adapted from mattpocock/skills; to-spec is the current successor candidate, but its spec-publishing workflow is not a one-to-one replacement for the local PRD contract.",
         "setup": [
             "Select with repo-familiar using `--skill to-prd` when generating or bootstrapping a repository",
         ],
@@ -982,17 +1049,32 @@ SKILL_SOURCES = {
     "triage": {
         "source_type": "external",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/triage/SKILL.md",
-        "notes": "Adapted from mattpocock/skills.",
+        "notes": "Refreshed from mattpocock/skills at upstream commit d80fa0f4ebe0c5714af0adf8670336065233ecc6; MIT license included.",
     },
     "upstream-improvement": {
         "source_type": "local",
         "source_url": "local:repo-familiar",
         "notes": "Authored for repo-familiar upstream contribution workflows.",
     },
+    "wayfinder": {
+        "source_type": "local-adapted",
+        "source_url": "https://github.com/mattpocock/skills/blob/main/skills/engineering/wayfinder/SKILL.md",
+        "notes": "Adapted from Matt Pocock's Wayfinder skill, reviewed at upstream file commit 8295b8e10d4cdb6cce772a56dda7b7c37075074d; local companion preflight and Notes safety guard preserve planning-only behavior. MIT licensed.",
+        "setup": [
+            "Select with repo-familiar using `--skill wayfinder` when generating or bootstrapping a repository",
+            "Select and run `setup-matt-pocock-skills` to write tracker-specific Wayfinding operations; choose its local Markdown tracker if needed",
+            "Install companion skills such as `grilling`, `domain-modeling`, `research`, `prototype`, `to-spec`, `to-tickets`, and `implement` separately when those workflows are needed",
+        ],
+        "verify": [
+            "Confirm `.agents/skills/wayfinder/SKILL.md` and `.agents/skills/wayfinder/agents/openai.yaml` exist after generation or bootstrap",
+            "Confirm required `wayfinder:*` labels exist on label-based trackers, and tracker instructions describe map, child-ticket, blocking, and frontier operations",
+            "Invoke `/wayfinder` explicitly for multi-session work whose route is unclear; confirm it stops before implementation",
+        ],
+    },
     "write-a-skill": {
-        "source_type": "external",
+        "source_type": "local-adapted",
         "source_url": "https://github.com/mattpocock/skills/blob/main/skills/productivity/writing-great-skills/SKILL.md",
-        "notes": "Adapted from mattpocock/skills; upstream renamed from write-a-skill to writing-great-skills.",
+        "notes": "Adapted from mattpocock/skills; the recorded writing-great-skills path now returns 404. Current writing-for-agents is a related candidate with separate SKILL-MECHANICS.md support, not a verified one-to-one replacement.",
     },
     "zoom-out": {
         "source_type": "local-adapted",

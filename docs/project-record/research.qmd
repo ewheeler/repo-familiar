@@ -14,4 +14,30 @@ Research pages are point-in-time evaluations of candidate inputs. Revalidate ups
 | [Ix Code Map](./assessments/ix-code-map.qmd) | 2026-08-10 | Keep as a research candidate; do not add as a dependency, default profile, or vendored skill. |
 | [Writing Style Skills](./assessments/writing-style-skills.qmd) | 2026-08-03 | Consider a reviewed SimpleEnglish adaptation; defer Economist Style pending evaluation and provenance review. |
 
+| [Vendored skill source review](#vendored-skill-source-review) | 2026-10-19 | Add Wayfinder and its tracker operations; preserve other changed or adapted skills until reviewed refreshes are explicitly chosen. |
+
+## Vendored Skill Source Review {#vendored-skill-source-review}
+
+After Wayfinder was registered, `uv run repo-familiar check-skill-sources --format json` checked the current 38-entry registry on 2026-10-19. It compares `SKILL.md` content and reports support-file presence, but does not compare nested support-file bytes. Existing shared support files were reviewed manually where current upstream sources were available. The command exited 1 because it found actionable drift.
+
+| Checker status | Count | Review meaning |
+|---|---:|---|
+| `local-source` | 10 | No upstream comparison needed. |
+| `upstream-newer` | 13 | Upstream `SKILL.md` differs and has a newer commit timestamp; candidate updates, not automatically applied. |
+| `content-differs` | 7 | Seven `SKILL.md` files differ without a newer upstream timestamp; this includes Wayfinder's intentional planning-only guard. Preserve other local adaptations pending review. |
+| `matches-upstream` | 2 | `migrate-to-shoehorn` and `scaffold-exercises` match at `SKILL.md`, but each lacks upstream `agents/openai.yaml` metadata locally. |
+| `unsupported-url` | 5 | `caveman`, `to-issues`, `to-prd`, `rodney-browser`, and `zoom-out` have no directly checkable current skill URL. `to-tickets` and `to-spec` are successor candidates for the first two, not verified replacements; `rodney-browser` is local guidance around the Rodney CLI. |
+| `fetch-error` | 1 | `write-a-skill`'s recorded `writing-great-skills` URL returns 404; current `writing-for-agents` is related but not a verified replacement. |
+
+### Support-file and path findings
+
+- Twelve current upstream skill directories include `agents/openai.yaml` that is absent locally: `diagnose`, `git-guardrails-claude-code`, `grill-me`, `grill-with-docs`, `improve-codebase-architecture`, `migrate-to-shoehorn`, `prototype`, `scaffold-exercises`, `setup-matt-pocock-skills`, `setup-pre-commit`, `tdd`, and `triage`.
+- Current upstream `playwright-cli` adds `references/pr-attachments.md` and no longer has the locally vendored `references/spec-driven-testing.md`. Its existing references also differ; they were not refreshed. The local architecture-review, TDD, and prototype support files retain adaptations, including the prototype's TUI-based `LOGIC.md`.
+- Shared support content was reviewed without bulk replacement: the `git-guardrails-claude-code` script, LiteParse search script, and TDD's `tests.md`/`mocking.md` match current sources. Other changed support files remain local adaptations. `cq` differs from upstream commit `bccb7333df91c7c27168f8738240f7ad7ef06194`; its local adaptation is newer.
+
+### Applied versus unapplied
+
+- **Applied:** added Wayfinder from Matt Pocock's MIT-licensed `mattpocock/skills` at repository HEAD `49dd158d1076134a641b33efb035946536778336`, including `SKILL.md`, `agents/openai.yaml`, and the license. The local safety adaptation prevents map Notes from authorizing implementation. Updated the setup skill's GitHub, GitLab, and local-Markdown tracker templates with Wayfinding operations and documented the required labels for GitHub and GitLab.
+- **Not applied:** no other upstream skill refreshes or support-file additions. The 13 newer and six pre-existing differing `SKILL.md` results, missing upstream metadata, and Playwright reference changes remain review candidates; local adaptations and defaults were preserved.
+
 When a candidate is adopted or definitively rejected, record the durable outcome in the owning registry, plan, or ADR and retire the assessment if it no longer provides useful rationale.
